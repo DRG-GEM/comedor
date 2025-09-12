@@ -93,7 +93,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, collection, getDocs, setDoc, addDoc, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "DEMO", authDomain: "DEMO", projectId: "DEMO" };
+        const firebaseConfig = typeof FIREBASE_CONFIG !== 'undefined' ? JSON.parse(FIREBASE_CONFIG) : { apiKey: "DEMO", authDomain: "DEMO", projectId: "DEMO" };
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'comedor-escolar-demo';
         
         let db, auth, userRole = null;
@@ -352,4 +352,5 @@
     </script>
 </body>
 </html>
+
 
