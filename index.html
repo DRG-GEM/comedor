@@ -382,6 +382,7 @@
             }
 
             function handleCsvImport(file) {
+                console.log('[DEBUG] handleCsvImport recibido:', file);
                 if (!file) return;
                 const statusElements = [dom.importStatusInitial, dom.importStatusDashboard];
                 statusElements.forEach(el => el.textContent = 'Procesando archivo...');
