@@ -342,6 +342,7 @@
                     dom.historyStudentList.innerHTML = '<p>No hay alumnos registrados.</p>';
                 }
              } catch (e) {
+                console.error("Error loading history:", e);
                 dom.historyStudentList.innerHTML = '<p class="text-red-400">Error al cargar el historial.</p>';
              }
              dom.historyStudentName.textContent = 'Selecciona un alumno';
@@ -360,6 +361,7 @@
                     dom.historyDatesList.innerHTML = '<p>Este alumno no tiene registros de asistencia.</p>';
                 }
             } catch (e) {
+                 console.error("Error fetching student history:", e);
                  dom.historyDatesList.innerHTML = '<p class="text-red-400">Error al buscar las fechas.</p>';
             }
         }
@@ -369,23 +371,30 @@
             if (!file) return;
             const statusElements = [dom.importStatusInitial, dom.importStatusDashboard];
             statusElements.forEach(el => el.textContent = 'Procesando archivo...');
+            
             Papa.parse(file, {
-                header: true, skipEmptyLines: true,
+                header: true,
+                skipEmptyLines: true,
                 complete: async (results) => {
-                    if (!results.data || results.data.length === 0 || !results.meta.fields.includes('name') || !results.meta.fields.includes('course') || !results.meta.fields.includes('shift')) {
-                         statusElements.forEach(el => el.textContent = `❌ Archivo vacío o formato incorrecto.`);
-                         setTimeout(() => statusElements.forEach(el => el.textContent = ''), 5000);
+                    dom.csvFileInput.value = ''; // Reset input to allow re-uploading the same file
+                    const headers = results.meta.fields.map(h => h.toLowerCase().trim());
+                    if (!results.data || results.data.length === 0 || !headers.includes('name') || !headers.includes('course') || !headers.includes('shift')) {
+                         statusElements.forEach(el => el.textContent = `❌ Error: El CSV debe tener columnas 'name', 'course', y 'shift'.`);
+                         setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
                          return;
                     }
+                    
                     statusElements.forEach(el => el.textContent = `Añadiendo ${results.data.length} alumnos...`);
                     const addedCount = await addStudentBatch(results.data);
                     statusElements.forEach(el => el.textContent = `✅ ¡${addedCount} alumnos importados!`);
                     setTimeout(() => statusElements.forEach(el => el.textContent = ''), 5000);
+                    
                     if (!dom.dashboard.classList.contains('hidden') && appState.currentShift) {
                         renderCourses(appState.currentShift);
                     }
                 },
                 error: (error) => {
+                    dom.csvFileInput.value = ''; // Also reset on error
                     statusElements.forEach(el => el.textContent = `❌ Error al leer el archivo.`);
                     setTimeout(() => statusElements.forEach(el => el.textContent = ''), 5000);
                 }
