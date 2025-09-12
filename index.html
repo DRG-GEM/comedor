@@ -391,6 +391,8 @@
                     header: true,
                     skipEmptyLines: true,
                     complete: async (results) => {
+                        console.log('[DEBUG] PapaParse results.meta.fields:', results.meta.fields);
+    console.log('[DEBUG] PapaParse data sample:', results.data.slice(0, 2));
                         dom.csvFileInput.value = '';
                         const headers = results.meta.fields.map(h => h.toLowerCase().trim());
                         if (!results.data || results.data.length === 0 || !headers.includes('name') || !headers.includes('course') || !headers.includes('shift')) {
@@ -415,6 +417,7 @@
                         }
                     },
                     error: (error) => {
+                        console.error('[DEBUG] PapaParse error:', err);
                         dom.csvFileInput.value = '';
                         statusElements.forEach(el => el.textContent = `❌ Error al leer el archivo.`);
                         setTimeout(() => statusElements.forEach(el => el.textContent = ''), 5000);
