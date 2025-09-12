@@ -109,7 +109,6 @@
 
         // --- IMPORTANTE: PEGA AQUÍ TU CONFIGURACIÓN DE FIREBASE ---
         // Reemplaza este objeto de ejemplo con el que copiaste de tu proyecto de Firebase.
-        // Lo encontrarás en la configuración de tu proyecto > Configuración del Proyecto > General > Tus apps > SDK de Firebase.
         const firebaseConfig = {
   apiKey: "AIzaSyAeI9G1_2-E8Kghc-88bkrXa_VDJXeDyHo",
   authDomain: "comedorvp.firebaseapp.com",
@@ -119,8 +118,8 @@
   appId: "1:821870274048:web:62b85d28ceace395245ae5"
 };
         // -----------------------------------------------------------
-
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'comedor-escolar-demo';
+        
+        const appId = firebaseConfig.projectId; 
         
         let db, auth, userRole = null;
         const appState = { currentShift: null, students: [], attendance: {} };
@@ -160,34 +159,34 @@
         }
 
         async function initFirebase() {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            return new Promise(resolve => {
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) resolve(user);
-                    else {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                return new Promise(resolve => {
+                    onAuthStateChanged(auth, async (user) => {
+                        if (user) return resolve(user);
                         try {
                             if (typeof __initial_auth_token !== 'undefined') await signInWithCustomToken(auth, __initial_auth_token);
                             else await signInAnonymously(auth);
                         } catch (error) { console.error("Auth Error:", error); }
-                    }
+                    });
                 });
-            });
+            } catch (error) {
+                console.error("Firebase Init Error:", error);
+                document.body.innerHTML = `<div class="text-red-500 text-center p-8"><h1>Error de Configuración</h1><p>La configuración de Firebase no es correcta. Por favor, revísala en el código.</p></div>`;
+            }
         }
         
-        // --- MODAL FUNCTIONS ---
         function showModal({ title, text, showInput = false, placeholder = '', okText = 'Aceptar', cancelText = 'Cancelar' }) {
             return new Promise(resolve => {
                 modalResolve = resolve;
                 dom.modal.title.textContent = title;
                 dom.modal.text.textContent = text;
+                dom.modal.input.style.display = showInput ? 'block' : 'none';
                 if (showInput) {
                     dom.modal.input.value = '';
                     dom.modal.input.placeholder = placeholder;
-                    dom.modal.input.style.display = 'block';
-                } else {
-                    dom.modal.input.style.display = 'none';
                 }
                 dom.modal.okBtn.textContent = okText;
                 dom.modal.cancelBtn.textContent = cancelText;
@@ -195,13 +194,13 @@
             });
         }
 
-        // --- DATA FUNCTIONS ---
         async function fetchStudents(shift) {
             if (!db) return [];
             const q = query(collection(db, "artifacts", appId, "public", "data", "students"), where("shift", "==", shift));
             const querySnapshot = await getDocs(q);
             return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         }
+        
         async function addStudentToDB(name, course, shift) {
             if (!db) return null;
             try {
@@ -212,6 +211,7 @@
                 return null;
             }
         }
+
         async function logAttendance(studentId, studentName, dateString) {
             if (!db || studentId.startsWith('temp_')) return;
             const attendanceId = `${studentId}_${dateString}`;
@@ -221,6 +221,7 @@
                 console.error("Error logging attendance: ", error);
             }
         }
+
         async function addStudentBatch(students) {
             if (!db || students.length === 0) return 0;
             const batch = writeBatch(db);
@@ -238,11 +239,10 @@
                 return validStudentCount;
             } catch(e) {
                 console.error("Error committing batch: ", e);
-                return 0;
+                return null;
             }
         }
         
-        // --- UI FUNCTIONS ---
         function updateSummary() {
             const statuses = Object.values(appState.attendance);
             document.getElementById('summary-diners').textContent = statuses.length;
@@ -250,9 +250,11 @@
             document.getElementById('summary-present').textContent = statuses.filter(s => s === 'present').length;
             document.getElementById('summary-pending').textContent = statuses.filter(s => s === 'pending').length;
         }
+
         function createStudentElement({id, name}) {
             return `<div id="${id}" class="student-item p-3 rounded-md cursor-pointer flex justify-between items-center mt-2 pending" data-student-id="${id}" data-student-name="${name}"><span>${name}</span><button class="mark-absent-btn bg-red-500 hover:bg-red-400 text-white font-bold w-6 h-6 rounded-full flex items-center justify-center">&times;</button></div>`;
         }
+
         function setStudentState(studentId, state) {
             appState.attendance[studentId] = state;
             const studentEl = document.getElementById(studentId);
@@ -261,6 +263,7 @@
             }
             updateSummary();
         }
+
         async function renderCourses(shift) {
             appState.currentShift = shift;
             dom.shiftSelection.classList.add('hidden');
@@ -270,7 +273,7 @@
             try {
                 appState.students = await fetchStudents(shift);
             } catch(e) {
-                dom.coursesContainer.innerHTML = '<p class="text-center text-lg text-red-400">Error al cargar los alumnos. Revisa la configuración de Firebase y las reglas de seguridad.</p>';
+                dom.coursesContainer.innerHTML = '<p class="text-center text-lg text-red-400">Error al cargar los alumnos. Revisa las reglas de seguridad de Firebase.</p>';
                 return;
             }
 
@@ -293,15 +296,11 @@
             }
             updateSummary();
         }
+
         async function handleStudentStateChange(studentId, studentName, newState) {
             const oldState = appState.attendance[studentId];
-            if(oldState === newState && newState !== 'pending') {
-                 setStudentState(studentId, 'pending');
-                 return;
-            }
             if(oldState === 'present' && newState === 'present') {
-                setStudentState(studentId, 'pending');
-                return;
+                newState = 'pending';
             }
             setStudentState(studentId, newState);
             const today = new Date().toISOString().slice(0, 10);
@@ -309,6 +308,7 @@
                 await logAttendance(studentId, studentName, today);
             }
         }
+
         async function addNewStudent(course) {
             const name = await showModal({
                 title: userRole === 'admin' ? 'Añadir Alumno Fijo' : 'Añadir Alumno Esporádico',
@@ -327,10 +327,10 @@
                         listEl.insertAdjacentHTML('beforeend', createStudentElement(newStudent));
                         updateSummary();
                     }
-                } else { // user role
+                } else {
                     const tempId = `temp_${Date.now()}`;
                     const newStudent = { id: tempId, name: name.trim(), course: course };
-                    appState.students.push(newStudent); // Also add to main students list for consistency
+                    appState.students.push(newStudent);
                     appState.attendance[tempId] = 'pending';
                     const listEl = document.querySelector(`[data-course-list="${course}"]`);
                     listEl.insertAdjacentHTML('beforeend', createStudentElement(newStudent));
@@ -339,7 +339,6 @@
             }
         }
         
-        // --- HISTORY MODAL ---
         async function showHistoryModal() {
              dom.historyModal.classList.remove('hidden');
              setTimeout(() => dom.historyModal.classList.remove('opacity-0'), 10);
@@ -360,6 +359,7 @@
              dom.historyStudentName.textContent = 'Selecciona un alumno';
              dom.historyDatesList.innerHTML = '';
         }
+
         async function showStudentHistory(studentId, studentName) {
             dom.historyStudentName.textContent = `Historial de: ${studentName}`;
             dom.historyDatesList.innerHTML = '<p>Buscando fechas...</p>';
@@ -378,7 +378,6 @@
             }
         }
 
-        // --- CSV IMPORT ---
         function handleCsvImport(file) {
             if (!file) return;
             const statusElements = [dom.importStatusInitial, dom.importStatusDashboard];
@@ -388,7 +387,7 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: async (results) => {
-                    dom.csvFileInput.value = ''; // Reset input to allow re-uploading the same file
+                    dom.csvFileInput.value = '';
                     const headers = results.meta.fields.map(h => h.toLowerCase().trim());
                     if (!results.data || results.data.length === 0 || !headers.includes('name') || !headers.includes('course') || !headers.includes('shift')) {
                          statusElements.forEach(el => el.textContent = `❌ Error: El CSV debe tener columnas 'name', 'course', y 'shift'.`);
@@ -398,27 +397,31 @@
                     
                     statusElements.forEach(el => el.textContent = `Añadiendo ${results.data.length} alumnos...`);
                     const addedCount = await addStudentBatch(results.data);
-                    statusElements.forEach(el => el.textContent = `✅ ¡${addedCount} alumnos importados!`);
-                    setTimeout(() => statusElements.forEach(el => el.textContent = ''), 5000);
+
+                    if (addedCount !== null) {
+                        statusElements.forEach(el => el.textContent = `✅ ¡${addedCount} alumnos importados!`);
+                    } else {
+                        statusElements.forEach(el => el.textContent = `❌ Error al guardar. Revisa las reglas de seguridad de Firebase.`);
+                    }
+
+                    setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
                     
                     if (!dom.dashboard.classList.contains('hidden') && appState.currentShift) {
                         renderCourses(appState.currentShift);
                     }
                 },
                 error: (error) => {
-                    dom.csvFileInput.value = ''; // Also reset on error
+                    dom.csvFileInput.value = '';
                     statusElements.forEach(el => el.textContent = `❌ Error al leer el archivo.`);
                     setTimeout(() => statusElements.forEach(el => el.textContent = ''), 5000);
                 }
             });
         }
         
-        // --- MAIN APP INITIALIZATION ---
         async function initializeAppLogic() {
             setUIVisibility();
             await initFirebase();
             
-            // --- EVENT LISTENERS ---
             document.getElementById('shift-buttons').addEventListener('click', e => {
                 if (e.target.tagName === 'BUTTON') renderCourses(e.target.dataset.shift);
             });
@@ -431,9 +434,7 @@
                     handleStudentStateChange(studentItem.dataset.studentId, studentItem.dataset.studentName, 'absent');
                 }
                 else if (studentItem) { 
-                     const currentStatus = appState.attendance[studentItem.dataset.studentId];
-                     const nextStatus = currentStatus === 'present' ? 'pending' : 'present';
-                     handleStudentStateChange(studentItem.dataset.studentId, studentItem.dataset.studentName, nextStatus);
+                     handleStudentStateChange(studentItem.dataset.studentId, studentItem.dataset.studentName, 'present');
                 }
                 else if (addBtn) { addNewStudent(addBtn.dataset.course); }
             });
@@ -444,7 +445,11 @@
             document.getElementById('reset-count').addEventListener('click', async () => {
                 const confirmed = await showModal({ title: 'Confirmar Reinicio', text: '¿Seguro que quieres reiniciar todos los estados a "Pendiente"?' });
                 if (confirmed) {
-                    Object.keys(appState.attendance).forEach(id => setStudentState(id, 'pending'));
+                    Object.keys(appState.attendance).forEach(id => {
+                        if (!id.startsWith('temp_')) { // No reiniciar esporádicos que se acaban de añadir
+                             setStudentState(id, 'pending')
+                        }
+                    });
                 }
             });
             document.getElementById('show-history').addEventListener('click', showHistoryModal);
@@ -466,12 +471,10 @@
                 }
             });
             
-            // CSV Listeners
             document.getElementById('import-csv-btn-initial').addEventListener('click', () => dom.csvFileInput.click());
             document.getElementById('import-csv-btn-dashboard').addEventListener('click', () => dom.csvFileInput.click());
             dom.csvFileInput.addEventListener('change', (event) => handleCsvImport(event.target.files[0]));
             
-            // Modal Listeners
             dom.modal.okBtn.addEventListener('click', () => {
                 const value = dom.modal.input.style.display === 'none' ? true : dom.modal.input.value;
                 if (modalResolve) modalResolve(value);
@@ -483,7 +486,6 @@
             });
         }
 
-        // --- ROLE SELECTION ---
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('login-admin').addEventListener('click', () => { userRole = 'admin'; initializeAppLogic(); });
             document.getElementById('login-user').addEventListener('click', () => { userRole = 'user'; initializeAppLogic(); });
