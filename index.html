@@ -20,6 +20,7 @@ body { font-family: 'Inter', sans-serif; }
 </head>
 <body class="bg-gray-900 text-white antialiased">
 
+<!-- Pantalla de selección de rol -->
 <div id="role-selection-screen" class="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-50">
   <div class="text-center bg-gray-800 p-8 rounded-lg shadow-2xl">
     <h2 class="text-3xl font-bold text-cyan-400 mb-6">¿Cómo quieres acceder?</h2>
@@ -30,12 +31,14 @@ body { font-family: 'Inter', sans-serif; }
   </div>
 </div>
 
+<!-- App principal -->
 <div id="app" class="container mx-auto p-4 md:p-8 max-w-7xl opacity-0 transition-opacity duration-500">
   <header class="text-center mb-8">
     <h1 class="text-4xl font-bold text-cyan-400">Gestor de Comedor</h1>
     <p id="role-display" class="text-gray-400 mt-2 font-semibold"></p>
   </header>
 
+  <!-- Selección de turno -->
   <div id="shift-selection" class="text-center">
     <h2 class="text-2xl font-semibold mb-4">Elige un turno de comedor</h2>
     <div id="shift-buttons" class="flex flex-wrap justify-center gap-4">
@@ -45,20 +48,18 @@ body { font-family: 'Inter', sans-serif; }
     <div class="mt-8 admin-only">
       <h3 class="text-xl font-semibold mb-4">Gestión de Datos</h3>
       <button id="import-csv-btn-initial" class="bg-green-600 hover:bg-green-500 font-bold py-3 px-6 rounded-lg">📤 Importar Alumnos (CSV)</button>
+      <button id="wipe-db" class="bg-red-600 hover:bg-red-500 font-bold py-3 px-6 rounded-lg">🗑️ Borrar todos los alumnos</button>
       <p id="import-status-initial" class="text-green-400 mt-2 h-6"></p>
-      <button id="wipe-db" class="bg-red-600 hover:bg-red-500 font-bold py-2 px-4 rounded-lg mt-4">🗑️ Borrar todos los alumnos</button>
-      <button id="export-csv" class="bg-yellow-600 hover:bg-yellow-500 font-bold py-2 px-4 rounded-lg mt-4">📥 Exportar CSV</button>
     </div>
   </div>
 
+  <!-- Dashboard -->
   <main id="dashboard" class="hidden">
     <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
       <button id="back-to-shifts" class="bg-gray-600 hover:bg-gray-500 font-bold py-2 px-4 rounded-lg">&larr; Cambiar Turno</button>
       <div class="flex flex-wrap gap-4">
         <button id="import-csv-btn-dashboard" class="bg-green-600 hover:bg-green-500 font-bold py-2 px-4 rounded-lg admin-only">📤 Importar Alumnos (CSV)</button>
-        <button id="show-history" class="bg-indigo-600 hover:bg-indigo-500 font-bold py-2 px-4 rounded-lg admin-only">📜 Ver Historial Completo</button>
-        <button id="reset-count" class="bg-amber-600 hover:bg-amber-500 font-bold py-2 px-4 rounded-lg">↻ Reiniciar Estados</button>
-        <button id="export-csv-dashboard" class="bg-yellow-600 hover:bg-yellow-500 font-bold py-2 px-4 rounded-lg admin-only">📥 Exportar CSV</button>
+        <button id="export-csv-btn-dashboard" class="bg-blue-600 hover:bg-blue-500 font-bold py-2 px-4 rounded-lg admin-only">💾 Exportar CSV</button>
       </div>
     </div>
     <p id="import-status-dashboard" class="text-center text-green-400 mb-4 h-6"></p>
@@ -82,22 +83,25 @@ body { font-family: 'Inter', sans-serif; }
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-<!-- PapaParse CSV Library -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.4.1/papaparse.min.js"></script>
+<!-- PapaParse -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', ()=>{
+document.addEventListener('DOMContentLoaded', () => {
+
+  // --- Configuración Firebase ---
   const firebaseConfig = {
-    apiKey: "AIzaSyAeI9G1_2-E8Kghc-88bkrXa_VDJXeDyHo",
-    authDomain: "comedorvp.firebaseapp.com",
-    projectId: "comedorvp",
-    storageBucket: "comedorvp.appspot.com",
-    messagingSenderId: "821870274048",
-    appId: "1:821870274048:web:62b85d28ceace395245ae5"
-  };
-  const appId = firebaseConfig.projectId;
-  let db, auth, userRole = null;
+  apiKey: "AIzaSyAeI9G1_2-E8Kghc-88bkrXa_VDJXeDyHo",
+  authDomain: "comedorvp.firebaseapp.com",
+  projectId: "comedorvp",
+  storageBucket: "comedorvp.firebasestorage.app",
+  messagingSenderId: "821870274048",
+  appId: "1:821870274048:web:62b85d28ceace395245ae5"
+};
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
+  let userRole = null;
   const appState = { currentShift: null, students: [], attendance: {} };
   let modalResolve = null;
 
@@ -111,223 +115,160 @@ document.addEventListener('DOMContentLoaded', ()=>{
     csvFileInput: document.getElementById('csv-file-input'),
     importStatusInitial: document.getElementById('import-status-initial'),
     importStatusDashboard: document.getElementById('import-status-dashboard'),
-    genericModal: null // por ahora no usado
+    wipeDbBtn: document.getElementById('wipe-db')
   };
 
+  // --- UI ---
   function setUIVisibility() {
     dom.roleScreen.style.display = 'none';
     dom.app.classList.remove('opacity-0');
-    document.querySelectorAll('.admin-only').forEach(el => el.style.display = (userRole==='admin')?'block':'none');
-    document.querySelectorAll('.user-only').forEach(el => el.style.display = (userRole==='user')?'block':'none');
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display = userRole==='admin'?'block':'none');
+    document.querySelectorAll('.user-only').forEach(el => el.style.display = userRole==='user'?'block':'none');
     dom.roleDisplay.textContent = userRole==='admin'?'Modo: Administrador':'Modo: Profesor / Cuidador';
   }
 
-  async function initFirebase() {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.firestore();
-    auth = firebase.auth();
-    try{ await auth.signInAnonymously(); } catch(e){ console.error(e); }
-  }
-
-  function updateSummary() {
-    const statuses = Object.values(appState.attendance);
-    document.getElementById('summary-diners').textContent = statuses.length;
-    document.getElementById('summary-absent').textContent = statuses.filter(s=>s==='absent').length;
-    document.getElementById('summary-present').textContent = statuses.filter(s=>s==='present').length;
-    document.getElementById('summary-pending').textContent = statuses.filter(s=>s==='pending').length;
-  }
-
-  function createStudentElement({id,name}) {
-    return `<div id="${id}" class="student-item p-3 rounded-md cursor-pointer flex justify-between items-center mt-2 pending" data-student-id="${id}" data-student-name="${name}"><span>${name}</span><button class="mark-absent-btn bg-red-500 hover:bg-red-400 text-white font-bold w-6 h-6 rounded-full flex items-center justify-center">&times;</button></div>`;
-  }
-
+  // --- Firestore helpers ---
   async function fetchStudents(shift) {
-    if(!db) return [];
     const snapshot = await db.collection("students").where("shift","==",shift).get();
-    return snapshot.docs.map(d=>({id:d.id,...d.data()}));
+    return snapshot.docs.map(doc => ({id:doc.id, ...doc.data()}));
   }
-
   async function addStudentBatch(students) {
-    if(!db) return 0;
     const batch = db.batch();
-    const coll = db.collection("students");
-    students.forEach(s=>{
-      if(s.name && s.course && s.shift) batch.set(coll.doc(),{name:s.name.trim(),course:s.course.trim(),shift:s.shift.trim()});
-    });
-    await batch.commit();
-    return students.length;
-  }
-
-  async function handleCsvImport(file){
-    if(!file) return;
-    dom.importStatusInitial.textContent = 'Procesando archivo...';
-    dom.importStatusDashboard.textContent = 'Procesando archivo...';
-
-    Papa.parse(file,{
-      header:true,
-      skipEmptyLines:true,
-      complete: async results=>{
-        dom.csvFileInput.value = '';
-        const headers = results.meta.fields.map(h=>h.toLowerCase().trim());
-        if(!results.data.length||!headers.includes('name')||!headers.includes('course')||!headers.includes('shift')){
-          dom.importStatusInitial.textContent = '❌ CSV inválido.';
-          dom.importStatusDashboard.textContent = '❌ CSV inválido.';
-          return;
-        }
-        await addStudentBatch(results.data);
-        dom.importStatusInitial.textContent = `✅ Alumnos importados!`;
-        dom.importStatusDashboard.textContent = `✅ Alumnos importados!`;
-        if(appState.currentShift) renderCourses(appState.currentShift);
-      },
-      error: e=>{
-        console.error(e);
-        dom.importStatusInitial.textContent = '❌ Error leyendo CSV';
-        dom.importStatusDashboard.textContent = '❌ Error leyendo CSV';
+    const collection = db.collection("students");
+    students.forEach(s => {
+      if(s.name && s.course && s.shift){
+        batch.set(collection.doc(), {name:s.name.trim(), course:s.course.trim(), shift:s.shift.trim()});
       }
     });
+    await batch.commit();
+  }
+  async function deleteAllStudents() {
+    const snapshot = await db.collection("students").get();
+    const batch = db.batch();
+    snapshot.docs.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+  }
+  async function logAttendance(studentId, dateStr, state) {
+    const docRef = db.collection("attendance").doc(`${studentId}_${dateStr}`);
+    await docRef.set({studentId, date: dateStr, state});
+  }
+  async function fetchAttendanceByDate(dateStr) {
+    const snapshot = await db.collection("attendance").where("date","==",dateStr).get();
+    const data = {};
+    snapshot.docs.forEach(doc=>data[doc.data().studentId]=doc.data().state);
+    return data;
   }
 
-  async function renderCourses(shift){
+  // --- Render ---
+  function updateSummary() {
+    const vals = Object.values(appState.attendance);
+    dom.summary = {
+      diners: document.getElementById('summary-diners'),
+      absent: document.getElementById('summary-absent'),
+      pending: document.getElementById('summary-pending'),
+      present: document.getElementById('summary-present')
+    };
+    dom.summary.diners.textContent = vals.length;
+    dom.summary.absent.textContent = vals.filter(s=>'absent'===s).length;
+    dom.summary.present.textContent = vals.filter(s=>'present'===s).length;
+    dom.summary.pending.textContent = vals.filter(s=>'pending'===s).length;
+  }
+
+  function createStudentElement(s){
+    return `<div id="${s.id}" class="student-item p-3 rounded-md cursor-pointer flex justify-between items-center mt-2 ${appState.attendance[s.id]||'pending'}" data-student-id="${s.id}" data-student-name="${s.name}"><span>${s.name}</span><button class="mark-absent-btn bg-red-500 hover:bg-red-400 text-white font-bold w-6 h-6 rounded-full flex items-center justify-center">&times;</button></div>`;
+  }
+
+  async function renderCourses(shift) {
     appState.currentShift = shift;
     dom.shiftSelection.classList.add('hidden');
     dom.dashboard.classList.remove('hidden');
-    dom.coursesContainer.innerHTML = '<p class="text-center">Cargando...</p>';
+    dom.coursesContainer.innerHTML = '<p class="text-center text-lg">Cargando alumnos...</p>';
     appState.students = await fetchStudents(shift);
+    const today = new Date().toISOString().slice(0,10);
+    const attendance = await fetchAttendanceByDate(today);
     appState.attendance = {};
-    appState.students.forEach(s=>appState.attendance[s.id]='pending');
+    appState.students.forEach(s=>appState.attendance[s.id]=attendance[s.id]||'pending');
     dom.coursesContainer.innerHTML = '';
-    const courses = [...new Set(appState.students.map(s=>s.course))];
-    if(!courses.length){
-      dom.coursesContainer.innerHTML='<p class="text-center">No hay alumnos.</p>';
-      return;
-    }
-    courses.forEach(course=>{
-      const div = document.createElement('div');
-      div.className='bg-gray-800 rounded-lg p-4 shadow-lg flex flex-col';
-      div.innerHTML = `<h3 class="text-xl font-bold text-cyan-300 mb-3">${course}</h3>
-        <div class="space-y-2" data-course-list="${course}">${appState.students.filter(s=>s.course===course).map(createStudentElement).join('')}</div>
-        <button class="add-student-btn mt-4 bg-blue-600 hover:bg-blue-500 font-bold py-2 px-4 rounded-lg" data-course="${course}">+ Añadir Alumno</button>`;
-      dom.coursesContainer.appendChild(div);
-    });
-    updateSummary();
-  }
-
-  async function saveAttendanceToFirestore(){
-    if(!appState.currentShift) return;
-    const dateStr = new Date().toISOString().split('T')[0];
-    const coll = db.collection("attendance").doc(appState.currentShift).collection(dateStr);
-    const batch = db.batch();
-    appState.students.forEach(s=>{
-      const state = appState.attendance[s.id];
-      if(state==='present'||state==='absent'){
-        batch.set(coll.doc(s.id),{
-          name: s.name,
-          course: s.course,
-          status: state,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      }
-    });
-    await batch.commit();
-    console.log(`Asistencia guardada: ${dateStr}, turno: ${appState.currentShift}`);
-  }
-
-  async function exportCsvByDate(dateStr, shift){
-    const coll = db.collection("attendance").doc(shift).collection(dateStr);
-    const snapshot = await coll.get();
-    if(snapshot.empty){ alert(`No hay datos para ${shift} el ${dateStr}`); return; }
-    let rows = [];
-    ['present','absent'].forEach(status=>{
-      snapshot.docs.filter(d=>d.data().status===status).forEach(doc=>{
-        const s = doc.data();
-        rows.push({fecha: dateStr, turno: shift, nombre: s.name, curso: s.course, estado: status.toUpperCase()});
+    const courses = [...new Set(appState.students.map(s=>s.course))].sort();
+    if(courses.length===0){
+      dom.coursesContainer.innerHTML='<p class="text-center text-lg text-gray-400">No hay alumnos en este turno.</p>';
+    }else{
+      courses.forEach(course=>{
+        const card = document.createElement('div');
+        card.className='bg-gray-800 rounded-lg p-4 shadow-lg flex flex-col';
+        const list = appState.students.filter(s=>s.course===course).map(createStudentElement).join('');
+        card.innerHTML=`<div class="flex-grow"><h3 class="text-xl font-bold text-cyan-300 mb-3">${course}</h3><div class="space-y-2">${list}</div></div>`;
+        dom.coursesContainer.appendChild(card);
       });
-    });
-    const csv = Papa.unparse(rows);
-    const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", `asistencia_${shift.replace(/ /g,'_')}_${dateStr}.csv`);
-    link.click();
-  }
-
-  function setStudentState(id,state){
-    appState.attendance[id]=state;
-    const el = document.getElementById(id);
-    if(el) el.className=`student-item p-3 rounded-md cursor-pointer flex justify-between items-center mt-2 ${state}`;
+    }
     updateSummary();
-    saveAttendanceToFirestore();
   }
 
-  dom.csvFileInput.addEventListener('change', e=>handleCsvImport(e.target.files[0]));
+  // --- CSV Import ---
+  function handleCsvImport(file){
+    if(!file) return;
+    [dom.importStatusInitial,dom.importStatusDashboard].forEach(el=>el.textContent='Procesando archivo...');
+    Papa.parse(file,{header:true,skipEmptyLines:true,complete: async (results)=>{
+      const headers = results.meta.fields.map(h=>h.trim().toLowerCase());
+      if(!headers.includes('nombre')||!headers.includes('curso')){
+        [dom.importStatusInitial,dom.importStatusDashboard].forEach(el=>el.textContent='Error: el CSV debe tener columnas "nombre" y "curso"');
+        return;
+      }
+      await deleteAllStudents(); // Borra alumnos previos
+      const data = results.data.map(r=>({name:r.nombre, course:r.curso, shift:appState.currentShift}));
+      await addStudentBatch(data);
+      [dom.importStatusInitial,dom.importStatusDashboard].forEach(el=>el.textContent='Importación completa ✅');
+      renderCourses(appState.currentShift);
+    },error: err=>{[dom.importStatusInitial,dom.importStatusDashboard].forEach(el=>el.textContent='Error: '+err.message);}});
+  }
 
+  // --- CSV Export ---
+  async function exportCsv(dateStr){
+    const students = await fetchStudents(appState.currentShift);
+    const attendance = await fetchAttendanceByDate(dateStr);
+    const rows = students.map(s=>{
+      const state = attendance[s.id]||'pending';
+      return {Fecha:dateStr, Turno:appState.currentShift, Nombre:s.name, Curso:s.course, Estado:state};
+    });
+    // Orden: presentes primero, ausentes después
+    rows.sort((a,b)=>{const order={'present':0,'absent':1,'pending':2}; return order[a.Estado]-order[b.Estado];});
+    const csv = Papa.unparse(rows);
+    const blob = new Blob([csv],{type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download=`asistencia_${dateStr}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // --- Event Listeners ---
+  document.getElementById('login-admin').addEventListener('click', ()=>{userRole='admin'; setUIVisibility();});
+  document.getElementById('login-user').addEventListener('click', ()=>{userRole='user'; setUIVisibility();});
+  document.querySelectorAll('#shift-buttons button').forEach(btn=>{
+    btn.addEventListener('click', ()=>renderCourses(btn.dataset.shift));
+  });
+  dom.csvFileInput.addEventListener('change', e=>handleCsvImport(e.target.files[0]));
   document.getElementById('import-csv-btn-initial').addEventListener('click', ()=>dom.csvFileInput.click());
   document.getElementById('import-csv-btn-dashboard').addEventListener('click', ()=>dom.csvFileInput.click());
-
-  document.getElementById('wipe-db').addEventListener('click', async ()=>{
-    if(!confirm('¿Seguro que quieres borrar todos los alumnos?')) return;
-    const snapshot = await db.collection("students").get();
-    const batch = db.batch();
-    snapshot.docs.forEach(doc=>batch.delete(doc.ref));
-    await batch.commit();
-    alert('Todos los alumnos eliminados!');
-    if(appState.currentShift) renderCourses(appState.currentShift);
+  dom.wipeDbBtn.addEventListener('click', async ()=>{if(confirm('¿Seguro que quieres borrar todos los alumnos?')){await deleteAllStudents(); renderCourses(appState.currentShift);}});
+  document.getElementById('export-csv-btn-dashboard').addEventListener('click', ()=>{
+    const dateStr = prompt('Introduce la fecha a exportar (YYYY-MM-DD)', new Date().toISOString().slice(0,10));
+    if(dateStr) exportCsv(dateStr);
   });
+  document.getElementById('back-to-shifts').addEventListener('click', ()=>{dom.dashboard.classList.add('hidden'); dom.shiftSelection.classList.remove('hidden');});
 
-  document.getElementById('export-csv').addEventListener('click', async ()=>{
-    if(!appState.currentShift) return;
-    const today = new Date().toISOString().split('T')[0];
-    const date = prompt('Introduce la fecha a exportar (yyyy-mm-dd):', today);
-    if(!date) return;
-    await exportCsvByDate(date, appState.currentShift);
-  });
-
-  document.getElementById('export-csv-dashboard').addEventListener('click', async ()=>{
-    if(!appState.currentShift) return;
-    const today = new Date().toISOString().split('T')[0];
-    const date = prompt('Introduce la fecha a exportar (yyyy-mm-dd):', today);
-    if(!date) return;
-    await exportCsvByDate(date, appState.currentShift);
-  });
-
-  document.getElementById('back-to-shifts').addEventListener('click', ()=>{
-    dom.dashboard.classList.add('hidden');
-    dom.shiftSelection.classList.remove('hidden');
-  });
-
-  document.getElementById('reset-count').addEventListener('click', ()=>{
-    Object.keys(appState.attendance).forEach(k=>appState.attendance[k]='pending');
-    document.querySelectorAll('.student-item').forEach(el=>el.className='student-item p-3 rounded-md cursor-pointer flex justify-between items-center mt-2 pending');
+  // --- Delegación de clicks para marcar presente/ausente ---
+  dom.coursesContainer.addEventListener('click', async e=>{
+    const studentDiv = e.target.closest('.student-item');
+    if(!studentDiv) return;
+    const studentId = studentDiv.dataset.studentId;
+    if(e.target.classList.contains('mark-absent-btn')){
+      appState.attendance[studentId]='absent';
+    }else{
+      appState.attendance[studentId]='present';
+    }
+    studentDiv.classList.remove('pending','present','absent');
+    studentDiv.classList.add(appState.attendance[studentId]);
     updateSummary();
-  });
-
-  document.getElementById('login-admin').addEventListener('click', async ()=>{
-    userRole='admin';
-    await initFirebase();
-    setUIVisibility();
-  });
-
-  document.getElementById('login-user').addEventListener('click', async ()=>{
-    userRole='user';
-    await initFirebase();
-    setUIVisibility();
-  });
-
-  dom.coursesContainer.addEventListener('click', e=>{
-    const studentEl = e.target.closest('.student-item');
-    if(studentEl){
-      const id = studentEl.dataset.studentId;
-      const current = appState.attendance[id];
-      const next = current==='pending'?'present':current==='present'?'absent':'pending';
-      setStudentState(id,next);
-    }
-    if(e.target.classList.contains('add-student-btn')){
-      const course = e.target.dataset.course;
-      const name = prompt('Nombre del alumno:');
-      if(!name) return;
-      const newStudent = {name:name.trim(), course, shift: appState.currentShift};
-      addStudentBatch([newStudent]).then(()=>renderCourses(appState.currentShift));
-    }
+    await logAttendance(studentId, new Date().toISOString().slice(0,10), appState.attendance[studentId]);
   });
 
 });
