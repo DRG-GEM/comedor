@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
         document.querySelectorAll('.user-only').forEach(el => el.style.display = 'none');
         const user = auth.currentUser;
-        dom.roleDisplay.textContent = user ? `Admin: ${user.displayName}` : 'Admin';
+        dom.roleDisplay.textContent = user ? `Admin: ${user.displayName || 'Usuario'}` : 'Admin';
     } else if (userRole === 'user') {
         dom.mainContent.classList.remove('hidden');
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
@@ -323,8 +323,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const hash = window.location.hash;
     const user = auth.currentUser;
 
+    // Check for real user (not anonymous)
+    const isRealUser = user && !user.isAnonymous;
+
     if (hash === '#admin') {
-      if (user) {
+      if (isRealUser) {
         setUIVisibility('admin');
       } else {
         setUIVisibility('login');
