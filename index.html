@@ -14,14 +14,12 @@ body { font-family: 'Inter', sans-serif; }
 .student-item.pending { background-color: #374151; }
 .student-item.present { background-color: #166534; transform: scale(1.02); }
 .student-item.absent { background-color: #991b1b; text-decoration: line-through; opacity: 0.6; }
-#role-selection-screen { backdrop-filter: blur(10px); }
-#history-modal, #generic-modal { transition: opacity 0.3s ease; }
 </style>
 </head>
 <body class="bg-gray-900 text-white antialiased">
 
 <!-- App principal -->
-<div id="app" class="container mx-auto p-4 md:p-8 max-w-7xl opacity-0 transition-opacity duration-500">
+<div id="app" class="container mx-auto p-4 md:p-8 max-w-7xl">
   <header class="text-center mb-8">
     <h1 class="text-4xl font-bold text-cyan-400">Gestor de Comedor</h1>
     <p id="role-display" class="text-gray-400 mt-2 font-semibold">Cargando...</p>
@@ -121,10 +119,10 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // --- UI ---
-  function setUIVisibility() {
+  function setUIVisibility(role) {
+    userRole = role;
     dom.app.classList.remove('opacity-0');
     
-    // Ocultar todas las vistas principales primero
     dom.adminLoginView.classList.add('hidden');
     dom.mainContent.classList.add('hidden');
 
@@ -321,32 +319,32 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   // --- Main App Logic & Routing ---
-  function handleAppInitialization() {
-    const path = window.location.pathname.toLowerCase();
+  function handleRouting() {
+    const hash = window.location.hash;
+    const user = auth.currentUser;
 
-    auth.onAuthStateChanged(user => {
+    if (hash === '#admin') {
       if (user) {
-        // User is signed in, this must be an admin.
-        userRole = 'admin';
-        setUIVisibility();
+        setUIVisibility('admin');
       } else {
-        // No user signed in.
-        if (path.startsWith('/admin')) {
-          userRole = 'login'; // Show the login button view
-          setUIVisibility();
-        } else {
-          // On any other page, default to user role.
-          userRole = 'user';
-          setUIVisibility();
-        }
+        setUIVisibility('login');
       }
-    });
+    } else {
+      setUIVisibility('user');
+    }
   }
 
-  // Initial call
-  handleAppInitialization();
+  // --- Initial call & Event Listeners ---
+  auth.onAuthStateChanged(user => {
+    handleRouting(); // Re-evaluate view whenever auth state changes
+  });
 
-  // --- Event Listeners ---
+  window.addEventListener('hashchange', handleRouting);
+  
+  // Initial check
+  handleRouting();
+
+
   document.getElementById('login-admin-btn').addEventListener('click', () => {
     auth.signInWithPopup(googleProvider).catch(error => {
         console.error("Google Sign-In Error:", error);
