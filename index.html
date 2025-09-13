@@ -393,48 +393,98 @@
             }
 
             function handleCsvImport(file) {
-                if (!file) return;
-                const statusElements = [dom.importStatusInitial, dom.importStatusDashboard];
-                statusElements.forEach(el => el.textContent = 'Procesando archivo...');
-                
-                Papa.parse(file, {
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: async (results) => {
-                        console.log("CSV parsing complete.", results);
-                        dom.csvFileInput.value = '';
-                        const headers = results.meta.fields.map(h => h.toLowerCase().trim());
-                        if (!results.data || results.data.length === 0 || !headers.includes('name') || !headers.includes('course') || !headers.includes('shift')) {
-                             console.error("CSV validation failed. Headers are missing or data is empty.");
-                             statusElements.forEach(el => el.textContent = `❌ Error: El CSV debe tener columnas 'name', 'course', y 'shift'.`);
-                             setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
-                             return;
-                        }
-                        
-                        console.log(`Found ${results.data.length} students. Starting batch add.`);
-                        statusElements.forEach(el => el.textContent = `Añadiendo ${results.data.length} alumnos...`);
-                        const addedCount = await addStudentBatch(results.data);
+    if (!file) return;
+    const statusElements = [dom.importStatusInitial, dom.importStatusDashboard];
+    statusElements.forEach(el => el.textContent = 'Procesando archivo...');
 
-                        if (addedCount !== null) {
-                            statusElements.forEach(el => el.textContent = `✅ ¡${addedCount} alumnos importados!`);
-                        } else {
-                            statusElements.forEach(el => el.textContent = `❌ Error al guardar. Revisa la consola (F12) para más detalles.`);
-                        }
+    // Si PapaParse no está disponible, intentamos cargarlo dinámicamente (fallback)
+    if (typeof Papa === 'undefined') {
+        statusElements.forEach(el => el.textContent = '❌ PapaParse no está cargado. Intentando cargar la librería...');
+        console.warn('PapaParse no encontrado. Cargando dinámicamente desde CDN...');
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.4.1/papaparse.min.js';
+        script.onload = () => {
+            console.info('PapaParse cargado correctamente. Reintentando importación...');
+            // reintentar con el mismo archivo
+            handleCsvImport(file);
+        };
+        script.onerror = () => {
+            console.error('No se pudo cargar PapaParse desde CDN.');
+            statusElements.forEach(el => el.textContent = '❌ Error: No se pudo cargar la librería PapaParse.');
+            setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
+        };
+        document.head.appendChild(script);
+        return;
+    }
 
-                        setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
-                        
-                        if (!dom.dashboard.classList.contains('hidden') && appState.currentShift) {
-                            renderCourses(appState.currentShift);
-                        }
-                    },
-                    error: (error) => {
-                        console.error("PapaParse Error:", error);
-                        dom.csvFileInput.value = '';
-                        statusElements.forEach(el => el.textContent = `❌ Error al leer el archivo.`);
-                        setTimeout(() => statusElements.forEach(el => el.textContent = ''), 5000);
-                    }
-                });
+    // Ya está PapaParse -> parseamos con normalización de encabezados
+    Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        transformHeader: h => h ? h.toLowerCase().trim() : h, // Normaliza headers a minúsculas y sin espacios
+        complete: async (results) => {
+            console.log("CSV parsing complete.", results);
+            // Limpiar input inmediatamente para permitir re-subida del mismo archivo si hace falta
+            dom.csvFileInput.value = '';
+
+            // Validación básica
+            const headers = (results.meta && results.meta.fields) ? results.meta.fields.map(h => h.toLowerCase().trim()) : [];
+            if (!results.data || results.data.length === 0 || !headers.includes('name') || !headers.includes('course') || !headers.includes('shift')) {
+                console.error("CSV validation failed. Headers are missing or data is empty.", { headers, sample: results.data && results.data[0] });
+                statusElements.forEach(el => el.textContent = `❌ Error: El CSV debe tener columnas 'name', 'course' y 'shift'.`);
+                setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
+                return;
             }
+
+            // Limpieza de valores: trim y asegurar strings
+            const cleanedData = results.data.map(rawRow => ({
+                name: rawRow.name ? String(rawRow.name).trim() : '',
+                course: rawRow.course ? String(rawRow.course).trim() : '',
+                shift: rawRow.shift ? String(rawRow.shift).trim() : ''
+            }));
+
+            // Filtrar filas vacías
+            const filteredData = cleanedData.filter(r => r.name && r.course && r.shift);
+            if (filteredData.length === 0) {
+                console.warn("No se encontraron filas válidas tras la limpieza.", cleanedData);
+                statusElements.forEach(el => el.textContent = `❌ Error: No se encontraron filas válidas en el CSV.`);
+                setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
+                return;
+            }
+
+            console.log(`Found ${filteredData.length} valid students. Starting batch add.`);
+            statusElements.forEach(el => el.textContent = `Añadiendo ${filteredData.length} alumnos...`);
+
+            try {
+                const addedCount = await addStudentBatch(filteredData);
+                if (addedCount !== null && addedCount !== 0) {
+                    statusElements.forEach(el => el.textContent = `✅ ¡${addedCount} alumnos importados!`);
+                } else if (addedCount === 0) {
+                    statusElements.forEach(el => el.textContent = `❌ No se importó ningún alumno (revisa la consola).`);
+                } else {
+                    statusElements.forEach(el => el.textContent = `❌ Error al guardar. Revisa la consola (F12) para más detalles.`);
+                }
+            } catch (e) {
+                console.error("Error en addStudentBatch:", e);
+                statusElements.forEach(el => el.textContent = `❌ Error al guardar. Revisa la consola (F12).`);
+            }
+
+            setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
+
+            // Si estamos ya en un turno visible, refrescar la vista
+            if (!dom.dashboard.classList.contains('hidden') && appState.currentShift) {
+                renderCourses(appState.currentShift);
+            }
+        },
+        error: (error) => {
+            console.error("PapaParse Error:", error);
+            dom.csvFileInput.value = '';
+            statusElements.forEach(el => el.textContent = `❌ Error al leer el archivo.`);
+            setTimeout(() => statusElements.forEach(el => el.textContent = ''), 5000);
+        }
+    });
+}
+
             
             async function initializeAppLogic() {
                 setUIVisibility();
@@ -491,7 +541,15 @@
                 
                 document.getElementById('import-csv-btn-initial').addEventListener('click', () => dom.csvFileInput.click());
                 document.getElementById('import-csv-btn-dashboard').addEventListener('click', () => dom.csvFileInput.click());
-                dom.csvFileInput.addEventListener('change', (event) => handleCsvImport(event.target.files[0]));
+                dom.csvFileInput.addEventListener('change', (event) => {
+    const file = event.target.files && event.target.files[0];
+    // Si el usuario selecciona el mismo archivo dos veces, forzamos cambio para que vuelva a dispararse
+    if (!file) return;
+    handleCsvImport(file);
+    // limpiamos value para permitir volver a subir el mismo archivo si hace falta
+    event.target.value = '';
+});
+
                 
                 dom.modal.okBtn.addEventListener('click', () => {
                     const value = dom.modal.input.style.display === 'none' ? true : dom.modal.input.value;
