@@ -20,20 +20,6 @@ body { font-family: 'Inter', sans-serif; }
 </head>
 <body class="bg-gray-900 text-white antialiased">
 
-<!-- Pantalla de selección de rol -->
-<div id="role-selection-screen" class="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-50">
-  <div class="text-center bg-gray-800 p-8 rounded-lg shadow-2xl">
-    <h2 class="text-3xl font-bold text-cyan-400 mb-6">¿Cómo quieres acceder?</h2>
-    <div class="space-y-4">
-      <button id="login-admin" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-lg text-lg flex items-center justify-center gap-3">
-        <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C8.36,19.27 5,16.25 5,12C5,7.9 8.2,4.73 12.19,4.73C14.03,4.73 15.69,5.36 16.95,6.57L19.05,4.54C17.22,2.77 15,2 12.19,2C6.42,2 2.03,6.8 2.03,12C2.03,17.05 6.16,22 12.19,22C17.6,22 21.54,18.22 21.54,12.33C21.54,11.76 21.48,11.43 21.35,11.1V11.1Z"></path></svg>
-        <span>Entrar como Administrador</span>
-      </button>
-      <button id="login-user" class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 px-6 rounded-lg text-lg">Soy Profesor / Cuidador</button>
-    </div>
-  </div>
-</div>
-
 <!-- App principal -->
 <div id="app" class="container mx-auto p-4 md:p-8 max-w-7xl opacity-0 transition-opacity duration-500">
   <header class="text-center mb-8">
@@ -110,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const appState = { currentShift: null, students: [], attendance: {} };
 
   const dom = {
-    roleScreen: document.getElementById('role-selection-screen'),
     app: document.getElementById('app'),
     roleDisplay: document.getElementById('role-display'),
     shiftSelection: document.getElementById('shift-selection'),
@@ -125,13 +110,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- UI ---
   function setUIVisibility() {
-    dom.roleScreen.style.display = 'none';
     dom.app.classList.remove('opacity-0');
     document.querySelectorAll('.admin-only').forEach(el => el.style.display = userRole === 'admin' ? 'block' : 'none');
     document.querySelectorAll('.user-only').forEach(el => el.style.display = userRole === 'user' ? 'block' : 'none');
     if (userRole === 'admin') {
         const user = auth.currentUser;
-        dom.roleDisplay.textContent = `Admin: ${user.displayName} (${user.email})`;
+        dom.roleDisplay.textContent = user ? `Admin: ${user.displayName} (${user.email})` : 'Admin';
     } else {
         dom.roleDisplay.textContent = 'Modo: Profesor / Cuidador';
     }
@@ -163,14 +147,16 @@ document.addEventListener('DOMContentLoaded', () => {
     await batch.commit();
   }
   async function logAttendance(studentId, dateStr, state) {
+    if (studentId.startsWith('sporadic_')) return; // No guardar esporádicos en BBDD
     const docRef = db.collection("attendance").doc(`${studentId}_${dateStr}`);
     await docRef.set({studentId, date: dateStr, state});
   }
    async function logBatchAttendance(studentsToUpdate, dateStr, state) {
-    if (studentsToUpdate.length === 0) return;
+    const validStudents = studentsToUpdate.filter(id => !id.startsWith('sporadic_'));
+    if (validStudents.length === 0) return;
     const batch = db.batch();
     const collection = db.collection("attendance");
-    studentsToUpdate.forEach(studentId => {
+    validStudents.forEach(studentId => {
       const docRef = collection.doc(`${studentId}_${dateStr}`);
       batch.set(docRef, { studentId, date: dateStr, state });
     });
@@ -309,16 +295,45 @@ document.addEventListener('DOMContentLoaded', () => {
       await logBatchAttendance(studentsToMarkAbsent, today, 'absent');
       updateSummary();
   }
+  
+  // --- Main App Logic & Routing ---
+  function handleAppInitialization() {
+    const path = window.location.pathname.toLowerCase();
+
+    // Listener for auth state changes (login, logout, page refresh)
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        // User is signed in. Assume admin role.
+        userRole = 'admin';
+        setUIVisibility();
+      } else {
+        // User is not signed in.
+        if (path.startsWith('/admin')) {
+          // If they are trying to access admin, start the login process.
+          auth.signInWithRedirect(googleProvider);
+        } else {
+          // Otherwise, they are a normal user.
+          userRole = 'user';
+          setUIVisibility();
+        }
+      }
+    });
+
+    // Handle the redirect result from Google sign-in
+    auth.getRedirectResult().catch(error => {
+      console.error("Auth redirect error:", error);
+      // If the user cancels the login, redirect to the base URL
+      if (path.startsWith('/admin')) {
+        window.location.href = '/';
+      }
+    });
+  }
+
+  // Initial call
+  handleAppInitialization();
 
 
   // --- Event Listeners ---
-  document.getElementById('login-admin').addEventListener('click', ()=>{
-      auth.signInWithPopup(googleProvider).then(result => {
-          userRole='admin';
-          setUIVisibility();
-      }).catch(error => console.error("Google sign-in error", error));
-  });
-  document.getElementById('login-user').addEventListener('click', ()=>{userRole='user'; setUIVisibility();});
   document.querySelectorAll('#shift-buttons button').forEach(btn=>{
     btn.addEventListener('click', ()=>renderCourses(btn.dataset.shift));
   });
