@@ -397,72 +397,172 @@
     const statusElements = [dom.importStatusInitial, dom.importStatusDashboard];
     statusElements.forEach(el => el.textContent = 'Procesando archivo...');
 
-    // Si PapaParse no está disponible, intentamos cargarlo dinámicamente (fallback)
-    if (typeof Papa === 'undefined') {
-        statusElements.forEach(el => el.textContent = '❌ PapaParse no está cargado. Intentando cargar la librería...');
-        console.warn('PapaParse no encontrado. Cargando dinámicamente desde CDN...');
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.4.1/papaparse.min.js';
-        script.onload = () => {
-            console.info('PapaParse cargado correctamente. Reintentando importación...');
-            // reintentar con el mismo archivo
-            handleCsvImport(file);
-        };
-        script.onerror = () => {
-            console.error('No se pudo cargar PapaParse desde CDN.');
-            statusElements.forEach(el => el.textContent = '❌ Error: No se pudo cargar la librería PapaParse.');
-            setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
-        };
-        document.head.appendChild(script);
-        return;
+    // Helper: fallback simple pero sólido para parsear CSV (maneja campos entrecomillados y dobles comillas escapadas)
+    function parseCSVString(text) {
+        const rows = [];
+        let cur = '';
+        let row = [];
+        let inQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+            const ch = text[i];
+            if (ch === '"') {
+                // Si se encuentra doble comilla dentro de comillas, la tratamos como comilla literal
+                if (inQuotes && text[i + 1] === '"') {
+                    cur += '"';
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (ch === ',' && !inQuotes) {
+                row.push(cur);
+                cur = '';
+            } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+                // salto de línea; cuidar \r\n
+                if (ch === '\r' && text[i + 1] === '\n') {
+                    // consume el \n adicional en el bucle
+                }
+                row.push(cur);
+                cur = '';
+                // Si fila no vacía (evitamos filas super vacías por saltos extra), la añadimos
+                if (row.length > 1 || (row.length === 1 && row[0] !== '')) rows.push(row);
+                row = [];
+                // Si había \r\n saltaremos el \n en la siguiente iteración pero ya está contemplado
+            } else {
+                cur += ch;
+            }
+        }
+        // resto
+        if (cur !== '' || row.length > 0) {
+            row.push(cur);
+            rows.push(row);
+        }
+        // Trim de celdas
+        return rows.map(r => r.map(c => (c == null ? '' : String(c).trim())));
     }
 
-    // Ya está PapaParse -> parseamos con normalización de encabezados
-    Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        transformHeader: h => h ? h.toLowerCase().trim() : h, // Normaliza headers a minúsculas y sin espacios
-        complete: async (results) => {
-            console.log("CSV parsing complete.", results);
-            // Limpiar input inmediatamente para permitir re-subida del mismo archivo si hace falta
-            dom.csvFileInput.value = '';
-
-            // Validación básica
-            const headers = (results.meta && results.meta.fields) ? results.meta.fields.map(h => h.toLowerCase().trim()) : [];
-            if (!results.data || results.data.length === 0 || !headers.includes('name') || !headers.includes('course') || !headers.includes('shift')) {
-                console.error("CSV validation failed. Headers are missing or data is empty.", { headers, sample: results.data && results.data[0] });
-                statusElements.forEach(el => el.textContent = `❌ Error: El CSV debe tener columnas 'name', 'course' y 'shift'.`);
-                setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
-                return;
+    // Normaliza filas (array de arrays -> array de objetos usando headers)
+    function rowsArrayToObjects(rows) {
+        if (!rows || rows.length === 0) return [];
+        const headers = rows[0].map(h => (h || '').toLowerCase().trim());
+        const objects = [];
+        for (let i = 1; i < rows.length; i++) {
+            const cols = rows[i];
+            // Si la fila está vacía (todas columnas vacías) la saltamos
+            const allEmpty = cols.every(c => c === '' || c == null);
+            if (allEmpty) continue;
+            const obj = {};
+            for (let j = 0; j < headers.length; j++) {
+                obj[headers[j]] = (cols[j] != null) ? String(cols[j]).trim() : '';
             }
+            objects.push(obj);
+        }
+        return { headers, objects };
+    }
 
-            // Limpieza de valores: trim y asegurar strings
-            const cleanedData = results.data.map(rawRow => ({
-                name: rawRow.name ? String(rawRow.name).trim() : '',
-                course: rawRow.course ? String(rawRow.course).trim() : '',
-                shift: rawRow.shift ? String(rawRow.shift).trim() : ''
-            }));
-
-            // Filtrar filas vacías
-            const filteredData = cleanedData.filter(r => r.name && r.course && r.shift);
-            if (filteredData.length === 0) {
-                console.warn("No se encontraron filas válidas tras la limpieza.", cleanedData);
-                statusElements.forEach(el => el.textContent = `❌ Error: No se encontraron filas válidas en el CSV.`);
-                setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
-                return;
-            }
-
-            console.log(`Found ${filteredData.length} valid students. Starting batch add.`);
-            statusElements.forEach(el => el.textContent = `Añadiendo ${filteredData.length} alumnos...`);
-
+    // Si PapaParse NO está disponible, usamos el fallback de arriba que lee el fichero
+    if (typeof Papa === 'undefined') {
+        console.warn('PapaParse no encontrado. Usando parser interno de fallback.');
+        // Leemos el fichero como texto
+        const reader = new FileReader();
+        reader.onload = async (e) => {
             try {
-                const addedCount = await addStudentBatch(filteredData);
+                const text = e.target.result;
+                const rows = parseCSVString(text);
+                const { headers, objects } = rowsArrayToObjects(rows);
+
+                console.log('Fallback CSV parse result', { headers, sample: objects[0] });
+
+                // Validación de encabezados
+                const lowerHeaders = headers.map(h => h.toLowerCase());
+                if (!lowerHeaders.includes('name') || !lowerHeaders.includes('course') || !lowerHeaders.includes('shift')) {
+                    console.error("CSV validation failed in fallback. Headers:", headers);
+                    statusElements.forEach(el => el.textContent = `❌ Error: El CSV debe tener columnas 'name', 'course' y 'shift'.`);
+                    setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
+                    return;
+                }
+
+                // Limpiar y preparar datos
+                const cleanedData = objects.map(row => ({
+                    name: row['name'] ? String(row['name']).trim() : '',
+                    course: row['course'] ? String(row['course']).trim() : '',
+                    shift: row['shift'] ? String(row['shift']).trim() : ''
+                })).filter(r => r.name && r.course && r.shift);
+
+                if (cleanedData.length === 0) {
+                    console.warn("No se encontraron filas válidas tras la limpieza (fallback).", objects);
+                    statusElements.forEach(el => el.textContent = `❌ Error: No se encontraron filas válidas en el CSV.`);
+                    setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
+                    return;
+                }
+
+                statusElements.forEach(el => el.textContent = `Añadiendo ${cleanedData.length} alumnos...`);
+                const addedCount = await addStudentBatch(cleanedData);
                 if (addedCount !== null && addedCount !== 0) {
                     statusElements.forEach(el => el.textContent = `✅ ¡${addedCount} alumnos importados!`);
                 } else if (addedCount === 0) {
                     statusElements.forEach(el => el.textContent = `❌ No se importó ningún alumno (revisa la consola).`);
                 } else {
-                    statusElements.forEach(el => el.textContent = `❌ Error al guardar. Revisa la consola (F12) para más detalles.`);
+                    statusElements.forEach(el => el.textContent = `❌ Error al guardar. Revisa la consola (F12).`);
+                }
+
+                setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
+                if (!dom.dashboard.classList.contains('hidden') && appState.currentShift) renderCourses(appState.currentShift);
+            } catch (err) {
+                console.error("Error en fallback CSV parsing:", err);
+                statusElements.forEach(el => el.textContent = `❌ Error al leer el archivo.`);
+                setTimeout(() => statusElements.forEach(el => el.textContent = ''), 5000);
+            }
+        };
+        reader.onerror = (err) => {
+            console.error("FileReader error:", err);
+            statusElements.forEach(el => el.textContent = `❌ Error al leer el archivo.`);
+            setTimeout(() => statusElements.forEach(el => el.textContent = ''), 5000);
+        };
+        reader.readAsText(file, 'UTF-8');
+        return;
+    }
+
+    // Si Papa sí está presente: comportamiento original robusto con transformHeader
+    Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        transformHeader: h => h ? h.toLowerCase().trim() : h, // Normaliza headers
+        complete: async (results) => {
+            console.log("CSV parsing complete (PapaParse).", results);
+            dom.csvFileInput.value = '';
+
+            const headers = (results.meta && results.meta.fields) ? results.meta.fields.map(h => h.toLowerCase().trim()) : [];
+            if (!results.data || results.data.length === 0 || !headers.includes('name') || !headers.includes('course') || !headers.includes('shift')) {
+                console.error("CSV validation failed. Headers missing or data empty.", { headers, sample: results.data && results.data[0] });
+                statusElements.forEach(el => el.textContent = `❌ Error: El CSV debe tener columnas 'name', 'course' y 'shift'.`);
+                setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
+                return;
+            }
+
+            const cleanedData = results.data.map(rawRow => ({
+                name: rawRow.name ? String(rawRow.name).trim() : '',
+                course: rawRow.course ? String(rawRow.course).trim() : '',
+                shift: rawRow.shift ? String(rawRow.shift).trim() : ''
+            })).filter(r => r.name && r.course && r.shift);
+
+            if (cleanedData.length === 0) {
+                console.warn("No valid rows after cleaning (PapaParse).", results.data);
+                statusElements.forEach(el => el.textContent = `❌ Error: No se encontraron filas válidas en el CSV.`);
+                setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
+                return;
+            }
+
+            console.log(`Found ${cleanedData.length} valid students. Starting batch add.`);
+            statusElements.forEach(el => el.textContent = `Añadiendo ${cleanedData.length} alumnos...`);
+
+            try {
+                const addedCount = await addStudentBatch(cleanedData);
+                if (addedCount !== null && addedCount !== 0) {
+                    statusElements.forEach(el => el.textContent = `✅ ¡${addedCount} alumnos importados!`);
+                } else if (addedCount === 0) {
+                    statusElements.forEach(el => el.textContent = `❌ No se importó ningún alumno (revisa la consola).`);
+                } else {
+                    statusElements.forEach(el => el.textContent = `❌ Error al guardar. Revisa la consola (F12).`);
                 }
             } catch (e) {
                 console.error("Error en addStudentBatch:", e);
@@ -470,8 +570,6 @@
             }
 
             setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
-
-            // Si estamos ya en un turno visible, refrescar la vista
             if (!dom.dashboard.classList.contains('hidden') && appState.currentShift) {
                 renderCourses(appState.currentShift);
             }
@@ -484,6 +582,7 @@
         }
     });
 }
+
 
             
             async function initializeAppLogic() {
