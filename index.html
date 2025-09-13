@@ -131,6 +131,8 @@
             let db, auth, userRole = null;
             const appState = { currentShift: null, students: [], attendance: {} };
             let modalResolve = null;
+let saveTimeout = null;
+const SAVE_DEBOUNCE_MS = 600; // ajustar si quieres más/menos
 
             const dom = {
                 roleScreen: document.getElementById('role-selection-screen'),
@@ -260,6 +262,41 @@
                     return null;
                 }
             }
+            // Guarda el mapa appState.attendance para un shift y fecha concreta (YYYY-MM-DD)
+async function saveAttendanceState(shift, dateString) {
+    if (!db) {
+        console.warn('saveAttendanceState: Firestore no inicializado.');
+        return;
+    }
+    try {
+        const docId = `${shift}_${dateString}`.replace(/\s+/g, '_');
+        const ref = db.collection("artifacts").doc(appId).collection("public").doc("data").collection("attendance_state").doc(docId);
+        await ref.set({ shift, date: dateString, statuses: appState.attendance }, { merge: true });
+        console.info(`saveAttendanceState: guardado estado para ${docId}`);
+    } catch (e) {
+        console.error('saveAttendanceState ERROR:', e);
+    }
+}
+
+// Carga el estado de asistencia para un shift y fecha; devuelve el mapa o null
+async function loadAttendanceState(shift, dateString) {
+    if (!db) {
+        console.warn('loadAttendanceState: Firestore no inicializado.');
+        return null;
+    }
+    try {
+        const docId = `${shift}_${dateString}`.replace(/\s+/g, '_');
+        const ref = db.collection("artifacts").doc(appId).collection("public").doc("data").collection("attendance_state").doc(docId);
+        const snap = await ref.get();
+        if (!snap.exists) return null;
+        const data = snap.data();
+        return (data && data.statuses) ? data.statuses : null;
+    } catch (e) {
+        console.error('loadAttendanceState ERROR:', e);
+        return null;
+    }
+}
+
             /**
  * Borra **todos** los documentos de la colección 'students' (en artefactos/appId/public/data/students).
  * Hace commits por lotes para evitar pasar el límite de 500 operaciones por batch.
@@ -305,14 +342,32 @@ async function deleteAllStudentsCollection() {
                 return `<div id="${id}" class="student-item p-3 rounded-md cursor-pointer flex justify-between items-center mt-2 pending" data-student-id="${id}" data-student-name="${name}"><span>${name}</span><button class="mark-absent-btn bg-red-500 hover:bg-red-400 text-white font-bold w-6 h-6 rounded-full flex items-center justify-center">&times;</button></div>`;
             }
 
-            function setStudentState(studentId, state) {
-                appState.attendance[studentId] = state;
-                const studentEl = document.getElementById(studentId);
-                if (studentEl) {
-                    studentEl.className = `student-item p-3 rounded-md cursor-pointer flex justify-between items-center mt-2 ${state}`;
-                }
-                updateSummary();
-            }
+            // Reemplaza la función existente
+async function setStudentState(studentId, state) {
+    appState.attendance[studentId] = state;
+    const studentEl = document.getElementById(studentId);
+    if (studentEl) {
+        studentEl.className = `student-item p-3 rounded-md cursor-pointer flex justify-between items-center mt-2 ${state}`;
+    }
+    updateSummary();
+
+    // Guardar estado en Firestore para el turno actual y la fecha de hoy
+    try {
+        if (appState.currentShift) {
+            const today = new Date().toISOString().slice(0,10); // YYYY-MM-DD
+            // debounce save
+if (appState.currentShift) {
+    const today = new Date().toISOString().slice(0,10);
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => saveAttendanceState(appState.currentShift, today).catch(e => console.error(e)), SAVE_DEBOUNCE_MS);
+}
+
+        }
+    } catch (e) {
+        console.error('Error guardando estado tras setStudentState:', e);
+    }
+}
+
 
             async function renderCourses(shift) {
                 appState.currentShift = shift;
@@ -329,6 +384,25 @@ async function deleteAllStudentsCollection() {
 
                 appState.attendance = {};
                 appState.students.forEach(s => appState.attendance[s.id] = 'pending');
+                try {
+    if (db && appState.currentShift) {
+        const today = new Date().toISOString().slice(0,10);
+        const saved = await loadAttendanceState(appState.currentShift, today);
+        if (saved && typeof saved === 'object') {
+            // aplicar los estados guardados sólo a ids que existen ahora (por si cambió la lista)
+            Object.keys(saved).forEach(id => {
+                if (appState.attendance.hasOwnProperty(id)) {
+                    appState.attendance[id] = saved[id];
+                }
+            });
+            console.info('Estados cargados desde Firestore para', appState.currentShift, today);
+        } else {
+            console.info('No hay estados previos guardados para', appState.currentShift);
+        }
+    }
+} catch (e) {
+    console.error('Error cargando estado al renderCourses:', e);
+}
                 const courses = [...new Set(appState.students.map(s => s.course))].sort();
                 dom.coursesContainer.innerHTML = '';
 
@@ -342,9 +416,14 @@ async function deleteAllStudentsCollection() {
                         const addButtonText = userRole === 'admin' ? '+ Añadir Alumno Fijo' : '+ Añadir Esporádico';
                         courseCard.innerHTML = `<div class="flex-grow"><h3 class="text-xl font-bold text-cyan-300 mb-3">${course}</h3><div class="space-y-2" data-course-list="${course}">${studentsInCourse.map(createStudentElement).join('')}</div></div><button class="add-student-btn mt-4 bg-blue-600 hover:bg-blue-500 font-bold py-2 px-4 rounded-lg" data-course="${course}">${addButtonText}</button>`;
                         dom.coursesContainer.appendChild(courseCard);
-                    });
-                }
-                updateSummary();
+                        // Después de insertar los elementos en el DOM, aplica clases según appState.attendance
+Object.keys(appState.attendance).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.className = `student-item p-3 rounded-md cursor-pointer flex justify-between items-center mt-2 ${appState.attendance[id]}`;
+});
+updateSummary();
+
+    
             }
 
             async function handleStudentStateChange(studentId, studentName, newState) {
