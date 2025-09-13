@@ -210,20 +210,28 @@ document.addEventListener('DOMContentLoaded', () => {
     [dom.importStatusInitial,dom.importStatusDashboard].forEach(el=>el.textContent='Procesando archivo...');
     Papa.parse(file,{header:true,skipEmptyLines:true,complete: async (results)=>{
       const headers = results.meta.fields.map(h => h.toLowerCase().trim());
-      if(!headers.includes('nombre')||!headers.includes('curso')){
-        [dom.importStatusInitial,dom.importStatusDashboard].forEach(el=>el.textContent='Error: el CSV debe tener columnas "nombre" y "curso"');
+      // Validar cabeceras en español, incluyendo 'turno'
+      if(!headers.includes('nombre') || !headers.includes('curso') || !headers.includes('turno')){
+        [dom.importStatusInitial,dom.importStatusDashboard].forEach(el=>el.textContent='Error: CSV debe tener columnas "nombre", "curso", y "turno"');
         return;
       }
       await deleteAllStudents(); // Borra alumnos previos
-      const students = results.data.map(r => ({
-    name: r.nombre.trim(),
-    course: r.curso.trim(),
-    shift: r.shift.trim() // <--- trim aquí limpia espacios invisibles
-}));
-      const data = results.data.map(r=>({name:r.nombre, course:r.curso, shift:appState.currentShift}));
-      await addStudentBatch(data);
+      
+      // CORRECCIÓN: Usar la columna 'turno' del CSV, no el estado actual de la app
+      const studentsToImport = results.data.map(r => ({
+          name: r.nombre ? r.nombre.trim() : '',
+          course: r.curso ? r.curso.trim() : '',
+          shift: r.turno ? r.turno.trim() : '' // Usar 'turno' del CSV
+      }));
+
+      await addStudentBatch(studentsToImport);
       [dom.importStatusInitial,dom.importStatusDashboard].forEach(el=>el.textContent='Importación completa ✅');
-      renderCourses(appState.currentShift);
+      
+      // Si estamos en un turno, lo refrescamos para ver los cambios
+      if (appState.currentShift) {
+          renderCourses(appState.currentShift);
+      }
+
     },error: err=>{[dom.importStatusInitial,dom.importStatusDashboard].forEach(el=>el.textContent='Error: '+err.message);}});
   }
 
@@ -253,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
   dom.csvFileInput.addEventListener('change', e=>handleCsvImport(e.target.files[0]));
   document.getElementById('import-csv-btn-initial').addEventListener('click', ()=>dom.csvFileInput.click());
   document.getElementById('import-csv-btn-dashboard').addEventListener('click', ()=>dom.csvFileInput.click());
-  dom.wipeDbBtn.addEventListener('click', async ()=>{if(confirm('¿Seguro que quieres borrar todos los alumnos?')){await deleteAllStudents(); renderCourses(appState.currentShift);}});
+  dom.wipeDbBtn.addEventListener('click', async ()=>{if(confirm('¿Seguro que quieres borrar todos los alumnos?')){await deleteAllStudents(); if(appState.currentShift){renderCourses(appState.currentShift);}}});
   document.getElementById('export-csv-btn-dashboard').addEventListener('click', ()=>{
     const dateStr = prompt('Introduce la fecha a exportar (YYYY-MM-DD)', new Date().toISOString().slice(0,10));
     if(dateStr) exportCsv(dateStr);
@@ -280,3 +288,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
