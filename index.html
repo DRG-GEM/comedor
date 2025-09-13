@@ -26,45 +26,55 @@ body { font-family: 'Inter', sans-serif; }
     <h1 class="text-4xl font-bold text-cyan-400">Gestor de Comedor</h1>
     <p id="role-display" class="text-gray-400 mt-2 font-semibold">Cargando...</p>
   </header>
-
-  <!-- Selección de turno -->
-  <div id="shift-selection" class="text-center">
-    <h2 class="text-2xl font-semibold mb-4">Elige un turno de comedor</h2>
-    <div id="shift-buttons" class="flex flex-wrap justify-center gap-4">
-      <button class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-lg" data-shift="Primer Turno (Infantil)">Primer Turno (Infantil)</button>
-      <button class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-lg" data-shift="Segundo Turno (Primaria)">Segundo Turno (Primaria)</button>
-    </div>
-    <div class="mt-8 admin-only">
-      <h3 class="text-xl font-semibold mb-4">Gestión de Datos</h3>
-      <button id="import-csv-btn-initial" class="bg-green-600 hover:bg-green-500 font-bold py-3 px-6 rounded-lg">📤 Importar Alumnos (CSV)</button>
-      <button id="wipe-db" class="bg-red-600 hover:bg-red-500 font-bold py-3 px-6 rounded-lg">🗑️ Borrar todos los alumnos</button>
-      <p id="import-status-initial" class="text-green-400 mt-2 h-6"></p>
-    </div>
+  
+  <div id="admin-login-view" class="hidden text-center">
+      <h2 class="text-2xl font-semibold mb-6">Acceso de Administrador</h2>
+      <button id="login-admin-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-lg text-lg flex items-center justify-center gap-3 mx-auto">
+        <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C8.36,19.27 5,16.25 5,12C5,7.9 8.2,4.73 12.19,4.73C14.03,4.73 15.69,5.36 16.95,6.57L19.05,4.54C17.22,2.77 15,2 12.19,2C6.42,2 2.03,6.8 2.03,12C2.03,17.05 6.16,22 12.19,22C17.6,22 21.54,18.22 21.54,12.33C21.54,11.76 21.48,11.43 21.35,11.1V11.1Z"></path></svg>
+        <span>Iniciar Sesión con Google</span>
+      </button>
   </div>
 
-  <!-- Dashboard -->
-  <main id="dashboard" class="hidden">
-    <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
-      <button id="back-to-shifts" class="bg-gray-600 hover:bg-gray-500 font-bold py-2 px-4 rounded-lg">&larr; Cambiar Turno</button>
-      <div class="flex flex-wrap gap-4">
-        <button id="import-csv-btn-dashboard" class="bg-green-600 hover:bg-green-500 font-bold py-2 px-4 rounded-lg admin-only">📤 Importar Alumnos (CSV)</button>
-        <button id="export-csv-btn-dashboard" class="bg-blue-600 hover:bg-blue-500 font-bold py-2 px-4 rounded-lg admin-only">💾 Exportar CSV del Día</button>
-        <button id="finalize-shift-btn" class="bg-orange-600 hover:bg-orange-500 font-bold py-2 px-4 rounded-lg">🏁 Finalizar Turno</button>
+  <div id="main-content" class="hidden">
+      <!-- Selección de turno -->
+      <div id="shift-selection" class="text-center">
+        <h2 class="text-2xl font-semibold mb-4">Elige un turno de comedor</h2>
+        <div id="shift-buttons" class="flex flex-wrap justify-center gap-4">
+          <button class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-lg" data-shift="Primer Turno (Infantil)">Primer Turno (Infantil)</button>
+          <button class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-lg" data-shift="Segundo Turno (Primaria)">Segundo Turno (Primaria)</button>
+        </div>
+        <div class="mt-8 admin-only">
+          <h3 class="text-xl font-semibold mb-4">Gestión de Datos</h3>
+          <button id="import-csv-btn-initial" class="bg-green-600 hover:bg-green-500 font-bold py-3 px-6 rounded-lg">📤 Importar Alumnos (CSV)</button>
+          <button id="wipe-db" class="bg-red-600 hover:bg-red-500 font-bold py-3 px-6 rounded-lg">🗑️ Borrar todos los alumnos</button>
+          <p id="import-status-initial" class="text-green-400 mt-2 h-6"></p>
+        </div>
       </div>
-    </div>
-    <p id="import-status-dashboard" class="text-center text-green-400 mb-4 h-6"></p>
 
-    <section id="summary" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      <div class="bg-gray-800 p-4 rounded-lg text-center"><h3 class="text-lg font-semibold text-gray-400">Comensales del Día</h3><p id="summary-diners" class="text-3xl font-bold">0</p></div>
-      <div class="bg-red-800 bg-opacity-50 p-4 rounded-lg text-center"><h3 class="text-lg font-semibold text-red-300">Ausentes</h3><p id="summary-absent" class="text-3xl font-bold">0</p></div>
-      <div class="bg-blue-800 bg-opacity-50 p-4 rounded-lg text-center"><h3 class="text-lg font-semibold text-blue-300">Pendientes</h3><p id="summary-pending" class="text-3xl font-bold">0</p></div>
-      <div class="bg-green-800 bg-opacity-50 p-4 rounded-lg text-center"><h3 class="text-lg font-semibold text-green-300">PRESENTES</h3><p id="summary-present" class="text-3xl font-bold">0</p></div>
-    </section>
+      <!-- Dashboard -->
+      <main id="dashboard" class="hidden">
+        <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
+          <button id="back-to-shifts" class="bg-gray-600 hover:bg-gray-500 font-bold py-2 px-4 rounded-lg">&larr; Cambiar Turno</button>
+          <div class="flex flex-wrap gap-4">
+            <button id="import-csv-btn-dashboard" class="bg-green-600 hover:bg-green-500 font-bold py-2 px-4 rounded-lg admin-only">📤 Importar Alumnos (CSV)</button>
+            <button id="export-csv-btn-dashboard" class="bg-blue-600 hover:bg-blue-500 font-bold py-2 px-4 rounded-lg admin-only">💾 Exportar CSV del Día</button>
+            <button id="finalize-shift-btn" class="bg-orange-600 hover:bg-orange-500 font-bold py-2 px-4 rounded-lg">🏁 Finalizar Turno</button>
+          </div>
+        </div>
+        <p id="import-status-dashboard" class="text-center text-green-400 mb-4 h-6"></p>
 
-    <section id="student-lists">
-      <div id="courses-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-    </section>
-  </main>
+        <section id="summary" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div class="bg-gray-800 p-4 rounded-lg text-center"><h3 class="text-lg font-semibold text-gray-400">Comensales del Día</h3><p id="summary-diners" class="text-3xl font-bold">0</p></div>
+          <div class="bg-red-800 bg-opacity-50 p-4 rounded-lg text-center"><h3 class="text-lg font-semibold text-red-300">Ausentes</h3><p id="summary-absent" class="text-3xl font-bold">0</p></div>
+          <div class="bg-blue-800 bg-opacity-50 p-4 rounded-lg text-center"><h3 class="text-lg font-semibold text-blue-300">Pendientes</h3><p id="summary-pending" class="text-3xl font-bold">0</p></div>
+          <div class="bg-green-800 bg-opacity-50 p-4 rounded-lg text-center"><h3 class="text-lg font-semibold text-green-300">PRESENTES</h3><p id="summary-present" class="text-3xl font-bold">0</p></div>
+        </section>
+
+        <section id="student-lists">
+          <div id="courses-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+      </main>
+  </div>
 </div>
 
 <input type="file" id="csv-file-input" class="hidden" accept=".csv">
@@ -105,19 +115,33 @@ document.addEventListener('DOMContentLoaded', () => {
     importStatusInitial: document.getElementById('import-status-initial'),
     importStatusDashboard: document.getElementById('import-status-dashboard'),
     wipeDbBtn: document.getElementById('wipe-db'),
-    finalizeShiftBtn: document.getElementById('finalize-shift-btn')
+    finalizeShiftBtn: document.getElementById('finalize-shift-btn'),
+    adminLoginView: document.getElementById('admin-login-view'),
+    mainContent: document.getElementById('main-content')
   };
 
   // --- UI ---
   function setUIVisibility() {
     dom.app.classList.remove('opacity-0');
-    document.querySelectorAll('.admin-only').forEach(el => el.style.display = userRole === 'admin' ? 'block' : 'none');
-    document.querySelectorAll('.user-only').forEach(el => el.style.display = userRole === 'user' ? 'block' : 'none');
+    
+    // Ocultar todas las vistas principales primero
+    dom.adminLoginView.classList.add('hidden');
+    dom.mainContent.classList.add('hidden');
+
     if (userRole === 'admin') {
+        dom.mainContent.classList.remove('hidden');
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+        document.querySelectorAll('.user-only').forEach(el => el.style.display = 'none');
         const user = auth.currentUser;
-        dom.roleDisplay.textContent = user ? `Admin: ${user.displayName} (${user.email})` : 'Iniciando sesión como Admin...';
-    } else {
+        dom.roleDisplay.textContent = user ? `Admin: ${user.displayName}` : 'Admin';
+    } else if (userRole === 'user') {
+        dom.mainContent.classList.remove('hidden');
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.user-only').forEach(el => el.style.display = 'block');
         dom.roleDisplay.textContent = 'Modo: Profesor / Cuidador';
+    } else if (userRole === 'login') {
+        dom.adminLoginView.classList.remove('hidden');
+        dom.roleDisplay.textContent = 'Acceso de Administrador';
     }
   }
 
@@ -299,33 +323,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Main App Logic & Routing ---
   function handleAppInitialization() {
     const path = window.location.pathname.toLowerCase();
-    
-    auth.getRedirectResult()
-      .then(result => {
-        if (result.user) {
-          // Successful login from redirect, onAuthStateChanged will handle the rest
-        }
-      })
-      .catch(error => {
-        console.error("Auth redirect error:", error);
-        // If login fails/is cancelled on admin page, go back to user page
-        if (path.startsWith('/admin')) {
-          window.location.href = '/'; 
-        }
-      });
 
     auth.onAuthStateChanged(user => {
       if (user) {
-        // User is signed in, this must be an admin
+        // User is signed in, this must be an admin.
         userRole = 'admin';
         setUIVisibility();
       } else {
-        // No user signed in
+        // No user signed in.
         if (path.startsWith('/admin')) {
-          // Trying to access /admin without being logged in, start the process
-          auth.signInWithRedirect(googleProvider);
+          userRole = 'login'; // Show the login button view
+          setUIVisibility();
         } else {
-          // On any other page, default to user role
+          // On any other page, default to user role.
           userRole = 'user';
           setUIVisibility();
         }
@@ -337,6 +347,13 @@ document.addEventListener('DOMContentLoaded', () => {
   handleAppInitialization();
 
   // --- Event Listeners ---
+  document.getElementById('login-admin-btn').addEventListener('click', () => {
+    auth.signInWithPopup(googleProvider).catch(error => {
+        console.error("Google Sign-In Error:", error);
+        alert("No se pudo iniciar sesión con Google.");
+    });
+  });
+
   document.querySelectorAll('#shift-buttons button').forEach(btn=>{
     btn.addEventListener('click', ()=>renderCourses(btn.dataset.shift));
   });
