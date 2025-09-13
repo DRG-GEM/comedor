@@ -6,6 +6,12 @@
 <title>Gestor de Comedor Escolar</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- PWA Meta Tags -->
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Comedor">
+<link rel="apple-touch-icon" href="https://placehold.co/192x192/111827/FFFFFF?text=GDC">
 <style>
 body { font-family: 'Inter', sans-serif; }
 .admin-only { display: none; }
@@ -330,7 +336,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function handleRouting() {
     const hash = window.location.hash;
     const user = auth.currentUser;
-
     const isRealUser = user && !user.isAnonymous;
 
     if (hash === '#admin') {
@@ -378,7 +383,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   // Set default date for export
   document.getElementById('export-date-input').value = new Date().toISOString().slice(0,10);
-
 
   dom.finalizeShiftBtn.addEventListener('click', finalizeShift);
   document.getElementById('back-to-shifts').addEventListener('click', ()=>{dom.dashboard.classList.add('hidden'); dom.shiftSelection.classList.remove('hidden');});
