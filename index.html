@@ -228,7 +228,10 @@
             }
 
             async function addStudentBatch(students) {
-                if (!db || students.length === 0) return 0;
+                if (!db || students.length === 0) {
+                    console.log("addStudentBatch: db not ready or no students to add.");
+                    return 0;
+                }
                 const batch = db.batch();
                 const studentsCollection = db.collection("artifacts").doc(appId).collection("public").doc("data").collection("students");
                 let validStudentCount = 0;
@@ -239,11 +242,19 @@
                         validStudentCount++;
                     }
                 });
+
+                if (validStudentCount === 0) {
+                    console.warn("No valid students found in the provided data to add to the batch.");
+                    return 0;
+                }
+
                 try {
+                    console.log(`Committing batch with ${validStudentCount} students.`);
                     await batch.commit();
+                    console.log("Batch commit successful.");
                     return validStudentCount;
                 } catch(e) {
-                    console.error("Error committing batch: ", e);
+                    console.error("FATAL: Error committing batch to Firestore: ", e);
                     return null;
                 }
             }
@@ -390,21 +401,24 @@
                     header: true,
                     skipEmptyLines: true,
                     complete: async (results) => {
+                        console.log("CSV parsing complete.", results);
                         dom.csvFileInput.value = '';
                         const headers = results.meta.fields.map(h => h.toLowerCase().trim());
                         if (!results.data || results.data.length === 0 || !headers.includes('name') || !headers.includes('course') || !headers.includes('shift')) {
+                             console.error("CSV validation failed. Headers are missing or data is empty.");
                              statusElements.forEach(el => el.textContent = `❌ Error: El CSV debe tener columnas 'name', 'course', y 'shift'.`);
                              setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
                              return;
                         }
                         
+                        console.log(`Found ${results.data.length} students. Starting batch add.`);
                         statusElements.forEach(el => el.textContent = `Añadiendo ${results.data.length} alumnos...`);
                         const addedCount = await addStudentBatch(results.data);
 
                         if (addedCount !== null) {
                             statusElements.forEach(el => el.textContent = `✅ ¡${addedCount} alumnos importados!`);
                         } else {
-                            statusElements.forEach(el => el.textContent = `❌ Error al guardar. Revisa las reglas de seguridad de Firebase.`);
+                            statusElements.forEach(el => el.textContent = `❌ Error al guardar. Revisa la consola (F12) para más detalles.`);
                         }
 
                         setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
@@ -414,6 +428,7 @@
                         }
                     },
                     error: (error) => {
+                        console.error("PapaParse Error:", error);
                         dom.csvFileInput.value = '';
                         statusElements.forEach(el => el.textContent = `❌ Error al leer el archivo.`);
                         setTimeout(() => statusElements.forEach(el => el.textContent = ''), 5000);
