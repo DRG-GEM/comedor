@@ -24,7 +24,7 @@ body { font-family: 'Inter', sans-serif; }
 <div id="app" class="container mx-auto p-4 md:p-8 max-w-7xl opacity-0 transition-opacity duration-500">
   <header class="text-center mb-8">
     <h1 class="text-4xl font-bold text-cyan-400">Gestor de Comedor</h1>
-    <p id="role-display" class="text-gray-400 mt-2 font-semibold"></p>
+    <p id="role-display" class="text-gray-400 mt-2 font-semibold">Cargando...</p>
   </header>
 
   <!-- Selección de turno -->
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.user-only').forEach(el => el.style.display = userRole === 'user' ? 'block' : 'none');
     if (userRole === 'admin') {
         const user = auth.currentUser;
-        dom.roleDisplay.textContent = user ? `Admin: ${user.displayName} (${user.email})` : 'Admin';
+        dom.roleDisplay.textContent = user ? `Admin: ${user.displayName} (${user.email})` : 'Iniciando sesión como Admin...';
     } else {
         dom.roleDisplay.textContent = 'Modo: Profesor / Cuidador';
     }
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
     await batch.commit();
   }
   async function logAttendance(studentId, dateStr, state) {
-    if (studentId.startsWith('sporadic_')) return; // No guardar esporádicos en BBDD
+    if (studentId.startsWith('sporadic_')) return;
     const docRef = db.collection("attendance").doc(`${studentId}_${dateStr}`);
     await docRef.set({studentId, date: dateStr, state});
   }
@@ -299,39 +299,42 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Main App Logic & Routing ---
   function handleAppInitialization() {
     const path = window.location.pathname.toLowerCase();
+    
+    auth.getRedirectResult()
+      .then(result => {
+        if (result.user) {
+          // Successful login from redirect, onAuthStateChanged will handle the rest
+        }
+      })
+      .catch(error => {
+        console.error("Auth redirect error:", error);
+        // If login fails/is cancelled on admin page, go back to user page
+        if (path.startsWith('/admin')) {
+          window.location.href = '/'; 
+        }
+      });
 
-    // Listener for auth state changes (login, logout, page refresh)
     auth.onAuthStateChanged(user => {
       if (user) {
-        // User is signed in. Assume admin role.
+        // User is signed in, this must be an admin
         userRole = 'admin';
         setUIVisibility();
       } else {
-        // User is not signed in.
+        // No user signed in
         if (path.startsWith('/admin')) {
-          // If they are trying to access admin, start the login process.
+          // Trying to access /admin without being logged in, start the process
           auth.signInWithRedirect(googleProvider);
         } else {
-          // Otherwise, they are a normal user.
+          // On any other page, default to user role
           userRole = 'user';
           setUIVisibility();
         }
-      }
-    });
-
-    // Handle the redirect result from Google sign-in
-    auth.getRedirectResult().catch(error => {
-      console.error("Auth redirect error:", error);
-      // If the user cancels the login, redirect to the base URL
-      if (path.startsWith('/admin')) {
-        window.location.href = '/';
       }
     });
   }
 
   // Initial call
   handleAppInitialization();
-
 
   // --- Event Listeners ---
   document.querySelectorAll('#shift-buttons button').forEach(btn=>{
