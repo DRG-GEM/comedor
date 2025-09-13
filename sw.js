@@ -1,35 +1,32 @@
-const CACHE_NAME = 'comedor-cache-v1';
-const urlsToCache = [
+const CACHE_NAME = 'comedor-v1';
+const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  'https://cdn.tailwindcss.com',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
-  'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
-  'https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js',
-  'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js'
+  '/manifest.json',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png'
+  // añade aquí CSS/JS externos o rutas que quieras cachear
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE))
   );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+    ))
+  );
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {
+  // Estrategia: cache primero, fallback a network
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response; // Return from cache
-        }
-        return fetch(event.request); // Fetch from network
-      }
-    )
+    caches.match(event.request).then(resp => resp || fetch(event.request).catch(()=>caches.match('/')))
   );
 });
-
