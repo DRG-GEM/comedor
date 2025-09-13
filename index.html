@@ -617,6 +617,33 @@ async function deleteAllStudentsCollection() {
     });
 }
 
+async function deleteAllStudentsCollection() {
+    if (!db) {
+        console.warn('deleteAllStudentsCollection: Firestore no inicializado (db undefined).');
+        return 0;
+    }
+    try {
+        const studentsRef = db.collection("artifacts").doc(appId).collection("public").doc("data").collection("students");
+        const snapshot = await studentsRef.get();
+        if (snapshot.empty) return 0;
+
+        const refs = snapshot.docs.map(d => d.ref);
+        const chunkSize = 450;
+        let totalDeleted = 0;
+        for (let i = 0; i < refs.length; i += chunkSize) {
+            const chunk = refs.slice(i, i + chunkSize);
+            const batch = db.batch();
+            chunk.forEach(r => batch.delete(r));
+            await batch.commit();
+            totalDeleted += chunk.length;
+            console.info(`deleteAllStudentsCollection: commit borrado chunk ${Math.floor(i/chunkSize) + 1} (${chunk.length} docs)`);
+        }
+        return totalDeleted;
+    } catch (e) {
+        console.error("deleteAllStudentsCollection ERROR:", e);
+        return null;
+    }
+}
 
             
             async function initializeAppLogic() {
@@ -671,7 +698,70 @@ async function deleteAllStudentsCollection() {
                         showStudentHistory(studentEl.dataset.studentId, studentEl.dataset.studentName);
                     }
                 });
-                
+                (function attachWipeDbHandler() {
+    const wipeBtn = document.getElementById('wipe-db');
+    if (!wipeBtn) {
+        console.warn('[wipe-db] El elemento #wipe-db no existe en el DOM.');
+        return;
+    }
+    if (wipeBtn.dataset.listenerAdded) {
+        console.info('[wipe-db] Listener ya agregado, no se añade de nuevo.');
+        return;
+    }
+    wipeBtn.dataset.listenerAdded = '1';
+
+    wipeBtn.addEventListener('click', async (ev) => {
+        ev.preventDefault();
+        console.log('[wipe-db] click recibido');
+
+        if (typeof deleteAllStudentsCollection !== 'function') {
+            console.error('[wipe-db] deleteAllStudentsCollection no está definida.');
+            dom.importStatusDashboard.textContent = '❌ Error interno: función de borrado no encontrada.';
+            setTimeout(()=> dom.importStatusDashboard.textContent = '', 5000);
+            return;
+        }
+
+        const confirmedText = await showModal({
+            title: 'Confirmar borrado total',
+            text: 'Esta acción eliminará TODOS los alumnos. Escribe BORRAR en el campo para confirmar:',
+            showInput: true,
+            placeholder: 'BORRAR',
+            okText: 'Borrar',
+            cancelText: 'Cancelar'
+        });
+
+        if (!confirmedText || String(confirmedText).trim().toUpperCase() !== 'BORRAR') {
+            console.log('[wipe-db] borrado cancelado o texto incorrecto:', confirmedText);
+            dom.importStatusDashboard.textContent = 'Acción cancelada.';
+            setTimeout(()=> dom.importStatusDashboard.textContent = '', 2500);
+            return;
+        }
+
+        const statusElements = [dom.importStatusInitial, dom.importStatusDashboard];
+        statusElements.forEach(el => el.textContent = 'Borrando todos los alumnos...');
+
+        try {
+            const deleted = await deleteAllStudentsCollection();
+            if (deleted === null) {
+                statusElements.forEach(el => el.textContent = '❌ Error al borrar (ver consola).');
+            } else {
+                statusElements.forEach(el => el.textContent = `✅ Se borraron ${deleted} alumnos.`);
+                appState.students = [];
+                appState.attendance = {};
+                updateSummary();
+                if (!dom.dashboard.classList.contains('hidden')) {
+                    renderCourses(appState.currentShift);
+                }
+            }
+        } catch (err) {
+            console.error('[wipe-db] Excepción al borrar:', err);
+            statusElements.forEach(el => el.textContent = '❌ Error al borrar (ver consola).');
+        } finally {
+            setTimeout(()=> statusElements.forEach(el => el.textContent = ''), 8000);
+        }
+    });
+})();
+
                 document.getElementById('import-csv-btn-initial').addEventListener('click', () => dom.csvFileInput.click());
                 document.getElementById('import-csv-btn-dashboard').addEventListener('click', () => dom.csvFileInput.click());
                 dom.csvFileInput.addEventListener('change', (event) => {
