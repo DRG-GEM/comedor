@@ -1,267 +1,498 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestor de Comedor Escolar</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    .admin-only { display: none; }
-    .user-only { display: none; }
-    .student-item { transition: all 0.2s ease-in-out; }
-    .student-item.pending { background-color: #374151; }
-    .student-item.present { background-color: #166534; transform: scale(1.02); }
-    .student-item.absent { background-color: #991b1b; text-decoration: line-through; opacity: 0.6; }
-    #role-selection-screen { backdrop-filter: blur(10px); }
-    #history-modal, #generic-modal { transition: opacity 0.3s ease; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Comedor Escolar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .admin-only { display: none; }
+        .user-only { display: none; }
+        .student-item { transition: all 0.2s ease-in-out; }
+        .student-item.pending { background-color: #374151; }
+        .student-item.present { background-color: #166534; transform: scale(1.02); }
+        .student-item.absent { background-color: #991b1b; text-decoration: line-through; opacity: 0.6; }
+        #role-selection-screen { backdrop-filter: blur(10px); }
+        #history-modal, #generic-modal { transition: opacity 0.3s ease; }
+    </style>
 </head>
 <body class="bg-gray-900 text-white antialiased">
 
-  <!-- Pantalla de selección de rol -->
-  <div id="role-selection-screen" class="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-50">
-    <div class="text-center bg-gray-800 p-8 rounded-lg shadow-2xl">
-      <h2 class="text-3xl font-bold text-cyan-400 mb-6">¿Cómo quieres acceder?</h2>
-      <div class="space-y-4">
-        <button id="login-admin" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-lg text-lg">Soy Administrador</button>
-        <button id="login-user" class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 px-6 rounded-lg text-lg">Soy Profesor / Cuidador</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Aplicación -->
-  <div id="app" class="container mx-auto p-4 md:p-8 max-w-7xl opacity-0 transition-opacity duration-500">
-    <header class="text-center mb-8">
-      <h1 class="text-4xl font-bold text-cyan-400">Gestor de Comedor</h1>
-      <p id="role-display" class="text-gray-400 mt-2 font-semibold"></p>
-    </header>
-
-    <div id="shift-selection" class="text-center">
-      <h2 class="text-2xl font-semibold mb-4">Elige un turno de comedor</h2>
-      <div id="shift-buttons" class="flex flex-wrap justify-center gap-4">
-        <button class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-lg" data-shift="Primer Turno (Infantil)">Primer Turno (Infantil)</button>
-        <button class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-lg" data-shift="Segundo Turno (Primaria)">Segundo Turno (Primaria)</button>
-      </div>
-      <div class="mt-8 admin-only">
-        <h3 class="text-xl font-semibold mb-4">Gestión de Datos</h3>
-        <button id="import-csv-btn-initial" class="bg-green-600 hover:bg-green-500 font-bold py-3 px-6 rounded-lg">📤 Importar Alumnos (CSV)</button>
-        <p id="import-status-initial" class="text-green-400 mt-2 h-6"></p>
-      </div>
+    <div id="role-selection-screen" class="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-50">
+        <div class="text-center bg-gray-800 p-8 rounded-lg shadow-2xl">
+            <h2 class="text-3xl font-bold text-cyan-400 mb-6">¿Cómo quieres acceder?</h2>
+            <div class="space-y-4">
+                <button id="login-admin" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-lg text-lg">Soy Administrador</button>
+                <button id="login-user" class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 px-6 rounded-lg text-lg">Soy Profesor / Cuidador</button>
+            </div>
+        </div>
     </div>
 
-    <main id="dashboard" class="hidden">
-      <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
-        <button id="back-to-shifts" class="bg-gray-600 hover:bg-gray-500 font-bold py-2 px-4 rounded-lg">&larr; Cambiar Turno</button>
-        <div class="flex flex-wrap gap-4">
-          <button id="import-csv-btn-dashboard" class="bg-green-600 hover:bg-green-500 font-bold py-2 px-4 rounded-lg admin-only">📤 Importar Alumnos (CSV)</button>
-          <button id="show-history" class="bg-indigo-600 hover:bg-indigo-500 font-bold py-2 px-4 rounded-lg admin-only">📜 Ver Historial Completo</button>
-          <button id="reset-count" class="bg-amber-600 hover:bg-amber-500 font-bold py-2 px-4 rounded-lg">↻ Reiniciar Estados</button>
+    <div id="app" class="container mx-auto p-4 md:p-8 max-w-7xl opacity-0 transition-opacity duration-500">
+        <header class="text-center mb-8">
+             <h1 class="text-4xl font-bold text-cyan-400">Gestor de Comedor</h1>
+             <p id="role-display" class="text-gray-400 mt-2 font-semibold"></p>
+        </header>
+        
+        <div id="shift-selection" class="text-center">
+             <h2 class="text-2xl font-semibold mb-4">Elige un turno de comedor</h2>
+             <div id="shift-buttons" class="flex flex-wrap justify-center gap-4">
+                 <button class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-lg" data-shift="Primer Turno (Infantil)">Primer Turno (Infantil)</button>
+                 <button class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-lg" data-shift="Segundo Turno (Primaria)">Segundo Turno (Primaria)</button>
+             </div>
+             <div class="mt-8 admin-only">
+                <h3 class="text-xl font-semibold mb-4">Gestión de Datos</h3>
+                <button id="import-csv-btn-initial" class="bg-green-600 hover:bg-green-500 font-bold py-3 px-6 rounded-lg">📤 Importar Alumnos (CSV)</button>
+                <p id="import-status-initial" class="text-green-400 mt-2 h-6"></p>
+            </div>
         </div>
-      </div>
-      <p id="import-status-dashboard" class="text-center text-green-400 mb-4 h-6"></p>
 
-      <section id="summary" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-gray-800 p-4 rounded-lg text-center">
-          <h3 class="text-lg font-semibold text-gray-400">Comensales del Día</h3>
-          <p id="summary-diners" class="text-3xl font-bold">0</p>
+        <main id="dashboard" class="hidden">
+            <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
+                <button id="back-to-shifts" class="bg-gray-600 hover:bg-gray-500 font-bold py-2 px-4 rounded-lg">&larr; Cambiar Turno</button>
+                <div class="flex flex-wrap gap-4">
+                    <button id="import-csv-btn-dashboard" class="bg-green-600 hover:bg-green-500 font-bold py-2 px-4 rounded-lg admin-only">📤 Importar Alumnos (CSV)</button>
+                    <button id="show-history" class="bg-indigo-600 hover:bg-indigo-500 font-bold py-2 px-4 rounded-lg admin-only">📜 Ver Historial Completo</button>
+                    <button id="reset-count" class="bg-amber-600 hover:bg-amber-500 font-bold py-2 px-4 rounded-lg">↻ Reiniciar Estados</button>
+                </div>
+            </div>
+            <p id="import-status-dashboard" class="text-center text-green-400 mb-4 h-6"></p>
+
+            <section id="summary" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                 <div class="bg-gray-800 p-4 rounded-lg text-center"><h3 class="text-lg font-semibold text-gray-400">Comensales del Día</h3><p id="summary-diners" class="text-3xl font-bold">0</p></div>
+                 <div class="bg-red-800 bg-opacity-50 p-4 rounded-lg text-center"><h3 class="text-lg font-semibold text-red-300">Ausentes</h3><p id="summary-absent" class="text-3xl font-bold">0</p></div>
+                 <div class="bg-blue-800 bg-opacity-50 p-4 rounded-lg text-center"><h3 class="text-lg font-semibold text-blue-300">Pendientes</h3><p id="summary-pending" class="text-3xl font-bold">0</p></div>
+                 <div class="bg-green-800 bg-opacity-50 p-4 rounded-lg text-center"><h3 class="text-lg font-semibold text-green-300">PRESENTES</h3><p id="summary-present" class="text-3xl font-bold">0</p></div>
+            </section>
+            <section id="student-lists">
+                <div id="courses-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+        </main>
+    </div>
+    
+    <input type="file" id="csv-file-input" class="hidden" accept=".csv">
+
+    <div id="history-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 hidden opacity-0 z-40">
+        <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl h-full max-h-[90vh] flex flex-col">
+            <header class="p-4 border-b border-gray-700 flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-cyan-400">Historial de Asistencia</h2>
+                <button id="close-history" class="text-3xl font-bold hover:text-red-500">&times;</button>
+            </header>
+            <div class="p-4 flex-grow flex flex-col md:flex-row gap-4 overflow-hidden">
+                <div class="w-full md:w-1/3 flex flex-col"><input type="text" id="history-search" placeholder="Buscar alumno..." class="w-full p-2 rounded-md bg-gray-900 border border-gray-700 mb-4"><div id="history-student-list" class="flex-grow overflow-y-auto pr-2"></div></div>
+                <div id="history-details-container" class="w-full md:w-2/3 bg-gray-900 rounded-lg p-4 flex-grow flex flex-col"><h3 id="history-student-name" class="text-xl font-semibold mb-4 text-center">Selecciona un alumno</h3><div id="history-dates-list" class="flex-grow overflow-y-auto text-center"></div></div>
+            </div>
         </div>
-        <div class="bg-red-800 bg-opacity-50 p-4 rounded-lg text-center">
-          <h3 class="text-lg font-semibold text-red-300">Ausentes</h3>
-          <p id="summary-absent" class="text-3xl font-bold">0</p>
+    </div>
+
+    <div id="generic-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-md">
+            <div class="p-6">
+                <h3 id="modal-title" class="text-xl font-semibold mb-4">Título del Modal</h3>
+                <p id="modal-text" class="text-gray-300 mb-4">Texto del modal.</p>
+                <input type="text" id="modal-input" class="w-full p-2 rounded-md bg-gray-900 border border-gray-700 hidden">
+            </div>
+            <div class="bg-gray-700 p-4 flex justify-end gap-4 rounded-b-lg">
+                <button id="modal-cancel-btn" class="bg-gray-600 hover:bg-gray-500 font-bold py-2 px-4 rounded-lg">Cancelar</button>
+                <button id="modal-ok-btn" class="bg-cyan-600 hover:bg-cyan-500 font-bold py-2 px-4 rounded-lg">Aceptar</button>
+            </div>
         </div>
-        <div class="bg-blue-800 bg-opacity-50 p-4 rounded-lg text-center">
-          <h3 class="text-lg font-semibold text-blue-300">Pendientes</h3>
-          <p id="summary-pending" class="text-3xl font-bold">0</p>
-        </div>
-        <div class="bg-green-800 bg-opacity-50 p-4 rounded-lg text-center">
-          <h3 class="text-lg font-semibold text-green-300">Presentes</h3>
-          <p id="summary-present" class="text-3xl font-bold">0</p>
-        </div>
-      </section>
+    </div>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <!-- PapaParse CSV Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.4.1/papaparse.min.js"></script>
 
-      <section id="student-lists">
-        <div id="courses-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-      </section>
-    </main>
-  </div>
+    <!-- Your App's Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- IMPORTANTE: PEGA AQUÍ TU CONFIGURACIÓN DE FIREBASE ---
+            const firebaseConfig = {
+              apiKey: "AIzaSyAeI9G1_2-E8Kghc-88bkrXa_VDJXeDyHo",
+              authDomain: "comedorvp.firebaseapp.com",
+              projectId: "comedorvp",
+              storageBucket: "comedorvp.appspot.com",
+              messagingSenderId: "821870274048",
+              appId: "1:821870274048:web:62b85d28ceace395245ae5"
+            };
+            // -----------------------------------------------------------
+            
+            const appId = firebaseConfig.projectId; 
+            
+            let db, auth, userRole = null;
+            const appState = { currentShift: null, students: [], attendance: {} };
+            let modalResolve = null;
 
-  <!-- Input oculto para CSV -->
-  <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+            const dom = {
+                roleScreen: document.getElementById('role-selection-screen'),
+                app: document.getElementById('app'),
+                roleDisplay: document.getElementById('role-display'),
+                shiftSelection: document.getElementById('shift-selection'),
+                dashboard: document.getElementById('dashboard'),
+                coursesContainer: document.getElementById('courses-container'),
+                csvFileInput: document.getElementById('csv-file-input'),
+                importStatusInitial: document.getElementById('import-status-initial'),
+                importStatusDashboard: document.getElementById('import-status-dashboard'),
+                historyModal: document.getElementById('history-modal'),
+                historyStudentList: document.getElementById('history-student-list'),
+                historyStudentName: document.getElementById('history-student-name'),
+                historyDatesList: document.getElementById('history-dates-list'),
+                genericModal: document.getElementById('generic-modal'),
+                modal: {
+                    title: document.getElementById('modal-title'),
+                    text: document.getElementById('modal-text'),
+                    input: document.getElementById('modal-input'),
+                    okBtn: document.getElementById('modal-ok-btn'),
+                    cancelBtn: document.getElementById('modal-cancel-btn'),
+                }
+            };
 
-  <!-- Módulo principal -->
-  <script type="module">
-    import Papa from 'https://cdn.jsdelivr.net/npm/papaparse@5.4.1/+esm';
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-    import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-    import {
-      getFirestore, collection, query, where, getDocs,
-      writeBatch, doc, addDoc, setDoc
-    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
-
-    // Configuración de Firebase (tuya)
-    const firebaseConfig = {
-      apiKey: "AIzaSyAeI9G1_2-E8Kghc-88bkrXa_VDJXeDyHo",
-      authDomain: "comedorvp.firebaseapp.com",
-      projectId: "comedorvp",
-      storageBucket: "comedorvp.appspot.com",
-      messagingSenderId: "821870274048",
-      appId: "1:821870274048:web:62b85d28ceace395245ae5"
-    };
-
-    // Inicializaciones
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    let userRole = null;
-    const appState = { currentShift: null, students: [], attendance: {} };
-    let modalResolve = null;
-
-    const dom = {
-      roleScreen: document.getElementById('role-selection-screen'),
-      app: document.getElementById('app'),
-      roleDisplay: document.getElementById('role-display'),
-      shiftSelection: document.getElementById('shift-selection'),
-      dashboard: document.getElementById('dashboard'),
-      coursesContainer: document.getElementById('courses-container'),
-      csvFileInput: document.getElementById('csv-file-input'),
-      importStatusInitial: document.getElementById('import-status-initial'),
-      importStatusDashboard: document.getElementById('import-status-dashboard'),
-      historyModal: document.getElementById('history-modal'),
-      historyStudentList: document.getElementById('history-student-list'),
-      historyStudentName: document.getElementById('history-student-name'),
-      historyDatesList: document.getElementById('history-dates-list'),
-      genericModal: document.getElementById('generic-modal'),
-      modal: {
-        title: document.getElementById('modal-title'),
-        text: document.getElementById('modal-text'),
-        input: document.getElementById('modal-input'),
-        okBtn: document.getElementById('modal-ok-btn'),
-        cancelBtn: document.getElementById('modal-cancel-btn'),
-      }
-    };
-
-    // Muestra/oculta UI según rol
-    function setUIVisibility() {
-      dom.roleScreen.style.display = 'none';
-      dom.app.classList.remove('opacity-0');
-      document.querySelectorAll('.admin-only')
-        .forEach(el => el.style.display = userRole === 'admin' ? 'block' : 'none');
-      document.querySelectorAll('.user-only')
-        .forEach(el => el.style.display = userRole === 'user' ? 'block' : 'none');
-      dom.roleDisplay.textContent = userRole === 'admin'
-        ? 'Modo: Administrador'
-        : 'Modo: Profesor / Cuidador';
-      dom.roleDisplay.className = userRole === 'admin'
-        ? 'text-indigo-400 mt-2 font-semibold'
-        : 'text-teal-400 mt-2 font-semibold';
-    }
-
-    // Autenticación anónima / custom token
-    async function initFirebase() {
-      return new Promise(resolve => {
-        onAuthStateChanged(auth, async user => {
-          if (user) return resolve(user);
-          try {
-            if (typeof __initial_auth_token !== 'undefined') {
-              await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-              await signInAnonymously(auth);
+            function setUIVisibility() {
+                dom.roleScreen.style.display = 'none';
+                dom.app.classList.remove('opacity-0');
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = (userRole === 'admin') ? 'block' : 'none');
+                document.querySelectorAll('.user-only').forEach(el => el.style.display = (userRole === 'user') ? 'block' : 'none');
+                dom.roleDisplay.textContent = userRole === 'admin' ? 'Modo: Administrador' : 'Modo: Profesor / Cuidador';
+                dom.roleDisplay.className = userRole === 'admin' ? 'text-indigo-400 mt-2 font-semibold' : 'text-teal-400 mt-2 font-semibold';
             }
-          } catch (e) {
-            console.error('Auth Error:', e);
-          }
+
+            async function initFirebase() {
+                try {
+                    firebase.initializeApp(firebaseConfig);
+                    db = firebase.firestore();
+                    auth = firebase.auth();
+                    
+                    return new Promise(resolve => {
+                        auth.onAuthStateChanged(async (user) => {
+                            if (user) return resolve(user);
+                            try {
+                                if (typeof __initial_auth_token !== 'undefined') await auth.signInWithCustomToken(__initial_auth_token);
+                                else await auth.signInAnonymously();
+                            } catch (error) { console.error("Auth Error:", error); }
+                        });
+                    });
+                } catch (error) {
+                    console.error("Firebase Init Error:", error);
+                    document.body.innerHTML = `<div class="text-red-500 text-center p-8"><h1>Error de Configuración</h1><p>La configuración de Firebase no es correcta. Por favor, revísala en el código.</p></div>`;
+                }
+            }
+            
+            function showModal({ title, text, showInput = false, placeholder = '', okText = 'Aceptar', cancelText = 'Cancelar' }) {
+                return new Promise(resolve => {
+                    modalResolve = resolve;
+                    dom.modal.title.textContent = title;
+                    dom.modal.text.textContent = text;
+                    dom.modal.input.style.display = showInput ? 'block' : 'none';
+                    if (showInput) {
+                        dom.modal.input.value = '';
+                        dom.modal.input.placeholder = placeholder;
+                    }
+                    dom.modal.okBtn.textContent = okText;
+                    dom.modal.cancelBtn.textContent = cancelText;
+                    dom.genericModal.classList.remove('hidden');
+                });
+            }
+
+            async function fetchStudents(shift) {
+                if (!db) return [];
+                const querySnapshot = await db.collection("artifacts").doc(appId).collection("public").doc("data").collection("students").where("shift", "==", shift).get();
+                return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            }
+            
+            async function addStudentToDB(name, course, shift) {
+                if (!db) return null;
+                try {
+                    const docRef = await db.collection("artifacts").doc(appId).collection("public").doc("data").collection("students").add({ name, course, shift });
+                    return { id: docRef.id, name, course, shift };
+                } catch (error) {
+                    console.error("Error adding student to DB: ", error);
+                    return null;
+                }
+            }
+
+            async function logAttendance(studentId, studentName, dateString) {
+                if (!db || studentId.startsWith('temp_')) return;
+                const attendanceId = `${studentId}_${dateString}`;
+                try {
+                    await db.collection("artifacts").doc(appId).collection("public").doc("data").collection("attendance").doc(attendanceId).set({ studentId, studentName, date: dateString });
+                } catch (error) {
+                    console.error("Error logging attendance: ", error);
+                }
+            }
+
+            async function addStudentBatch(students) {
+                if (!db || students.length === 0) return 0;
+                const batch = db.batch();
+                const studentsCollection = db.collection("artifacts").doc(appId).collection("public").doc("data").collection("students");
+                let validStudentCount = 0;
+                students.forEach(student => {
+                    if (student.name && student.course && student.shift) {
+                        const newStudentRef = studentsCollection.doc();
+                        batch.set(newStudentRef, { name: student.name.trim(), course: student.course.trim(), shift: student.shift.trim() });
+                        validStudentCount++;
+                    }
+                });
+                try {
+                    await batch.commit();
+                    return validStudentCount;
+                } catch(e) {
+                    console.error("Error committing batch: ", e);
+                    return null;
+                }
+            }
+            
+            function updateSummary() {
+                const statuses = Object.values(appState.attendance);
+                document.getElementById('summary-diners').textContent = statuses.length;
+                document.getElementById('summary-absent').textContent = statuses.filter(s => s === 'absent').length;
+                document.getElementById('summary-present').textContent = statuses.filter(s => s === 'present').length;
+                document.getElementById('summary-pending').textContent = statuses.filter(s => s === 'pending').length;
+            }
+
+            function createStudentElement({id, name}) {
+                return `<div id="${id}" class="student-item p-3 rounded-md cursor-pointer flex justify-between items-center mt-2 pending" data-student-id="${id}" data-student-name="${name}"><span>${name}</span><button class="mark-absent-btn bg-red-500 hover:bg-red-400 text-white font-bold w-6 h-6 rounded-full flex items-center justify-center">&times;</button></div>`;
+            }
+
+            function setStudentState(studentId, state) {
+                appState.attendance[studentId] = state;
+                const studentEl = document.getElementById(studentId);
+                if (studentEl) {
+                    studentEl.className = `student-item p-3 rounded-md cursor-pointer flex justify-between items-center mt-2 ${state}`;
+                }
+                updateSummary();
+            }
+
+            async function renderCourses(shift) {
+                appState.currentShift = shift;
+                dom.shiftSelection.classList.add('hidden');
+                dom.dashboard.classList.remove('hidden');
+                dom.coursesContainer.innerHTML = '<p class="text-center text-lg">Cargando alumnos...</p>';
+                
+                try {
+                    appState.students = await fetchStudents(shift);
+                } catch(e) {
+                    dom.coursesContainer.innerHTML = '<p class="text-center text-lg text-red-400">Error al cargar los alumnos. Revisa las reglas de seguridad de Firebase.</p>';
+                    return;
+                }
+
+                appState.attendance = {};
+                appState.students.forEach(s => appState.attendance[s.id] = 'pending');
+                const courses = [...new Set(appState.students.map(s => s.course))].sort();
+                dom.coursesContainer.innerHTML = '';
+
+                if (courses.length === 0) {
+                     dom.coursesContainer.innerHTML = `<div class="text-center bg-gray-800 p-6 rounded-lg"><h3 class="text-xl font-semibold">No hay alumnos para este turno</h3><p class="text-gray-400 mt-2">Puedes añadirlos usando el importador de CSV en el modo Administrador.</p></div>`;
+                } else {
+                    courses.forEach(course => {
+                        const courseCard = document.createElement('div');
+                        courseCard.className = 'bg-gray-800 rounded-lg p-4 shadow-lg flex flex-col';
+                        const studentsInCourse = appState.students.filter(s => s.course === course);
+                        const addButtonText = userRole === 'admin' ? '+ Añadir Alumno Fijo' : '+ Añadir Esporádico';
+                        courseCard.innerHTML = `<div class="flex-grow"><h3 class="text-xl font-bold text-cyan-300 mb-3">${course}</h3><div class="space-y-2" data-course-list="${course}">${studentsInCourse.map(createStudentElement).join('')}</div></div><button class="add-student-btn mt-4 bg-blue-600 hover:bg-blue-500 font-bold py-2 px-4 rounded-lg" data-course="${course}">${addButtonText}</button>`;
+                        dom.coursesContainer.appendChild(courseCard);
+                    });
+                }
+                updateSummary();
+            }
+
+            async function handleStudentStateChange(studentId, studentName, newState) {
+                const oldState = appState.attendance[studentId];
+                if(oldState === 'present' && newState === 'present') {
+                    newState = 'pending';
+                }
+                setStudentState(studentId, newState);
+                const today = new Date().toISOString().slice(0, 10);
+                if (newState === 'present') {
+                    await logAttendance(studentId, studentName, today);
+                }
+            }
+
+            async function addNewStudent(course) {
+                const name = await showModal({
+                    title: userRole === 'admin' ? 'Añadir Alumno Fijo' : 'Añadir Alumno Esporádico',
+                    text: `Introduce el nombre del alumno para ${course}:`,
+                    showInput: true,
+                    placeholder: 'Nombre y Apellido'
+                });
+                
+                if (name && name.trim()) {
+                    if (userRole === 'admin') {
+                        const newStudent = await addStudentToDB(name.trim(), course, appState.currentShift);
+                        if (newStudent) {
+                            appState.students.push(newStudent);
+                            appState.attendance[newStudent.id] = 'pending';
+                            const listEl = document.querySelector(`[data-course-list="${course}"]`);
+                            listEl.insertAdjacentHTML('beforeend', createStudentElement(newStudent));
+                            updateSummary();
+                        }
+                    } else {
+                        const tempId = `temp_${Date.now()}`;
+                        const newStudent = { id: tempId, name: name.trim(), course: course };
+                        appState.students.push(newStudent);
+                        appState.attendance[tempId] = 'pending';
+                        const listEl = document.querySelector(`[data-course-list="${course}"]`);
+                        listEl.insertAdjacentHTML('beforeend', createStudentElement(newStudent));
+                        updateSummary();
+                    }
+                }
+            }
+            
+            async function showHistoryModal() {
+                 dom.historyModal.classList.remove('hidden');
+                 setTimeout(() => dom.historyModal.classList.remove('opacity-0'), 10);
+                 dom.historyStudentList.innerHTML = '<p>Cargando historial...</p>';
+                 try {
+                    const snapshot = await db.collection("artifacts").doc(appId).collection("public").doc("data").collection("students").get();
+                    const allStudents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => a.name.localeCompare(b.name));
+                    if (allStudents.length > 0) {
+                        dom.historyStudentList.innerHTML = allStudents.map(s => `<div class="p-2 hover:bg-gray-700 cursor-pointer rounded-md history-student" data-student-id="${s.id}" data-student-name="${s.name}"><p class="font-semibold">${s.name}</p><p class="text-sm text-gray-400">${s.course}</p></div>`).join('');
+                    } else {
+                        dom.historyStudentList.innerHTML = '<p>No hay alumnos registrados.</p>';
+                    }
+                 } catch (e) {
+                    console.error("Error loading history:", e);
+                    dom.historyStudentList.innerHTML = '<p class="text-red-400">Error al cargar el historial.</p>';
+                 }
+                 dom.historyStudentName.textContent = 'Selecciona un alumno';
+                 dom.historyDatesList.innerHTML = '';
+            }
+
+            async function showStudentHistory(studentId, studentName) {
+                dom.historyStudentName.textContent = `Historial de: ${studentName}`;
+                dom.historyDatesList.innerHTML = '<p>Buscando fechas...</p>';
+                try {
+                    const snapshot = await db.collection("artifacts").doc(appId).collection("public").doc("data").collection("attendance").where("studentId", "==", studentId).get();
+                    const dates = snapshot.docs.map(doc => doc.data().date).sort().reverse();
+                    if (dates.length > 0) {
+                         dom.historyDatesList.innerHTML = `<ul class="space-y-1 text-left">${dates.map(d => `<li class="bg-gray-800 p-2 rounded">${new Date(d + 'T00:00:00').toLocaleDateString('es-ES', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}</li>`).join('')}</ul>`;
+                    } else {
+                        dom.historyDatesList.innerHTML = '<p>Este alumno no tiene registros de asistencia.</p>';
+                    }
+                } catch (e) {
+                     console.error("Error fetching student history:", e);
+                     dom.historyDatesList.innerHTML = '<p class="text-red-400">Error al buscar las fechas.</p>';
+                }
+            }
+
+            function handleCsvImport(file) {
+                if (!file) return;
+                const statusElements = [dom.importStatusInitial, dom.importStatusDashboard];
+                statusElements.forEach(el => el.textContent = 'Procesando archivo...');
+                
+                Papa.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: async (results) => {
+                        dom.csvFileInput.value = '';
+                        const headers = results.meta.fields.map(h => h.toLowerCase().trim());
+                        if (!results.data || results.data.length === 0 || !headers.includes('name') || !headers.includes('course') || !headers.includes('shift')) {
+                             statusElements.forEach(el => el.textContent = `❌ Error: El CSV debe tener columnas 'name', 'course', y 'shift'.`);
+                             setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
+                             return;
+                        }
+                        
+                        statusElements.forEach(el => el.textContent = `Añadiendo ${results.data.length} alumnos...`);
+                        const addedCount = await addStudentBatch(results.data);
+
+                        if (addedCount !== null) {
+                            statusElements.forEach(el => el.textContent = `✅ ¡${addedCount} alumnos importados!`);
+                        } else {
+                            statusElements.forEach(el => el.textContent = `❌ Error al guardar. Revisa las reglas de seguridad de Firebase.`);
+                        }
+
+                        setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
+                        
+                        if (!dom.dashboard.classList.contains('hidden') && appState.currentShift) {
+                            renderCourses(appState.currentShift);
+                        }
+                    },
+                    error: (error) => {
+                        dom.csvFileInput.value = '';
+                        statusElements.forEach(el => el.textContent = `❌ Error al leer el archivo.`);
+                        setTimeout(() => statusElements.forEach(el => el.textContent = ''), 5000);
+                    }
+                });
+            }
+            
+            async function initializeAppLogic() {
+                setUIVisibility();
+                await initFirebase();
+                
+                document.getElementById('shift-buttons').addEventListener('click', e => {
+                    if (e.target.tagName === 'BUTTON') renderCourses(e.target.dataset.shift);
+                });
+                dom.coursesContainer.addEventListener('click', e => {
+                    const studentItem = e.target.closest('.student-item');
+                    const absentBtn = e.target.closest('.mark-absent-btn');
+                    const addBtn = e.target.closest('.add-student-btn');
+
+                    if (absentBtn && studentItem) { 
+                        handleStudentStateChange(studentItem.dataset.studentId, studentItem.dataset.studentName, 'absent');
+                    }
+                    else if (studentItem) { 
+                         handleStudentStateChange(studentItem.dataset.studentId, studentItem.dataset.studentName, 'present');
+                    }
+                    else if (addBtn) { addNewStudent(addBtn.dataset.course); }
+                });
+                document.getElementById('back-to-shifts').addEventListener('click', () => {
+                    dom.dashboard.classList.add('hidden');
+                    dom.shiftSelection.classList.remove('hidden');
+                });
+                document.getElementById('reset-count').addEventListener('click', async () => {
+                    const confirmed = await showModal({ title: 'Confirmar Reinicio', text: '¿Seguro que quieres reiniciar todos los estados a "Pendiente"?' });
+                    if (confirmed) {
+                        Object.keys(appState.attendance).forEach(id => {
+                            if (!id.startsWith('temp_')) {
+                                 setStudentState(id, 'pending')
+                            }
+                        });
+                    }
+                });
+                document.getElementById('show-history').addEventListener('click', showHistoryModal);
+                document.getElementById('close-history').addEventListener('click', () => { 
+                    dom.historyModal.classList.add('opacity-0');
+                    setTimeout(() => dom.historyModal.classList.add('hidden'), 300);
+                });
+                document.getElementById('history-search').addEventListener('input', e => { 
+                    const searchTerm = e.target.value.toLowerCase();
+                    document.querySelectorAll('#history-student-list .history-student').forEach(el => {
+                        const name = el.dataset.studentName.toLowerCase();
+                        el.style.display = name.includes(searchTerm) ? '' : 'none';
+                    });
+                });
+                dom.historyStudentList.addEventListener('click', e => { 
+                    const studentEl = e.target.closest('.history-student');
+                    if (studentEl) {
+                        showStudentHistory(studentEl.dataset.studentId, studentEl.dataset.studentName);
+                    }
+                });
+                
+                document.getElementById('import-csv-btn-initial').addEventListener('click', () => dom.csvFileInput.click());
+                document.getElementById('import-csv-btn-dashboard').addEventListener('click', () => dom.csvFileInput.click());
+                dom.csvFileInput.addEventListener('change', (event) => handleCsvImport(event.target.files[0]));
+                
+                dom.modal.okBtn.addEventListener('click', () => {
+                    const value = dom.modal.input.style.display === 'none' ? true : dom.modal.input.value;
+                    if (modalResolve) modalResolve(value);
+                    dom.genericModal.classList.add('hidden');
+                });
+                dom.modal.cancelBtn.addEventListener('click', () => {
+                    if (modalResolve) modalResolve(null);
+                    dom.genericModal.classList.add('hidden');
+                });
+            }
+
+            document.getElementById('login-admin').addEventListener('click', () => { userRole = 'admin'; initializeAppLogic(); });
+            document.getElementById('login-user').addEventListener('click', () => { userRole = 'user'; initializeAppLogic(); });
         });
-      });
-    }
+    </script>
+</body>
+</html>
 
-    // Modal genérico
-    function showModal({ title, text, showInput = false, placeholder = '', okText = 'Aceptar', cancelText = 'Cancelar' }) {
-      return new Promise(resolve => {
-        modalResolve = resolve;
-        dom.modal.title.textContent = title;
-        dom.modal.text.textContent = text;
-        dom.modal.input.style.display = showInput ? 'block' : 'none';
-        if (showInput) {
-          dom.modal.input.value = '';
-          dom.modal.input.placeholder = placeholder;
-        }
-        dom.modal.okBtn.textContent = okText;
-        dom.modal.cancelBtn.textContent = cancelText;
-        dom.genericModal.classList.remove('hidden');
-      });
-    }
-
-    // Lectura de alumnos por turno
-    async function fetchStudents(shift) {
-      const q = query(
-        collection(db, "artifacts", firebaseConfig.projectId, "public", "data", "students"),
-        where("shift", "==", shift)
-      );
-      const snap = await getDocs(q);
-      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    }
-
-    // Añade un solo alumno (modo admin)
-    async function addStudentToDB(name, course, shift) {
-      try {
-        const ref = await addDoc(
-          collection(db, "artifacts", firebaseConfig.projectId, "public", "data", "students"),
-          { name, course, shift }
-        );
-        return { id: ref.id, name, course, shift };
-      } catch (e) {
-        console.error("Error addStudentToDB:", e);
-        return null;
-      }
-    }
-
-    // Batch para CSV
-    async function addStudentBatch(students) {
-      if (students.length === 0) return 0;
-      const batch = writeBatch(db);
-      const coll = collection(db, "artifacts", firebaseConfig.projectId, "public", "data", "students");
-      let valid = 0;
-      students.forEach(s => {
-        if (s.name && s.course && s.shift) {
-          const ref = doc(coll);
-          batch.set(ref, {
-            name: s.name.trim(),
-            course: s.course.trim(),
-            shift: s.shift.trim()
-          });
-          valid++;
-        }
-      });
-      try {
-        await batch.commit();
-        return valid;
-      } catch (e) {
-        console.error("Error committing batch:", e);
-        return null;
-      }
-    }
-
-    // Registrar asistencia
-    async function logAttendance(studentId, studentName, dateString) {
-      if (studentId.startsWith('temp_')) return;
-      const id = `${studentId}_${dateString}`;
-      try {
-        await setDoc(
-          doc(db, "artifacts", firebaseConfig.projectId, "public", "data", "attendance", id),
-          { studentId, studentName, date: dateString }
-        );
-      } catch (e) {
-        console.error("Error logAttendance:", e);
-      }
-    }
-
-    // UI de resumen
-    function updateSummary() {
-      const vals = Object.values(appState.attendance);
-      document.getElementById('summary-diners').textContent = vals.length;
-      document.getElementById('summary-absent').textContent = vals.filter(v => v === 'absent').length;
-      document.getElementById('summary-present').textContent = vals.filter(v => v === 'present').length;
-      document.getElementById('summary-pending').textContent = vals.filter(v => v === 'pending
