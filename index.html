@@ -53,10 +53,12 @@
             <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
                 <button id="back-to-shifts" class="bg-gray-600 hover:bg-gray-500 font-bold py-2 px-4 rounded-lg">&larr; Cambiar Turno</button>
                 <div class="flex flex-wrap gap-4">
-                    <button id="import-csv-btn-dashboard" class="bg-green-600 hover:bg-green-500 font-bold py-2 px-4 rounded-lg admin-only">📤 Importar Alumnos (CSV)</button>
-                    <button id="show-history" class="bg-indigo-600 hover:bg-indigo-500 font-bold py-2 px-4 rounded-lg admin-only">📜 Ver Historial Completo</button>
-                    <button id="reset-count" class="bg-amber-600 hover:bg-amber-500 font-bold py-2 px-4 rounded-lg">↻ Reiniciar Estados</button>
-                </div>
+    <button id="import-csv-btn-dashboard" class="bg-green-600 hover:bg-green-500 font-bold py-2 px-4 rounded-lg admin-only">📤 Importar Alumnos (CSV)</button>
+    <button id="show-history" class="bg-indigo-600 hover:bg-indigo-500 font-bold py-2 px-4 rounded-lg admin-only">📜 Ver Historial Completo</button>
+    <button id="wipe-db" class="bg-red-600 hover:bg-red-500 font-bold py-2 px-4 rounded-lg admin-only">🗑️ Borrar todos los alumnos</button>
+    <button id="reset-count" class="bg-amber-600 hover:bg-amber-500 font-bold py-2 px-4 rounded-lg">↻ Reiniciar Estados</button>
+</div>
+
             </div>
             <p id="import-status-dashboard" class="text-center text-green-400 mb-4 h-6"></p>
 
@@ -258,7 +260,39 @@
                     return null;
                 }
             }
-            
+            /**
+ * Borra **todos** los documentos de la colección 'students' (en artefactos/appId/public/data/students).
+ * Hace commits por lotes para evitar pasar el límite de 500 operaciones por batch.
+ * Devuelve el número total de documentos borrados o null si hubo error.
+ */
+async function deleteAllStudentsCollection() {
+    if (!db) {
+        console.warn('deleteAllStudentsCollection: Firestore no inicializado.');
+        return 0;
+    }
+    try {
+        const studentsRef = db.collection("artifacts").doc(appId).collection("public").doc("data").collection("students");
+        const snapshot = await studentsRef.get();
+        if (snapshot.empty) return 0;
+
+        const refs = snapshot.docs.map(d => d.ref);
+        const chunkSize = 450; // un poco por debajo del límite de 500
+        let totalDeleted = 0;
+        for (let i = 0; i < refs.length; i += chunkSize) {
+            const chunk = refs.slice(i, i + chunkSize);
+            const batch = db.batch();
+            chunk.forEach(r => batch.delete(r));
+            await batch.commit();
+            totalDeleted += chunk.length;
+            console.info(`deleteAllStudentsCollection: commit borrado chunk ${Math.floor(i/chunkSize) + 1} (${chunk.length} docs)`);
+        }
+        return totalDeleted;
+    } catch (e) {
+        console.error("deleteAllStudentsCollection ERROR:", e);
+        return null;
+    }
+}
+
             function updateSummary() {
                 const statuses = Object.values(appState.attendance);
                 document.getElementById('summary-diners').textContent = statuses.length;
@@ -641,6 +675,46 @@
                 document.getElementById('import-csv-btn-initial').addEventListener('click', () => dom.csvFileInput.click());
                 document.getElementById('import-csv-btn-dashboard').addEventListener('click', () => dom.csvFileInput.click());
                 dom.csvFileInput.addEventListener('change', (event) => {
+                    // Botón para borrar toda la colección de alumnos (solo admins — la UI ya oculta el botón si no lo eres)
+const wipeBtn = document.getElementById('wipe-db');
+if (wipeBtn) {
+    wipeBtn.addEventListener('click', async () => {
+        const confirmed = await showModal({
+            title: 'Borrar todos los alumnos',
+            text: 'Esta acción eliminará **todos** los alumnos registrados en la base de datos. ¿Deseas continuar? (esto es irreversible)',
+            showInput: false,
+            okText: 'Sí, borrar todo',
+            cancelText: 'Cancelar'
+        });
+        // showModal resuelve true si OK (tal como lo tienes implementado)
+        if (!confirmed) return;
+
+        const statusElements = [dom.importStatusInitial, dom.importStatusDashboard];
+        statusElements.forEach(el => el.textContent = 'Borrando todos los alumnos...');
+
+        try {
+            const deleted = await deleteAllStudentsCollection();
+            if (deleted === null) {
+                statusElements.forEach(el => el.textContent = '❌ Error al borrar la base de datos. Revisa la consola.');
+            } else {
+                statusElements.forEach(el => el.textContent = `✅ Se borraron ${deleted} alumnos.`);
+                // refrescar vista: vaciar estado local y recargar la vista actual si procede
+                appState.students = [];
+                appState.attendance = {};
+                updateSummary();
+                if (!dom.dashboard.classList.contains('hidden') && appState.currentShift) {
+                    renderCourses(appState.currentShift);
+                }
+            }
+        } catch (e) {
+            console.error("Error borrando toda la colección:", e);
+            statusElements.forEach(el => el.textContent = '❌ Error al borrar. Revisa la consola.');
+        }
+
+        setTimeout(() => statusElements.forEach(el => el.textContent = ''), 8000);
+    });
+}
+
     const file = event.target.files && event.target.files[0];
     // Si el usuario selecciona el mismo archivo dos veces, forzamos cambio para que vuelva a dispararse
     if (!file) return;
