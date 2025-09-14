@@ -1,32 +1,54 @@
-const CACHE_NAME = 'comedor-v1';
-const ASSETS_TO_CACHE = [
+const CACHE_NAME = 'comedor-cache-v3'; // Versión actualizada para forzar la actualización
+const urlsToCache = [
   '/',
   '/index.html',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
-  // añade aquí CSS/JS externos o rutas que quieras cachear
+  'https://cdn.tailwindcss.com',
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap',
+  'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
+  'https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js',
+  'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js',
+  '/manifest.json' // Añadido para asegurar que el manifiesto también se cachea
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE))
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('Opened cache and caching new assets');
+        return cache.addAll(urlsToCache);
+      })
   );
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-    ))
-  );
-  self.clients.claim();
+  self.skipWaiting(); // Forzar la activación del nuevo SW
 });
 
 self.addEventListener('fetch', event => {
-  // Estrategia: cache primero, fallback a network
   event.respondWith(
-    caches.match(event.request).then(resp => resp || fetch(event.request).catch(()=>caches.match('/')))
+    caches.match(event.request)
+      .then(response => {
+        if (response) {
+          return response; // Lo sirve desde la caché
+        }
+        return fetch(event.request); // Si no, lo busca en la red
+      }
+    )
   );
 });
+
+self.addEventListener('activate', event => {
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('Deleting old cache:', cacheName);
+            return caches.delete(cacheName); // Borra las cachés antiguas
+          }
+        })
+      );
+    })
+  );
+  return self.clients.claim(); // Tomar control inmediato de la página
+});
+
