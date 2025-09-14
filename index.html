@@ -773,43 +773,43 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('show-history-btn').addEventListener('click', showHistoryModal);
   document.getElementById('show-monthly-report-btn').addEventListener('click', () => { const now = new Date(); const year = now.getFullYear(); const month = (now.getMonth() + 1).toString().padStart(2, '0'); dom.reportMonthInput.value = `${year}-${month}`; dom.monthlyReportModal.classList.remove('hidden'); setTimeout(() => dom.monthlyReportModal.classList.remove('opacity-0'), 10); generateMonthlyReport(`${year}-${month}`); });
   dom.reportMonthInput.addEventListener('change', (e) => generateMonthlyReport(e.target.value));
-// Reemplaza el antiguo listener por este para imprimir sólo el informe
-document.getElementById('print-report-btn').addEventListener('click', async () => {
-  // Aseguramos mes seleccionado
-  let yearMonth = dom.reportMonthInput.value;
-  if (!yearMonth) {
-    const now = new Date();
-    yearMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-    dom.reportMonthInput.value = yearMonth;
+document.getElementById('print-report-btn').addEventListener('click', () => {
+  const reportContent = document.getElementById('monthly-report-container').innerHTML;
+  const printWindow = window.open('', '_blank');
+
+  if (!printWindow) {
+    alert("⚠️ Permite las ventanas emergentes para poder imprimir el informe.");
+    return;
   }
 
-  // Generamos el informe (se mostrará en modal y llenará dom.monthlyReportContent)
-  await generateMonthlyReport(yearMonth);
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Informe Mensual</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { text-align: center; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+          th { background-color: #f4f4f4; }
+        </style>
+      </head>
+      <body>
+        <h1>Informe Mensual</h1>
+        ${reportContent}
+      </body>
+    </html>
+  `);
 
-  // Tomamos HTML generado
-  const reportHtml = dom.monthlyReportContent.innerHTML;
+  printWindow.document.close();
 
-  // Abrimos nueva ventana con estilos mínimos (puedes añadir más estilos si los necesitas)
-  const win = window.open('', '_blank', 'noopener,width=1000,height=800');
-  if (!win) { alert('Permite ventanas emergentes para imprimir.'); return; }
-
-  const styles = `
-    <style>
-      body{ font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; padding:20px; color:#111; }
-      .report-wrapper{ max-width:1200px; margin:auto; }
-      .report-table{ width:100%; border-collapse:collapse; font-size:12px; }
-      .report-table th, .report-table td { border:1px solid #ddd; padding:6px; text-align:center; }
-      .report-table th:first-child, .report-table td:first-child { text-align:left; position:sticky; left:0; background:#fff; }
-      .attendance-mark { display:inline-block; width:20px; height:20px; background:#067a46; color:#fff; border-radius:50%; text-align:center; line-height:20px; font-weight:700; }
-      .course-header{ background:${getComputedStyle(document.documentElement).getPropertyValue('--brand') || '#8b0630'}; color:#fff; padding:8px; margin-bottom:8px;}
-      @media print { body{margin:0;} }
-    </style>
-  `;
-
-  win.document.open();
-  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Imprimir informe ${yearMonth}</title>${styles}</head><body><div class="report-wrapper">${reportHtml}</div><script>setTimeout(()=>{window.print(); setTimeout(()=>{window.close();},1000);},300);<\/script></body></html>`);
-  win.document.close();
+  // Dar un respiro para que cargue el contenido antes de imprimir
+  setTimeout(() => {
+    printWindow.print();
+    printWindow.close();
+  }, 300);
 });
+
 
   dom.closeHistoryBtn.addEventListener('click', () => { dom.historyModal.classList.add('opacity-0'); setTimeout(() => dom.historyModal.classList.add('hidden'), 300); });
   dom.historyStudentList.addEventListener('click', e => { const studentEl = e.target.closest('.history-student'); if (studentEl) { showStudentHistory(studentEl.dataset.studentId, studentEl.dataset.studentName); } });
