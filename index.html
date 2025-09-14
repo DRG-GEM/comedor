@@ -19,90 +19,127 @@
 <style>
 :root{
   --bg: #ffffff;
-  --paper: #fbfbfb;
+  --paper: #ffffff;
+  --surface: #f8fafc;     /* ligerísimo gris para listados */
   --text: #0f172a;
   --muted: #6b7280;
-  --brand: #8b0630; /* burdeos corporativo */
-  --accent: #19b4d6; /* turquesa */
-  --success: #10b981;
-  --danger: #ef4444;
+  --brand: #8b0630;       /* burdeos */
+  --brand-dark: #700424;
+  --accent: #19b4d6;
+  --success: #067a46;
+  --danger: #c92a2a;
   --card-border: rgba(15,23,42,0.06);
 }
 
-/* base */
+/* Base */
 body {
   font-family: 'Inter', sans-serif;
-  background-color: var(--bg);
+  background-color: #f6f7f9;
   color: var(--text);
-  line-height: 1.45;
-  -webkit-font-smoothing:antialiased;
   margin: 0;
-  padding: 0;
+  -webkit-font-smoothing:antialiased;
 }
 
-/* header */
+/* Header */
 header { padding: 1.25rem 0; }
-header .logo { width:56px; height:56px; border-radius:12px; background:var(--paper); display:flex; align-items:center; justify-content:center; box-shadow:0 6px 24px rgba(15,23,42,0.06); border:1px solid var(--card-border); }
+header .logo { width:56px; height:56px; border-radius:10px; background:white; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 20px rgba(15,23,42,0.04); border:1px solid var(--card-border); }
 
-/* headings */
+/* Headings */
 h1,h2,h3,h4 { color: var(--brand); font-weight:700; margin-bottom:.35rem; }
 
-/* buttons */
+/* Global buttons */
 button {
-  transition: transform .16s ease, box-shadow .16s ease;
+  transition: transform .12s ease, box-shadow .12s ease;
   border-radius: 10px;
   font-weight: 600;
   padding: .6rem .9rem;
-  box-shadow: 0 8px 30px rgba(15,23,42,0.04);
+  box-shadow: 0 6px 18px rgba(15,23,42,0.04);
   border: 1px solid transparent;
-  background: linear-gradient(180deg,var(--paper),#f6f6f6);
+  background: linear-gradient(180deg,#fff,#fbfbfb);
   color: var(--text);
+  cursor: pointer;
 }
-button.primary { background: linear-gradient(180deg,var(--brand),#700424); color:white; border-color:rgba(0,0,0,0.06); }
-button.ghost { background: transparent; border: 1px solid var(--card-border); color:var(--text); }
-button:hover { transform: translateY(-2px); }
+button.primary {
+  background: linear-gradient(180deg,var(--brand),var(--brand-dark));
+  color: #fff;
+  border-color: rgba(0,0,0,0.06);
+}
+button.ghost {
+  background: transparent;
+  border: 1px solid var(--card-border);
+  color:var(--text);
+}
 
-/* inputs */
+/* Make primary larger pill-buttons (use class 'large') */
+button.large {
+  padding: .9rem 1.4rem;
+  font-size: 1.05rem;
+  border-radius: 999px;
+  box-shadow: 0 12px 30px rgba(139,6,48,0.12);
+}
+
+/* Inputs */
 input, select {
-  background: var(--paper);
+  background: #fff;
   color: var(--text);
   border: 1px solid var(--card-border);
-  padding: .55rem .8rem;
+  padding: .6rem .85rem;
   border-radius: 10px;
 }
-input:focus, select:focus { outline:none; box-shadow:0 8px 24px rgba(25,180,214,0.12); border-color:var(--accent); }
+input:focus, select:focus { outline:none; box-shadow: 0 8px 24px rgba(25,180,214,0.10); border-color:var(--accent); }
 
-/* student card */
-.student-item {
-  background: var(--paper);
+/* Admin panel card (wrap) */
+.admin-panel {
+  background: white;
+  border-radius: 14px;
+  padding: 1.25rem;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 18px 40px rgba(15,23,42,0.04);
+}
+
+/* Courses container & course card */
+#courses-container { margin-top: 0.5rem; }
+.course-card {
+  background: white;
   border-radius: 12px;
-  padding: .8rem 1rem;
+  padding: 1rem;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 10px 30px rgba(15,23,42,0.03);
+  display:flex;
+  flex-direction:column;
+  gap: .75rem;
+}
+.course-card h3 { color:var(--brand); margin:0 0 .5rem 0; }
+
+/* Student items: much clearer contrast */
+.student-item {
+  background: var(--surface);
+  border-radius: 10px;
+  padding: .7rem .9rem;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:.75rem;
-  border:1px solid var(--card-border);
-  box-shadow:0 8px 24px rgba(15,23,42,0.03);
+  gap:.6rem;
+  border-left: 6px solid transparent;
+  border: 1px solid rgba(15,23,42,0.04);
 }
-.student-item .name { font-weight:600; color:var(--text); }
-.student-item.pending { border-left:6px solid #cbd5e1; }
-.student-item.present { border-left:6px solid var(--success); background: linear-gradient(180deg, rgba(16,185,129,0.04), transparent); }
-.student-item.absent { border-left:6px solid var(--danger); background: linear-gradient(180deg, rgba(239,68,68,0.04), transparent); text-decoration:line-through; }
+.student-item .name { font-weight:600; color:var(--text); font-size: 0.98rem; }
+.student-item.pending { border-left-color: #cbd5e1; background: #ffffff; }
+.student-item.present { border-left-color: var(--success); background: linear-gradient(90deg, rgba(6,122,70,0.04), #fff); box-shadow: 0 8px 20px rgba(6,122,70,0.04); }
+.student-item.absent { border-left-color: var(--danger); background: linear-gradient(90deg, rgba(201,42,42,0.04), #fff); opacity: .95; text-decoration: line-through; }
 
-/* absent control */
-.mark-absent-btn { width:38px; height:38px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; font-weight:700; }
+/* mark-absent control */
+.mark-absent-btn {
+  width:42px; height:42px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; font-weight:700;
+  border: 1px solid rgba(0,0,0,0.04);
+}
 
-/* summary cards */
-.summary-card { background:var(--paper); padding:1rem; border-radius:12px; border:1px solid var(--card-border); box-shadow:0 8px 24px rgba(15,23,42,0.04); }
+/* Summary cards */
+.summary-card { background: white; padding: .9rem; border-radius:12px; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.03); }
 
-/* report */
-.report-wrapper { background: var(--paper); border-radius:12px; padding:1rem; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.04); }
-
-/* course band */
-.report-course { margin-bottom:1rem; border-radius:8px; overflow:hidden; border:1px solid rgba(0,0,0,0.04); }
-.report-course .course-header { background: linear-gradient(90deg,var(--brand),#700424); color:#fff; padding:.6rem .9rem; font-weight:700; display:flex; justify-content:space-between; align-items:center; }
-
-/* table */
+/* Report (mantengo la mejora que te gustó) */
+.report-wrapper { background: white; border-radius:12px; padding:1rem; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.04); }
+.report-course .course-header { background: linear-gradient(90deg,var(--brand),var(--brand-dark)); color:#fff; padding:.6rem .9rem; font-weight:700; display:flex; justify-content:space-between; align-items:center; }
 .report-scroll { overflow:auto; -webkit-overflow-scrolling:touch; }
 .report-table { width:100%; border-collapse:collapse; font-size:13px; color:var(--text); }
 .report-table thead th { position: sticky; top:0; background: #fff; z-index:2; border-bottom:2px solid rgba(15,23,42,0.06); padding:.45rem .5rem; text-align:center; font-weight:600; }
@@ -112,14 +149,15 @@ input:focus, select:focus { outline:none; box-shadow:0 8px 24px rgba(25,180,214,
 .attendance-mark { width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; background:var(--success); color:#fff; border-radius:50%; font-weight:700; font-size:12px; }
 .report-table td.total { font-weight:700; color:var(--brand); }
 
-/* small screens adjustments */
+/* Small screens */
 @media (max-width:900px){
   .report-table th, .report-table td { padding:.25rem .35rem; font-size:11px; min-width:22px; }
+  /* stack admin controls vertically */
+  .admin-panel .controls { flex-direction: column; gap: .75rem; }
 }
 
 /* print */
 @media print {
-  :root { --bg:#fff; }
   body { background:#fff; color:#000; }
   .no-print { display:none !important; }
   .report-table thead th { background:#eee !important; -webkit-print-color-adjust:exact; }
@@ -127,6 +165,7 @@ input:focus, select:focus { outline:none; box-shadow:0 8px 24px rgba(25,180,214,
   .attendance-mark { background:#000 !important; color:#fff !important; -webkit-print-color-adjust:exact; }
 }
 </style>
+
 <!-- ===== end styles ===== -->
 </head>
 <body>
@@ -155,10 +194,11 @@ input:focus, select:focus { outline:none; box-shadow:0 8px 24px rgba(25,180,214,
       <!-- Selección de turno -->
       <div id="shift-selection" class="text-center">
         <h2 class="text-2xl font-bold mb-6 text-black">Elige un turno de comedor</h2>
-        <div id="shift-buttons" class="flex flex-wrap justify-center gap-4">
-          <button class="primary" data-shift="Primer Turno (Infantil)">Primer Turno (Infantil)</button>
-          <button class="primary" data-shift="Segundo Turno (Primaria)">Segundo Turno (Primaria)</button>
-        </div>
+        <div id="shift-buttons" class="flex flex-wrap justify-center gap-6">
+  <button class="primary large" data-shift="Primer Turno (Infantil)">Primer Turno (Infantil)</button>
+  <button class="primary large" data-shift="Segundo Turno (Primaria)">Segundo Turno (Primaria)</button>
+</div>
+
 
         <div class="mt-12 pt-8 border-t border-gray-100/50 admin-only max-w-3xl mx-auto">
           <h3 class="text-xl font-bold mb-6 text-black">Panel de Gestión</h3>
@@ -415,14 +455,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if(courses.length===0){ 
       dom.coursesContainer.innerHTML='<p class="text-center text-lg text-slate-500">No hay alumnos en este turno.</p>'; 
     }else{ 
-      courses.forEach(course=>{ 
-        const card = document.createElement('div'); 
-        card.className='bg-white rounded-xl p-4 shadow-sm flex flex-col'; 
-        const list = appState.students.filter(s=>s.course===course).map(createStudentElement).join(''); 
-        const sporadicBtn = userRole === 'user' ? `<button class="add-sporadic-btn mt-4 bg-purple-600 hover:bg-purple-500 text-white font-semibold py-2 px-4 rounded-lg w-full" data-course="${course}">+ Añadir Esporádico</button>` : ''; 
-        card.innerHTML=`<div class="flex-grow"><h3 class="text-xl font-bold text-${'' /* decorative placeholder */} mb-4">${course}</h3><div class="space-y-2" data-course-list="${course}">${list}</div></div>${sporadicBtn}`; 
-        dom.coursesContainer.appendChild(card); 
-      }); 
+      courses.forEach(course=>{
+  const card = document.createElement('div');
+  card.className = 'course-card';
+  const studentsInCourse = appState.students.filter(s => s.course === course);
+  const listHtml = studentsInCourse.map(createStudentElement).join('');
+  const sporadicBtn = userRole === 'user' ? `<button class="add-sporadic-btn mt-4 primary" data-course="${course}">+ Añadir Esporádico</button>` : '';
+  card.innerHTML = `<div class="flex-grow"><h3 class="text-xl font-bold mb-2">${course}</h3><div class="space-y-2" data-course-list="${course}">${listHtml}</div></div>${sporadicBtn}`;
+  dom.coursesContainer.appendChild(card);
+});
     } 
     updateSummary(); 
   }
