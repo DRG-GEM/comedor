@@ -15,26 +15,149 @@
 <link rel="apple-touch-icon" href="https://placehold.co/192x192/0f172a/FFFFFF?text=GDC">
 <link rel="manifest" href="/manifest.json">
 <style>
-body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
-.admin-only { display: none; }
-.user-only { display: none; }
-.student-item { transition: all 0.2s ease-in-out; border-left-width: 4px; }
-.student-item.pending { border-color: #4b5563; }
-.student-item.present { border-color: #10B981; background-color: #10B9811A; transform: scale(1.02); }
-.student-item.absent { border-color: #F43F5E; background-color: #F43F5E1A; text-decoration: line-through; opacity: 0.7; }
-#history-modal, #monthly-report-modal { transition: opacity 0.3s ease; }
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #0f172a;
+  color: #f1f5f9;
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4 {
+  color: #38bdf8;
+  font-weight: 700;
+  margin-bottom: 0.5em;
+}
+
+button {
+  transition: all 0.2s ease-in-out;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+button:hover {
+  transform: scale(1.03);
+  opacity: 0.95;
+}
+
+input, select {
+  background-color: #1e293b;
+  color: white;
+  border: 1px solid #334155;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px #38bdf880;
+}
+
+.student-item {
+  transition: all 0.2s ease-in-out;
+  border-left-width: 4px;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background-color: #1e293b;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.student-item.pending {
+  border-color: #64748b;
+}
+
+.student-item.present {
+  border-color: #10b981;
+  background-color: rgba(16, 185, 129, 0.1);
+  transform: scale(1.02);
+}
+
+.student-item.absent {
+  border-color: #f43f5e;
+  background-color: rgba(244, 63, 94, 0.1);
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.mark-absent-btn {
+  background-color: #f43f5e;
+  color: white;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.mark-absent-btn:hover {
+  background-color: #fb7185;
+}
+
+#history-modal,
+#monthly-report-modal {
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(6px);
+}
 
 @media print {
-  body * { visibility: hidden; }
-  .printable-area, .printable-area * { visibility: visible; }
-  .printable-area { position: absolute; left: 0; top: 0; width: 100%; color: black !important; }
-  .no-print, .no-print * { display: none !important; }
-  table { width: 100%; border-collapse: collapse; font-size: 9px; }
-  th, td { border: 1px solid #ccc; padding: 4px; text-align: center; }
-  th:first-child, td:first-child { text-align: left; }
-  .attendance-mark { background-color: #10B981 !important; color: #10B981 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border-radius: 50%; }
-  h2, h3 { color: black !important; margin-top: 20px; }
+  body * {
+    visibility: hidden;
+  }
+
+  .printable-area,
+  .printable-area * {
+    visibility: visible;
+  }
+
+  .printable-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    color: black !important;
+  }
+
+  .no-print,
+  .no-print * {
+    display: none !important;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+  }
+
+  th, td {
+    border: 1px solid #ccc;
+    padding: 4px;
+    text-align: center;
+  }
+
+  th:first-child, td:first-child {
+    text-align: left;
+  }
+
+  .attendance-mark {
+    background-color: #10b981 !important;
+    color: #10b981 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    border-radius: 50%;
+  }
+
+  h2, h3 {
+    color: black !important;
+    margin-top: 20px;
+  }
 }
+
 </style>
 </head>
 <body class="bg-slate-900 text-slate-200 antialiased">
@@ -116,8 +239,8 @@ body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
 <input type="file" id="csv-file-input" class="hidden" accept=".csv">
 
 <!-- History Modal -->
-<div id="history-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden opacity-0 z-40">
-    <div class="bg-slate-800 rounded-lg shadow-xl w-full max-w-4xl h-full max-h-[90vh] flex flex-col border border-slate-700">
+<div id="history-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 z-40">
+    <div class="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl h-full max-h-[90vh] flex flex-col border border-slate-700 overflow-hidden">
         <header class="p-4 border-b border-slate-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-teal-300">Historial de Asistencia</h2>
             <button id="close-history-btn" class="text-3xl font-bold hover:text-red-500">&times;</button>
@@ -136,8 +259,8 @@ body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
 </div>
 
 <!-- Monthly Report Modal -->
-<div id="monthly-report-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden opacity-0 z-40">
-    <div class="bg-slate-800 rounded-lg shadow-xl w-full max-w-7xl h-full max-h-[95vh] flex flex-col border border-slate-700">
+<div id="monthly-report-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 z-40">
+    <div class="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl h-full max-h-[90vh] flex flex-col border border-slate-700 overflow-hidden">
         <header class="p-4 border-b border-slate-700 flex justify-between items-center no-print">
             <h2 class="text-2xl font-bold text-teal-300">Informe de Asistencia Mensual</h2>
             <div class="flex items-center gap-4">
