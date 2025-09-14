@@ -198,7 +198,11 @@ button.ghost {
 }
 .student-item .name { font-weight:600; color:var(--text); font-size: 0.98rem; }
 .student-item.pending { border-left-color: #cbd5e1; background: #ffffff; }
-.student-item.present { border-left-color: var(--success); background: linear-gradient(90deg, rgba(6,122,70,0.04), #fff); box-shadow: 0 8px 20px rgba(6,122,70,0.04); }
+.student-item.present { 
+  border-left-color: var(--success); 
+  background-color: #f0fdf4; /* Light green background */
+  box-shadow: 0 8px 20px rgba(6,122,70,0.04); 
+}
 .student-item.absent { border-left-color: var(--danger); background: linear-gradient(90deg, rgba(201,42,42,0.04), #fff); opacity: .95; text-decoration: line-through; }
 
 /* mark-absent control */
@@ -210,7 +214,7 @@ button.ghost {
 /* Summary cards */
 .summary-card { background: white; padding: .9rem; border-radius:12px; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.03); }
 
-/* Report (mantengo la mejora que te gustó) */
+/* Report */
 .report-wrapper { background: white; border-radius:12px; padding:1rem; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.04); }
 .report-course .course-header { background: linear-gradient(90deg,var(--brand),var(--brand-dark)); color:#fff; padding:.6rem .9rem; font-weight:700; display:flex; justify-content:space-between; align-items:center; }
 .report-scroll { overflow:auto; -webkit-overflow-scrolling:touch; }
@@ -231,10 +235,10 @@ button.ghost {
 
 /* print */
 @media print {
-  body { background:#fff; color:#000; }
-  .no-print { display:none !important; }
+  body * { visibility: hidden; }
   .printable-area, .printable-area * { visibility: visible; }
   .printable-area { position: absolute; left: 0; top: 0; width: 100%; }
+  body { background:#fff; color:#000; }
   .report-table thead th { background:#eee !important; -webkit-print-color-adjust:exact; }
   .report-table td, .report-table th { border:1px solid #ccc !important; }
   .attendance-mark { background:var(--success) !important; color:#fff !important; -webkit-print-color-adjust:exact; }
@@ -249,10 +253,13 @@ button.ghost {
 <div id="app" class="container mx-auto p-4 md:p-8 max-w-7xl">
   <header class="text-center mb-10">
     <div class="flex justify-between items-center">
-        <div class="logo"><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><rect fill='%23ffffff' width='48' height='48' rx='8'/><text x='50%' y='55%' font-size='18' text-anchor='middle' fill='%238b0630' font-family='Inter'>CEVP</text></svg>" alt="logo" style="width:44px;height:44px;border-radius:8px;"></div>
-        <h1 class="text-4xl font-extrabold text-black">Gestor de Comedor</h1>
+        <div class="w-14"></div> <!-- Espaciador izquierdo -->
+        <div class="flex flex-col items-center">
+            <div class="logo"><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><rect fill='%23ffffff' width='48' height='48' rx='8'/><text x='50%' y='55%' font-size='18' text-anchor='middle' fill='%238b0630' font-family='Inter'>CEVP</text></svg>" alt="logo" style="width:44px;height:44px;border-radius:8px;"></div>
+            <h1 class="text-4xl font-extrabold text-black mt-2">Gestor de Comedor</h1>
+        </div>
         <div id="auth-controls" class="w-14">
-            <button id="logout-btn" class="hidden ghost p-2">
+            <button id="logout-btn" class="hidden ghost p-2" title="Cerrar Sesión">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
             </button>
         </div>
@@ -353,7 +360,7 @@ button.ghost {
 </div>
 
 <!-- Monthly Report Modal -->
-<div id="monthly-report-modal" class="fixed inset-0 bg-black/10 flex items-center justify-center p-4 hidden opacity-0 z-40 no-print">
+<div id="monthly-report-modal" class="fixed inset-0 bg-black/10 flex items-center justify-center p-4 hidden opacity-0 z-40">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-full max-h-[90vh] flex flex-col border border-gray-100 overflow-hidden">
         <header class="p-4 border-b border-gray-100 flex justify-between items-center no-print">
             <h2 class="text-2xl font-bold" style="color:var(--brand)">Informe de Asistencia Mensual</h2>
@@ -363,7 +370,7 @@ button.ghost {
                 <button id="close-report-btn" class="text-3xl font-bold hover:text-red-500">&times;</button>
             </div>
         </header>
-        <div id="monthly-report-content" class="p-6 flex-grow overflow-y-auto printable-area">
+        <div id="monthly-report-content" class="p-6 flex-grow overflow-y-auto">
             <p class="text-center text-muted">Selecciona un mes para generar el informe.</p>
         </div>
     </div>
@@ -417,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
     monthlyReportContent: document.getElementById('monthly-report-content'),
     reportMonthInput: document.getElementById('report-month-input'),
     logoutBtn: document.getElementById('logout-btn'),
-    closeReportBtn: document.getElementById('close-report-btn') // <-- Añadido el botón que faltaba
+    closeReportBtn: document.getElementById('close-report-btn')
   };
 
   /* ---------------- UI visibility ---------------- */
@@ -426,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.app.classList.remove('opacity-0');
     dom.adminLoginView.classList.add('hidden');
     dom.mainContent.classList.add('hidden');
-    dom.logoutBtn.classList.add('hidden'); // Ocultar por defecto
+    dom.logoutBtn.classList.add('hidden');
 
     if (userRole === 'admin') {
         dom.mainContent.classList.remove('hidden');
@@ -434,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.user-only').forEach(el => el.style.display = 'none');
         const user = auth.currentUser;
         dom.roleDisplay.textContent = user ? `Admin: ${user.displayName || 'Usuario'}` : 'Admin';
-        dom.logoutBtn.classList.remove('hidden'); // Mostrar botón de logout para admin
+        dom.logoutBtn.classList.remove('hidden');
     } else if (userRole === 'user') {
         dom.mainContent.classList.remove('hidden');
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
@@ -476,60 +483,19 @@ document.addEventListener('DOMContentLoaded', () => {
     studentDiv.dataset.studentId = s.id;
     studentDiv.dataset.studentName = s.name;
     studentDiv.innerHTML = `<span class="name">${s.name}</span><button class="mark-absent-btn bg-rose-500/50 hover:bg-rose-500 text-white font-bold" title="Marcar ausente">&times;</button>`;
-    
-    // Asignar estado inicial
     const state = appState.attendance[s.id] || 'pending';
     studentDiv.classList.add(state);
-    
     return studentDiv.outerHTML;
   }
-  async function renderCourses(shift) { appState.currentShift = shift; dom.shiftSelection.classList.add('hidden'); dom.dashboard.classList.remove('hidden'); dom.coursesContainer.innerHTML = '<p class="text-center text-lg">Cargando alumnos...</p>'; appState.students = await fetchStudents(shift); const today = new Date().toISOString().slice(0,10); const attendance = await fetchAttendanceByDate(today); appState.attendance = {}; appState.students.forEach(s=>appState.attendance[s.id]=attendance[s.id]||'pending'); dom.coursesContainer.innerHTML = ''; const courses = [...new Set(appState.students.map(s=>s.course))].sort(); if(courses.length===0){ dom.coursesContainer.innerHTML='<p class="text-center text-lg text-slate-500">No hay alumnos en este turno.</p>'; }else{ courses.forEach(course=>{ const card = document.createElement('div'); card.className = 'course-card'; const studentsInCourse = appState.students.filter(s => s.course === course); const listHtml = studentsInCourse.map(createStudentElement).join(''); const sporadicBtn = userRole === 'user' ? `<button class="add-sporadic-btn mt-4 primary" data-course="${course}">+ Añadir Esporádico</button>` : ''; card.innerHTML = `<div class="flex-grow"><h3 class="text-xl font-bold mb-2">${course}</h3><div class="space-y-2" data-course-list="${course}">${listHtml}</div></div>${sporadicBtn}`; dom.coursesContainer.appendChild(card); }); } updateSummary(); }
+  async function renderCourses(shift) { appState.currentShift = shift; dom.shiftSelection.classList.add('hidden'); dom.dashboard.classList.remove('hidden'); dom.coursesContainer.innerHTML = '<p class="text-center text-lg">Cargando alumnos...</p>'; appState.students = await fetchStudents(shift); const today = new Date().toISOString().slice(0,10); const attendance = await fetchAttendanceByDate(today); appState.attendance = {}; appState.students.forEach(s=>appState.attendance[s.id]=attendance[s.id]||'pending'); dom.coursesContainer.innerHTML = ''; const courses = [...new Set(appState.students.map(s=>s.course))].sort(); if(courses.length===0){ dom.coursesContainer.innerHTML='<p class="text-center text-lg text-slate-500">No hay alumnos en este turno.</p>'; }else{ courses.forEach(course=>{ const card = document.createElement('div'); card.className = 'course-card'; const studentsInCourse = appState.students.filter(s => s.course === course).sort((a,b) => a.name.localeCompare(b.name)); const listHtml = studentsInCourse.map(createStudentElement).join(''); const sporadicBtn = userRole === 'user' ? `<button class="add-sporadic-btn mt-4 primary" data-course="${course}">+ Añadir Esporádico</button>` : ''; card.innerHTML = `<div class="flex-grow"><h3 class="text-xl font-bold mb-2">${course}</h3><div class="space-y-2" data-course-list="${course}">${listHtml}</div></div>${sporadicBtn}`; dom.coursesContainer.appendChild(card); }); } updateSummary(); }
 
-  /* ---------------- CSV Import (mejorado y robusto) ---------------- */
-  function handleCsvImport(file){
-    if(!file) return;
-    dom.importStatusInitial.textContent = 'Procesando archivo...';
-    Papa.parse(file,{
-      header:true,
-      skipEmptyLines:true,
-      complete: async (results)=>{
-        try {
-          const headers = (results.meta.fields || []).map(h => (h||'').toLowerCase().trim());
-          if(!headers.includes('nombre') || !headers.includes('curso') || !(headers.includes('turno') || headers.includes('shift'))){
-            dom.importStatusInitial.textContent = 'Error: CSV debe tener columnas "nombre", "curso" y "turno" (o "shift")';
-            return;
-          }
-          await deleteAllStudents();
-          const studentsToImport = results.data.map(r => {
-            const rawShift = (r.turno || r.shift || '').toString();
-            const cleanedShift = rawShift.replace(/\u00A0/g,' ').trim();
-            let shiftNormalized = cleanedShift;
-            if (/primer/i.test(cleanedShift)) shiftNormalized = 'Primer Turno (Infantil)';
-            else if (/segund/i.test(cleanedShift)) shiftNormalized = 'Segundo Turno (Primaria)';
-            return { name: r.nombre ? r.nombre.trim() : '', course: r.curso ? r.curso.trim() : '', shift: shiftNormalized };
-          });
-          await addStudentBatch(studentsToImport);
-          dom.importStatusInitial.textContent = 'Importación completa ✅';
-          if (appState.currentShift) renderCourses(appState.currentShift);
-        } catch (err) {
-          console.error('Import error', err);
-          dom.importStatusInitial.textContent = 'Error al procesar CSV. Mira la consola.';
-        } finally {
-          setTimeout(()=>dom.importStatusInitial.textContent = '', 7000);
-        }
-      },
-      error: err=>{
-        console.error('PapaParse error', err);
-        dom.importStatusInitial.textContent = 'Error leyendo el archivo CSV';
-        setTimeout(()=>dom.importStatusInitial.textContent = '', 5000);
-      }
-    });
-  }
-
+  /* ---------------- CSV Import ---------------- */
+  function handleCsvImport(file){ if(!file) return; dom.importStatusInitial.textContent = 'Procesando archivo...'; Papa.parse(file,{ header:true, skipEmptyLines:true, complete: async (results)=>{ try { const headers = (results.meta.fields || []).map(h => (h||'').toLowerCase().trim()); if(!headers.includes('nombre') || !headers.includes('curso') || !(headers.includes('turno') || headers.includes('shift'))){ dom.importStatusInitial.textContent = 'Error: CSV debe tener columnas "nombre", "curso" y "turno" (o "shift")'; return; } await deleteAllStudents(); const studentsToImport = results.data.map(r => { const rawShift = (r.turno || r.shift || '').toString(); const cleanedShift = rawShift.replace(/\u00A0/g,' ').trim(); let shiftNormalized = cleanedShift; if (/primer/i.test(cleanedShift)) shiftNormalized = 'Primer Turno (Infantil)'; else if (/segund/i.test(cleanedShift)) shiftNormalized = 'Segundo Turno (Primaria)'; return { name: r.nombre ? r.nombre.trim() : '', course: r.curso ? r.curso.trim() : '', shift: shiftNormalized }; }); await addStudentBatch(studentsToImport); dom.importStatusInitial.textContent = 'Importación completa ✅'; if (appState.currentShift) renderCourses(appState.currentShift); } catch (err) { console.error('Import error', err); dom.importStatusInitial.textContent = 'Error al procesar CSV. Mira la consola.'; } finally { setTimeout(()=>dom.importStatusInitial.textContent = '', 7000); } }, error: err=>{ console.error('PapaParse error', err); dom.importStatusInitial.textContent = 'Error leyendo el archivo CSV'; setTimeout(()=>dom.importStatusInitial.textContent = '', 5000); } }); }
+  
   /* ---------------- Export CSV full day ---------------- */
   async function exportFullDayCsv(dateStr){ const allStudents = await fetchStudents(null); const attendance = await fetchAttendanceByDate(dateStr); const rows = allStudents.map(s=>{ const state = attendance[s.id]||'pending'; return {Fecha:dateStr, Turno:s.shift, Nombre:s.name, Curso:s.course, Estado:state}; }); rows.sort((a,b) => a.Turno.localeCompare(b.Turno) || a.Curso.localeCompare(b.Curso) || a.Nombre.localeCompare(b.Nombre)); const csv = Papa.unparse(rows); const blob = new Blob([`\uFEFF${csv}`],{type:'text/csv;charset=utf-8;'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=`asistencia_completa_${dateStr}.csv`; a.click(); URL.revokeObjectURL(url); }
   
-  /* ---------------- Sporadic, finalize, etc (sin cambios lógicos) ---------------- */
+  /* ---------------- Sporadic, finalize, etc ---------------- */
   function addSporadicStudent(course) { const name = prompt(`Nombre del alumno esporádico para ${course}:`); if (name && name.trim()) { const student = { id: `sporadic_${Date.now()}`, name: `${name.trim()} (Esporádico)`, course: course }; appState.students.push(student); appState.attendance[student.id] = 'pending'; const listContainer = document.querySelector(`[data-course-list="${course}"]`); if (listContainer) { listContainer.insertAdjacentHTML('beforeend', createStudentElement(student)); } updateSummary(); } }
   async function finalizeShift() { if (!confirm("¿Seguro que quieres finalizar el turno? Todos los alumnos pendientes pasarán a estar ausentes.")) { return; } const today = new Date().toISOString().slice(0, 10); const studentsToMarkAbsent = []; for (const studentId in appState.attendance) { if (appState.attendance[studentId] === 'pending') { studentsToMarkAbsent.push(studentId); appState.attendance[studentId] = 'absent'; const studentDiv = document.getElementById(studentId); if (studentDiv) { studentDiv.classList.remove('pending','present','absent'); studentDiv.classList.add('absent'); } } } await logBatchAttendance(studentsToMarkAbsent, today, 'absent'); updateSummary(); }
 
@@ -537,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function showHistoryModal() { dom.historyModal.classList.remove('hidden'); setTimeout(() => dom.historyModal.classList.remove('opacity-0'), 10); dom.historyStudentList.innerHTML = '<p>Cargando alumnos...</p>'; try { const allStudents = await fetchStudents(null); allStudents.sort((a, b) => a.name.localeCompare(b.name)); if (allStudents.length > 0) { dom.historyStudentList.innerHTML = allStudents.map(s => `<div class="p-2 hover:bg-gray-50 cursor-pointer rounded-md history-student" data-student-id="${s.id}" data-student-name="${s.name}"><p class="font-semibold">${s.name}</p><p class="text-sm text-muted">${s.shift} - ${s.course}</p></div>`).join(''); } else { dom.historyStudentList.innerHTML = '<p>No hay alumnos registrados.</p>'; } } catch(e) { console.error("Error fetching students for history", e); dom.historyStudentList.innerHTML = '<p class="text-red-500">Error al cargar alumnos.</p>'; } dom.historyStudentName.textContent = 'Selecciona un alumno'; dom.historyDatesList.innerHTML = ''; }
   async function showStudentHistory(studentId, studentName) { dom.historyStudentName.textContent = `Historial de: ${studentName}`; dom.historyDatesList.innerHTML = '<p>Buscando fechas...</p>'; try { const snapshot = await db.collection("attendance").where("studentId", "==", studentId).get(); const dates = snapshot.docs.map(doc => doc.data().date).sort().reverse(); if (dates.length > 0) { dom.historyDatesList.innerHTML = `<ul class="space-y-1 text-left">${dates.map(d => `<li class="bg-gray-50 p-2 rounded">${new Date(d + 'T00:00:00').toLocaleDateString('es-ES', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}</li>`).join('')}</ul>`; } else { dom.historyDatesList.innerHTML = '<p>Este alumno no tiene registros de asistencia.</p>'; } } catch(e) { console.error("Error fetching student history", e); dom.historyDatesList.innerHTML = '<p class="text-red-500">Error al buscar las fechas.</p>'; } }
 
-  /* ---------------- Monthly report (mejorada) ---------------- */
+  /* ---------------- Monthly report ---------------- */
   async function generateMonthlyReport(yearMonth) {
     dom.monthlyReportContent.innerHTML = '<div class="text-center text-muted">Generando informe, por favor espera...</div>';
     if (!yearMonth) { dom.monthlyReportContent.innerHTML = '<div class="text-center text-amber-400">Por favor, selecciona un mes.</div>'; return; }
@@ -549,15 +515,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const attendanceData = await fetchAttendanceByMonth(yearMonth);
     const daysInMonth = new Date(year, month, 0).getDate();
     const studentsByCourse = allStudents.reduce((acc, s) => { (acc[s.course] = acc[s.course] || []).push(s); return acc; }, {});
-    let html = `<h2 class="text-3xl font-bold text-center mb-4">${monthName.charAt(0).toUpperCase()+monthName.slice(1)} ${year}</h2>`;
+    let html = `<h2 class="text-3xl font-bold text-center mb-4 no-print">${monthName.charAt(0).toUpperCase()+monthName.slice(1)} ${year}</h2>`;
     const sortedCourses = Object.keys(studentsByCourse).sort((a,b)=> a.localeCompare(b));
     for (const course of sortedCourses) {
       const students = studentsByCourse[course].sort((a,b)=> a.name.localeCompare(b.name));
       html += `<div class="report-course mt-6"><div class="course-header"><div>${course} — ${students.length} alumno${students.length>1?'s':''}</div><div class="text-sm text-white/90">Días: ${daysInMonth}</div></div>`;
-      html += `<div class="report-scroll p-4"><table class="report-table"><thead><tr><th>Alumno</th>`;
+      html += `<div class="report-scroll"><table class="report-table"><thead><tr><th>Alumno</th>`;
       for (let d=1; d<=daysInMonth; d++) html += `<th title="${d}">${d}</th>`;
       html += `<th>Total</th></tr></thead><tbody>`;
-      students.forEach((student, index) => {
+      students.forEach((student) => {
         const attended = attendanceData.get(student.id) || new Set();
         html += `<tr><td style="white-space:nowrap;padding-left:.5rem;">${student.name}</td>`;
         for (let d=1; d<=daysInMonth; d++) {
@@ -575,14 +541,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const hash = window.location.hash; 
     const user = auth.currentUser; 
     const isRealUser = user && !user.isAnonymous; 
-    if (hash === '#admin') { 
-      if (isRealUser) { setUIVisibility('admin'); } else { setUIVisibility('login'); } 
+    if (isRealUser) {
+        setUIVisibility('admin');
+    } else if (hash === '#admin') { 
+        setUIVisibility('login'); 
     } else { 
-        if (isRealUser) { // Si hay un usuario real, es admin, no puede ser user
-            setUIVisibility('admin');
-        } else {
-            setUIVisibility('user');
-        }
+        setUIVisibility('user'); 
     } 
   }
 
@@ -591,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
   handleRouting();
 
   document.getElementById('login-admin-btn').addEventListener('click', () => { auth.signInWithPopup(googleProvider).catch(error => { console.error("Google Sign-In Error:", error); alert("No se pudo iniciar sesión con Google."); }); });
-  dom.logoutBtn.addEventListener('click', () => { auth.signOut(); });
+  dom.logoutBtn.addEventListener('click', () => { auth.signOut().then(() => { window.location.hash = ''; }); });
   
   document.querySelectorAll('#shift-buttons button').forEach(btn=>{ btn.addEventListener('click', ()=>renderCourses(btn.dataset.shift)); });
   dom.csvFileInput.addEventListener('change', e=>handleCsvImport(e.target.files[0]));
@@ -622,10 +586,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!studentDiv) return;
     const studentId = studentDiv.dataset.studentId;
     let newState;
+    const currentState = appState.attendance[studentId];
     if(e.target.classList.contains('mark-absent-btn')){
-      newState = appState.attendance[studentId] === 'absent' ? 'pending' : 'absent';
+      newState = currentState === 'absent' ? 'pending' : 'absent';
     } else {
-      newState = appState.attendance[studentId] === 'present' ? 'pending' : 'present';
+      newState = currentState === 'present' ? 'pending' : 'present';
     }
     appState.attendance[studentId] = newState;
     studentDiv.classList.remove('pending','present','absent');
