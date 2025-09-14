@@ -773,43 +773,73 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('show-history-btn').addEventListener('click', showHistoryModal);
   document.getElementById('show-monthly-report-btn').addEventListener('click', () => { const now = new Date(); const year = now.getFullYear(); const month = (now.getMonth() + 1).toString().padStart(2, '0'); dom.reportMonthInput.value = `${year}-${month}`; dom.monthlyReportModal.classList.remove('hidden'); setTimeout(() => dom.monthlyReportModal.classList.remove('opacity-0'), 10); generateMonthlyReport(`${year}-${month}`); });
   dom.reportMonthInput.addEventListener('change', (e) => generateMonthlyReport(e.target.value));
-document.getElementById('print-report-btn').addEventListener('click', () => {
-  const reportContent = document.getElementById('monthly-report-container').innerHTML;
-  const printWindow = window.open('', '_blank');
+// Reemplaza el antiguo listener de imprimir por este bloque completo
+document.getElementById('print-report-btn').addEventListener('click', async () => {
+  try {
+    // 1) Asegurar que hay un mes seleccionado; si no, tomar el mes actual
+    let yearMonth = dom.reportMonthInput.value;
+    if (!yearMonth) {
+      const now = new Date();
+      yearMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+      dom.reportMonthInput.value = yearMonth;
+    }
 
-  if (!printWindow) {
-    alert("⚠️ Permite las ventanas emergentes para poder imprimir el informe.");
-    return;
+    // 2) Generar el informe si no está ya generado
+    // generateMonthlyReport rellena dom.monthlyReportContent con el HTML del informe
+    await generateMonthlyReport(yearMonth);
+
+    // 3) Esperar hasta que el contenido esté presente (máx ~3s)
+    const maxWait = 3000;
+    const start = Date.now();
+    function contentReady() {
+      const html = dom.monthlyReportContent && dom.monthlyReportContent.innerHTML.trim();
+      return !!html && html.length > 50; // umbral sencillo
+    }
+    while (!contentReady() && (Date.now() - start) < maxWait) {
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise(r => setTimeout(r, 120));
+    }
+    if (!contentReady()) {
+      console.error('Imprimir: el contenido del informe no se generó antes de abrir la ventana.');
+      alert('No se ha podido generar el informe para imprimir. Revisa la consola.');
+      return;
+    }
+
+    // 4) Toma el HTML del informe
+    const reportHtml = dom.monthlyReportContent.innerHTML;
+
+    // 5) Abre ventana nueva y escribe contenido seguro
+    const printWin = window.open('', '_blank', 'noopener,width=1000,height=800');
+    if (!printWin) {
+      alert('Permite ventanas emergentes (popups) para poder imprimir el informe.');
+      return;
+    }
+
+    const inlineStyles = `
+      <style>
+        html,body{font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; color:#111; margin:0; padding:18px;}
+        .report-wrapper{ max-width:1200px; margin:0 auto; }
+        .course-header{ background: #8b0630; color:#fff; padding:8px 12px; border-radius:6px; margin-bottom:8px; font-weight:700; }
+        table{ width:100%; border-collapse:collapse; font-size:12px; margin-bottom:18px; }
+        th,td{ border:1px solid #ddd; padding:6px; text-align:center; }
+        th:first-child, td:first-child{ text-align:left; position:sticky; left:0; background:#fff; }
+        .attendance-mark { display:inline-block; width:20px; height:20px; background:#067a46; color:#fff; border-radius:50%; text-align:center; line-height:20px; font-weight:700; }
+        @media print { body{ margin:0; } }
+      </style>
+    `;
+
+    // 6) Escribir y cerrar documento en la ventana
+    printWin.document.open();
+    printWin.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Informe ${yearMonth}</title>${inlineStyles}</head><body><div class="report-wrapper">${reportHtml}</div><script>window.onload=function(){ setTimeout(()=>{ try{ window.focus(); window.print(); }catch(e){ console.error('print error',e); } setTimeout(()=>window.close(),700); },250); }<\/script></body></html>`);
+    printWin.document.close();
+
+    // 7) Fallback: si la ventana no llama a print (por bloqueo), avisamos en consola
+    console.log('Imprimir: ventana abierta con informe. Debería aparecer diálogo de impresión.');
+  } catch (err) {
+    console.error('Error en el handler de imprimir:', err);
+    alert('Ha ocurrido un error al intentar imprimir. Mira la consola para más detalles.');
   }
-
-  printWindow.document.write(`
-    <html>
-      <head>
-        <title>Informe Mensual</title>
-        <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          h1 { text-align: center; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-          th { background-color: #f4f4f4; }
-        </style>
-      </head>
-      <body>
-        <h1>Informe Mensual</h1>
-        ${reportContent}
-      </body>
-    </html>
-  `);
-
-  printWindow.document.close();
-
-  // Dar un respiro para que cargue el contenido antes de imprimir
-  setTimeout(() => {
-    printWindow.print();
-    printWindow.close();
-  }, 300);
 });
-
 
   dom.closeHistoryBtn.addEventListener('click', () => { dom.historyModal.classList.add('opacity-0'); setTimeout(() => dom.historyModal.classList.add('hidden'), 300); });
   dom.historyStudentList.addEventListener('click', e => { const studentEl = e.target.closest('.history-student'); if (studentEl) { showStudentHistory(studentEl.dataset.studentId, studentEl.dataset.studentName); } });
