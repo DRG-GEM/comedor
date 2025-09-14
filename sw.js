@@ -1,4 +1,4 @@
-const CACHE_NAME = 'comedor-cache-v3'; // Versión actualizada para forzar la actualización
+const CACHE_NAME = 'comedor-cache-v4'; // Versión actualizada para forzar la actualización
 const urlsToCache = [
   '/',
   '/index.html',
