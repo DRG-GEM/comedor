@@ -87,6 +87,78 @@ input, select {
   border-radius: 10px;
 }
 input:focus, select:focus { outline:none; box-shadow: 0 8px 24px rgba(25,180,214,0.10); border-color:var(--accent); }
+/* ---------- Admin panel: diseño mejorado ---------- */
+.admin-panel {
+  background: linear-gradient(180deg,#ffffff,#fbfcfd);
+  border-radius: 16px;
+  padding: 1.4rem;
+  border: 1px solid rgba(15,23,42,0.04);
+  box-shadow: 0 18px 40px rgba(15,23,42,0.04);
+}
+
+/* Controles: dos columnas en desktop, 1 en móvil */
+.admin-panel .controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: center;
+  justify-items: center;
+  margin-top: 0.75rem;
+}
+@media (max-width:900px){
+  .admin-panel .controls { grid-template-columns: 1fr; }
+}
+
+/* Grupo de botones (zona superior) */
+.admin-panel .btn-row {
+  display:flex;
+  gap:1rem;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+
+/* Destacar boton principal (import) */
+button.primary {
+  padding: .75rem 1.2rem;
+  border-radius: 999px;
+  font-size: 1.02rem;
+  letter-spacing: .2px;
+}
+
+/* Aclarar apariencia del segundo boton */
+button.ghost {
+  padding: .6rem .95rem;
+  background: #ffffff;
+  border: 1px solid rgba(15,23,42,0.04);
+  box-shadow: 0 6px 18px rgba(15,23,42,0.03);
+}
+
+/* Sección de exportación — centrada y espaciada */
+.admin-panel .export-row {
+  display:flex;
+  gap:1rem;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-top: .75rem;
+}
+
+/* Fecha + boton export: apariencia consistente */
+#export-date-input {
+  padding: .6rem .8rem;
+  border-radius: 10px;
+  border: 1px solid rgba(15,23,42,0.06);
+  background: #fff;
+}
+
+/* Mensajes */
+#import-status-initial, #import-status-dashboard {
+  margin-top:.6rem;
+  color: #059669;
+  min-height:1rem;
+  text-align:center;
+}
 
 /* Admin panel card (wrap) */
 .admin-panel {
@@ -200,29 +272,38 @@ input:focus, select:focus { outline:none; box-shadow: 0 8px 24px rgba(25,180,214
 </div>
 
 
-        <div class="mt-12 pt-8 border-t border-gray-100/50 admin-only max-w-3xl mx-auto">
-          <h3 class="text-xl font-bold mb-6 text-black">Panel de Gestión</h3>
-          <div class="bg-white p-6 rounded-2xl shadow-sm">
-              <h4 class="text-lg font-semibold mb-4 text-slate-700">Gestión de Datos</h4>
-              <div class="flex flex-col md:flex-row gap-4 justify-center">
-                  <button id="import-csv-btn-initial" class="primary">📤 <span>Importar Alumnos (CSV)</span></button>
-                  <button id="wipe-db" class="ghost">🗑️ <span>Borrar todos los alumnos</span></button>
-              </div>
-              <p id="import-status-initial" class="text-green-500 mt-4 h-6"></p>
+        <!-- Panel de Gestión (sustituye la sección admin existente por esto) -->
+<div class="mt-12 pt-8 admin-panel">
+  <h3 class="text-xl font-bold mb-2 text-center">Panel de Gestión</h3>
 
-              <div class="mt-8 pt-6 border-t border-gray-100">
-                  <h4 class="text-lg font-semibold mb-4 text-slate-700">Consultas y Exportación</h4>
-                  <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                      <button id="show-history-btn" class="bg-purple-600 text-white py-2 px-4 rounded-lg">📜 Historial por Alumno</button>
-                      <button id="show-monthly-report-btn" class="bg-sky-600 text-white py-2 px-4 rounded-lg">📅 Informe Mensual</button>
-                  </div>
-                   <div class="mt-6 flex flex-col sm:flex-row gap-4 justify-center items-center">
-                      <input type="date" id="export-date-input" class="p-3 w-full sm:w-auto rounded-lg bg-white text-black border border-gray-200">
-                      <button id="export-csv-btn" class="primary">💾 Exportar CSV del Día</button>
-                   </div>
-              </div>
-          </div>
-        </div>
+  <div class="mb-6">
+    <h4 class="text-lg font-semibold mb-4 text-center" style="color:#475569;">Gestión de Datos</h4>
+    <div class="btn-row" role="group" aria-label="gestion-datos">
+      <button id="import-csv-btn-initial" class="primary" title="Importar CSV">📤 Importar Alumnos (CSV)</button>
+      <button id="wipe-db" class="ghost" title="Borrar todos los alumnos">🗑️ Borrar todos los alumnos</button>
+    </div>
+    <p id="import-status-initial" class="text-center mt-3" style="min-height:18px"></p>
+  </div>
+
+  <hr style="border:none;border-top:1px solid rgba(15,23,42,0.04); margin: .8rem 0;">
+
+  <div>
+    <h4 class="text-lg font-semibold mb-4 text-center" style="color:#475569;">Consultas y Exportación</h4>
+
+    <div class="controls">
+      <div class="btn-row">
+        <button id="show-history-btn" class="bg-purple-600 text-white py-2 px-4 rounded-lg">📜 Historial por Alumno</button>
+        <button id="show-monthly-report-btn" class="bg-sky-600 text-white py-2 px-4 rounded-lg">📅 Informe Mensual</button>
+      </div>
+
+      <div class="export-row">
+        <input type="date" id="export-date-input" value="" aria-label="Fecha para exportar">
+        <button id="export-csv-btn" class="primary">💾 Exportar CSV del Día</button>
+      </div>
+    </div>
+  </div>
+</div>
+
       </div>
 
       <!-- Dashboard -->
@@ -692,8 +773,43 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('show-history-btn').addEventListener('click', showHistoryModal);
   document.getElementById('show-monthly-report-btn').addEventListener('click', () => { const now = new Date(); const year = now.getFullYear(); const month = (now.getMonth() + 1).toString().padStart(2, '0'); dom.reportMonthInput.value = `${year}-${month}`; dom.monthlyReportModal.classList.remove('hidden'); setTimeout(() => dom.monthlyReportModal.classList.remove('opacity-0'), 10); generateMonthlyReport(`${year}-${month}`); });
   dom.reportMonthInput.addEventListener('change', (e) => generateMonthlyReport(e.target.value));
-  document.getElementById('print-report-btn').addEventListener('click', () => window.print());
-  document.getElementById('close-report-btn').addEventListener('click', () => { dom.monthlyReportModal.classList.add('opacity-0'); setTimeout(() => dom.monthlyReportModal.classList.add('hidden'), 300); });
+// Reemplaza el antiguo listener por este para imprimir sólo el informe
+document.getElementById('print-report-btn').addEventListener('click', async () => {
+  // Aseguramos mes seleccionado
+  let yearMonth = dom.reportMonthInput.value;
+  if (!yearMonth) {
+    const now = new Date();
+    yearMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    dom.reportMonthInput.value = yearMonth;
+  }
+
+  // Generamos el informe (se mostrará en modal y llenará dom.monthlyReportContent)
+  await generateMonthlyReport(yearMonth);
+
+  // Tomamos HTML generado
+  const reportHtml = dom.monthlyReportContent.innerHTML;
+
+  // Abrimos nueva ventana con estilos mínimos (puedes añadir más estilos si los necesitas)
+  const win = window.open('', '_blank', 'noopener,width=1000,height=800');
+  if (!win) { alert('Permite ventanas emergentes para imprimir.'); return; }
+
+  const styles = `
+    <style>
+      body{ font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; padding:20px; color:#111; }
+      .report-wrapper{ max-width:1200px; margin:auto; }
+      .report-table{ width:100%; border-collapse:collapse; font-size:12px; }
+      .report-table th, .report-table td { border:1px solid #ddd; padding:6px; text-align:center; }
+      .report-table th:first-child, .report-table td:first-child { text-align:left; position:sticky; left:0; background:#fff; }
+      .attendance-mark { display:inline-block; width:20px; height:20px; background:#067a46; color:#fff; border-radius:50%; text-align:center; line-height:20px; font-weight:700; }
+      .course-header{ background:${getComputedStyle(document.documentElement).getPropertyValue('--brand') || '#8b0630'}; color:#fff; padding:8px; margin-bottom:8px;}
+      @media print { body{margin:0;} }
+    </style>
+  `;
+
+  win.document.open();
+  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Imprimir informe ${yearMonth}</title>${styles}</head><body><div class="report-wrapper">${reportHtml}</div><script>setTimeout(()=>{window.print(); setTimeout(()=>{window.close();},1000);},300);<\/script></body></html>`);
+  win.document.close();
+});
 
   dom.closeHistoryBtn.addEventListener('click', () => { dom.historyModal.classList.add('opacity-0'); setTimeout(() => dom.historyModal.classList.add('hidden'), 300); });
   dom.historyStudentList.addEventListener('click', e => { const studentEl = e.target.closest('.history-student'); if (studentEl) { showStudentHistory(studentEl.dataset.studentId, studentEl.dataset.studentName); } });
