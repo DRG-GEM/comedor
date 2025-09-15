@@ -200,7 +200,7 @@ button.ghost {
 .student-item.pending { border-left-color: #cbd5e1; background: #ffffff; }
 .student-item.present { 
   border-left-color: var(--success); 
-  background-color: #f0fdf4; /* Verde más visible */
+  background-color: #dcfce7; /* Verde más visible */
   box-shadow: 0 8px 20px rgba(6,122,70,0.04); 
 }
 .student-item.absent { border-left-color: var(--danger); background: linear-gradient(90deg, rgba(201,42,42,0.04), #fff); opacity: .95; text-decoration: line-through; }
@@ -234,13 +234,11 @@ button.ghost {
 
 /* print */
 @media print {
-  body * {
-    visibility: hidden;
-  }
-  .printable-area, .printable-area * {
-    visibility: visible;
+  body > *:not(.printable-area) {
+    display: none !important;
   }
   .printable-area {
+    display: block !important;
     position: absolute;
     left: 0;
     top: 0;
@@ -557,7 +555,13 @@ document.addEventListener('DOMContentLoaded', () => {
         setUIVisibility('login'); 
       } 
     } else { 
-        setUIVisibility('user'); 
+        // Si hay un usuario real logueado, es un admin, no un profesor.
+        // Si no hay hash, y está logueado, debe ir al panel de admin.
+        if (isRealUser) {
+            setUIVisibility('admin');
+        } else {
+            setUIVisibility('user');
+        }
     } 
   }
 
