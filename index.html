@@ -200,7 +200,7 @@ button.ghost {
 .student-item.pending { border-left-color: #cbd5e1; background: #ffffff; }
 .student-item.present { 
   border-left-color: var(--success); 
-  background-color: #f0fdf4; /* Light green background */
+  background-color: #f0fdf4; /* Verde más visible */
   box-shadow: 0 8px 20px rgba(6,122,70,0.04); 
 }
 .student-item.absent { border-left-color: var(--danger); background: linear-gradient(90deg, rgba(201,42,42,0.04), #fff); opacity: .95; text-decoration: line-through; }
@@ -229,16 +229,24 @@ button.ghost {
 /* Small screens */
 @media (max-width:900px){
   .report-table th, .report-table td { padding:.25rem .35rem; font-size:11px; min-width:22px; }
-  /* stack admin controls vertically */
   .admin-panel .controls { flex-direction: column; gap: .75rem; }
 }
 
 /* print */
 @media print {
-  body * { visibility: hidden; }
-  .printable-area, .printable-area * { visibility: visible; }
-  .printable-area { position: absolute; left: 0; top: 0; width: 100%; }
-  body { background:#fff; color:#000; }
+  body * {
+    visibility: hidden;
+  }
+  .printable-area, .printable-area * {
+    visibility: visible;
+  }
+  .printable-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  body { background:#fff !important; color:#000 !important; }
   .report-table thead th { background:#eee !important; -webkit-print-color-adjust:exact; }
   .report-table td, .report-table th { border:1px solid #ccc !important; }
   .attendance-mark { background:var(--success) !important; color:#fff !important; -webkit-print-color-adjust:exact; }
@@ -370,7 +378,7 @@ button.ghost {
                 <button id="close-report-btn" class="text-3xl font-bold hover:text-red-500">&times;</button>
             </div>
         </header>
-        <div id="monthly-report-content" class="p-6 flex-grow overflow-y-auto">
+        <div id="monthly-report-content" class="p-6 flex-grow overflow-y-auto printable-area">
             <p class="text-center text-muted">Selecciona un mes para generar el informe.</p>
         </div>
     </div>
@@ -515,11 +523,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const attendanceData = await fetchAttendanceByMonth(yearMonth);
     const daysInMonth = new Date(year, month, 0).getDate();
     const studentsByCourse = allStudents.reduce((acc, s) => { (acc[s.course] = acc[s.course] || []).push(s); return acc; }, {});
-    let html = `<h2 class="text-3xl font-bold text-center mb-4 no-print">${monthName.charAt(0).toUpperCase()+monthName.slice(1)} ${year}</h2>`;
+    let html = `<div class="printable-area"><h2 class="text-3xl font-bold text-center mb-4">${monthName.charAt(0).toUpperCase()+monthName.slice(1)} ${year}</h2>`;
     const sortedCourses = Object.keys(studentsByCourse).sort((a,b)=> a.localeCompare(b));
     for (const course of sortedCourses) {
       const students = studentsByCourse[course].sort((a,b)=> a.name.localeCompare(b.name));
-      html += `<div class="report-course mt-6"><div class="course-header"><div>${course} — ${students.length} alumno${students.length>1?'s':''}</div><div class="text-sm text-white/90">Días: ${daysInMonth}</div></div>`;
+      html += `<div class="report-course mt-6"><div class="course-header"><div>${course} — ${students.length} alumno${students.length>1?'s':''}</div><div class="text-sm">Días: ${daysInMonth}</div></div>`;
       html += `<div class="report-scroll"><table class="report-table"><thead><tr><th>Alumno</th>`;
       for (let d=1; d<=daysInMonth; d++) html += `<th title="${d}">${d}</th>`;
       html += `<th>Total</th></tr></thead><tbody>`;
@@ -533,7 +541,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       html += `</tbody></table></div></div>`;
     }
-    dom.monthlyReportContent.innerHTML = `<div class="report-wrapper">${html}</div>`;
+    html += '</div>';
+    dom.monthlyReportContent.innerHTML = html;
   }
   
   /* ---------------- Routing & Events ---------------- */
@@ -541,10 +550,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const hash = window.location.hash; 
     const user = auth.currentUser; 
     const isRealUser = user && !user.isAnonymous; 
-    if (isRealUser) {
+    if (hash === '#admin') { 
+      if (isRealUser) {
         setUIVisibility('admin');
-    } else if (hash === '#admin') { 
+      } else { 
         setUIVisibility('login'); 
+      } 
     } else { 
         setUIVisibility('user'); 
     } 
@@ -569,7 +580,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('show-monthly-report-btn').addEventListener('click', () => { const now = new Date(); const year = now.getFullYear(); const month = (now.getMonth() + 1).toString().padStart(2, '0'); dom.reportMonthInput.value = `${year}-${month}`; dom.monthlyReportModal.classList.remove('hidden'); setTimeout(() => dom.monthlyReportModal.classList.remove('opacity-0'), 10); generateMonthlyReport(`${year}-${month}`); });
   dom.reportMonthInput.addEventListener('change', (e) => generateMonthlyReport(e.target.value));
   
-  document.getElementById('print-report-btn').addEventListener('click', () => window.print());
+  document.getElementById('print-report-btn').addEventListener('click', () => {
+    window.print();
+  });
   dom.closeReportBtn.addEventListener('click', () => { dom.monthlyReportModal.classList.add('opacity-0'); setTimeout(() => dom.monthlyReportModal.classList.add('hidden'), 300); });
   
   dom.closeHistoryBtn.addEventListener('click', () => { dom.historyModal.classList.add('opacity-0'); setTimeout(() => dom.historyModal.classList.add('hidden'), 300); });
