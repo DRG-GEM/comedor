@@ -243,11 +243,33 @@ button.ghost {
     left: 0;
     top: 0;
     width: 100%;
+    background: white;
+    padding: 20px;
   }
-  body { background:#fff !important; color:#000 !important; }
+  body { background:#fff !important; color:#000 !important; margin: 0; padding: 0; }
   .report-table thead th { background:#eee !important; -webkit-print-color-adjust:exact; }
   .report-table td, .report-table th { border:1px solid #ccc !important; }
   .attendance-mark { background:var(--success) !important; color:#fff !important; -webkit-print-color-adjust:exact; }
+  
+  /* Ajustes específicos para la tabla del informe mensual */
+  .report-table {
+    width: 100% !important;
+    font-size: 10px !important;
+  }
+  .report-table th, .report-table td {
+    padding: 2px !important;
+    min-width: 20px !important;
+  }
+  .report-course .course-header {
+    background: #8b0630 !important;
+    -webkit-print-color-adjust: exact;
+  }
+  
+  /* Forzar diseño landscape para la impresión */
+  @page {
+    size: landscape;
+    margin: 0.5cm;
+  }
 }
 </style>
 
@@ -366,7 +388,7 @@ button.ghost {
 </div>
 
 <!-- Monthly Report Modal -->
-<div id="monthly-report-modal" class="fixed inset-0 bg-black/10 flex items-center justify-center p-4 hidden opacity-0 z-40">
+<div id="monthly-report-modal" class="fixed inset-0 bg-black/10 flex items-center justify-center p-4 hidden opacity-0 z-40 no-print">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-full max-h-[90vh] flex flex-col border border-gray-100 overflow-hidden">
         <header class="p-4 border-b border-gray-100 flex justify-between items-center no-print">
             <h2 class="text-2xl font-bold" style="color:var(--brand)">Informe de Asistencia Mensual</h2>
@@ -376,7 +398,7 @@ button.ghost {
                 <button id="close-report-btn" class="text-3xl font-bold hover:text-red-500">&times;</button>
             </div>
         </header>
-        <div id="monthly-report-content" class="p-6 flex-grow overflow-y-auto printable-area">
+        <div id="monthly-report-content" class="p-6 flex-grow overflow-y-auto">
             <p class="text-center text-muted">Selecciona un mes para generar el informe.</p>
         </div>
     </div>
@@ -430,7 +452,8 @@ document.addEventListener('DOMContentLoaded', () => {
     monthlyReportContent: document.getElementById('monthly-report-content'),
     reportMonthInput: document.getElementById('report-month-input'),
     logoutBtn: document.getElementById('logout-btn'),
-    closeReportBtn: document.getElementById('close-report-btn')
+    closeReportBtn: document.getElementById('close-report-btn'),
+    printReportBtn: document.getElementById('print-report-btn')  // Asegurarse de que esta referencia existe
   };
 
   /* ---------------- UI visibility ---------------- */
@@ -584,9 +607,49 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('show-monthly-report-btn').addEventListener('click', () => { const now = new Date(); const year = now.getFullYear(); const month = (now.getMonth() + 1).toString().padStart(2, '0'); dom.reportMonthInput.value = `${year}-${month}`; dom.monthlyReportModal.classList.remove('hidden'); setTimeout(() => dom.monthlyReportModal.classList.remove('opacity-0'), 10); generateMonthlyReport(`${year}-${month}`); });
   dom.reportMonthInput.addEventListener('change', (e) => generateMonthlyReport(e.target.value));
   
-  document.getElementById('print-report-btn').addEventListener('click', () => {
-    window.print();
+  // Función de impresión mejorada
+  dom.printReportBtn.addEventListener('click', () => {
+    // Crear una ventana de impresión específica para el informe
+    const printContent = dom.monthlyReportContent.querySelector('.printable-area');
+    if (!printContent) {
+      alert('No hay contenido para imprimir. Genera el informe primero.');
+      return;
+    }
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Informe Mensual de Comedor</title>
+          <style>
+            body { font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+            h2 { color: #8b0630; text-align: center; }
+            .report-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+            .report-table th, .report-table td { border: 1px solid #ccc; padding: 4px; text-align: center; }
+            .report-table th:first-child, .report-table td:first-child { text-align: left; }
+            .attendance-mark { background: #067a46; color: white; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
+            .course-header { background: #8b0630; color: white; padding: 8px; margin-top: 20px; font-weight: bold; }
+            .total { font-weight: bold; color: #8b0630; }
+            @page { size: landscape; margin: 0.5cm; }
+          </style>
+        </head>
+        <body>
+          ${printContent.innerHTML}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    
+    // Esperar a que se cargue el contenido antes de imprimir
+    printWindow.onload = function() {
+      printWindow.print();
+      printWindow.onafterprint = function() {
+        printWindow.close();
+      };
+    };
   });
+  
   dom.closeReportBtn.addEventListener('click', () => { dom.monthlyReportModal.classList.add('opacity-0'); setTimeout(() => dom.monthlyReportModal.classList.add('hidden'), 300); });
   
   dom.closeHistoryBtn.addEventListener('click', () => { dom.historyModal.classList.add('opacity-0'); setTimeout(() => dom.historyModal.classList.add('hidden'), 300); });
@@ -633,4 +696,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-
