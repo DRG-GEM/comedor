@@ -204,6 +204,9 @@ button.ghost {
   box-shadow: 0 8px 20px rgba(6,122,70,0.04); 
 }
 .student-item.absent { border-left-color: var(--danger); background: linear-gradient(90deg, rgba(201,42,42,0.04), #fff); opacity: .95; text-decoration: line-through; }
+.student-item.allergic {
+  box-shadow: 0 0 0 2px var(--danger);
+}
 
 /* mark-absent control */
 .mark-absent-btn {
@@ -235,8 +238,10 @@ button.ghost {
   body > *:not(.printable-area) {
     display: none !important;
   }
+  .printable-area, .printable-area * {
+    visibility: visible !important;
+  }
   .printable-area {
-    display: block !important;
     position: absolute;
     left: 0;
     top: 0;
@@ -942,6 +947,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const hash = window.location.hash; 
     const user = auth.currentUser; 
     const isRealUser = user && !user.isAnonymous; 
+    
     if (hash === '#admin') { 
       if (isRealUser) {
         setUIVisibility('admin');
