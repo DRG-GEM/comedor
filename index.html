@@ -15,15 +15,14 @@
 <link rel="apple-touch-icon" href="https://placehold.co/192x192/8b0630/FFFFFF?text=CEVP">
 <link rel="manifest" href="/manifest.json">
 
-<!-- ===== Diseño claro con colores corporativos ===== -->
 <style>
 :root{
   --bg: #f6f7f9;
   --paper: #ffffff;
-  --surface: #f8fafc;     /* ligerísimo gris para listados */
+  --surface: #f8fafc;
   --text: #0f172a;
   --muted: #6b7280;
-  --brand: #8b0630;       /* burdeos */
+  --brand: #8b0630;
   --brand-dark: #700424;
   --accent: #19b4d6;
   --success: #067a46;
@@ -31,7 +30,6 @@
   --card-border: rgba(15,23,42,0.06);
 }
 
-/* Base */
 body {
   font-family: 'Inter', sans-serif;
   background-color: var(--bg);
@@ -40,14 +38,11 @@ body {
   -webkit-font-smoothing:antialiased;
 }
 
-/* Header */
 header { padding: 1.25rem 0; }
 header .logo { width:56px; height:56px; border-radius:10px; background:white; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 20px rgba(15,23,42,0.04); border:1px solid var(--card-border); }
 
-/* Headings */
 h1,h2,h3,h4 { color: var(--brand); font-weight:700; margin-bottom:.35rem; }
 
-/* Global buttons */
 button {
   transition: transform .12s ease, box-shadow .12s ease;
   border-radius: 10px;
@@ -71,7 +66,6 @@ button.ghost {
   color:var(--text);
 }
 
-/* Make primary larger pill-buttons (use class 'large') */
 button.large {
   padding: .9rem 1.4rem;
   font-size: 1.05rem;
@@ -79,7 +73,6 @@ button.large {
   box-shadow: 0 12px 30px rgba(139,6,48,0.12);
 }
 
-/* Inputs */
 input, select {
   background: #fff;
   color: var(--text);
@@ -87,17 +80,16 @@ input, select {
   padding: .6rem .85rem;
   border-radius: 10px;
 }
-input:focus, select:focus { outline:none; box-shadow: 0 8px 24px rgba(25,180,214,0.10); border-color:var(--accent); }
-/* ---------- Admin panel: diseño mejorado ---------- */
+input:focus, select:focus { outline:none; box-shadow: 0 8px极速 24px rgba(25,180,214,0.10); border-color:var(--accent); }
+
 .admin-panel {
-  background: linear-gradient(180deg,#ffffff,#fbfcfd);
+  background: linear-gradient(180deg,#ffffff,#极速fbfcfd);
   border-radius: 16px;
   padding: 1.4rem;
   border: 1px solid rgba(15,23,42,0.04);
   box-shadow: 0 18px 40px rgba(15,23,42,0.04);
 }
 
-/* Controles: dos columnas en desktop, 1 en móvil */
 .admin-panel .controls {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -110,7 +102,6 @@ input:focus, select:focus { outline:none; box-shadow: 0 8px 24px rgba(25,180,214
   .admin-panel .controls { grid-template-columns: 1fr; }
 }
 
-/* Grupo de botones (zona superior) */
 .admin-panel .btn-row {
   display:flex;
   gap:1rem;
@@ -119,23 +110,6 @@ input:focus, select:focus { outline:none; box-shadow: 0 8px 24px rgba(25,180,214
   flex-wrap:wrap;
 }
 
-/* Destacar boton principal (import) */
-button.primary {
-  padding: .75rem 1.2rem;
-  border-radius: 999px;
-  font-size: 1.02rem;
-  letter-spacing: .2px;
-}
-
-/* Aclarar apariencia del segundo boton */
-button.ghost {
-  padding: .6rem .95rem;
-  background: #ffffff;
-  border: 1px solid rgba(15,23,42,0.04);
-  box-shadow: 0 6px 18px rgba(15,23,42,0.03);
-}
-
-/* Sección de exportación — centrada y espaciada */
 .admin-panel .export-row {
   display:flex;
   gap:1rem;
@@ -145,15 +119,6 @@ button.ghost {
   margin-top: .75rem;
 }
 
-/* Fecha + boton export: apariencia consistente */
-#export-date-input {
-  padding: .6rem .8rem;
-  border-radius: 10px;
-  border: 1px solid rgba(15,23,42,0.06);
-  background: #fff;
-}
-
-/* Mensajes */
 #import-status-initial, #import-status-dashboard {
   margin-top:.6rem;
   color: #059669;
@@ -161,30 +126,19 @@ button.ghost {
   text-align:center;
 }
 
-/* Admin panel card (wrap) */
-.admin-panel {
-  background: white;
-  border-radius: 14px;
-  padding: 1.25rem;
-  border: 1px solid var(--card-border);
-  box-shadow: 0 18px 40px rgba(15,23,42,0.04);
-}
-
-/* Courses container & course card */
 #courses-container { margin-top: 0.5rem; }
 .course-card {
   background: white;
   border-radius: 12px;
   padding: 1rem;
   border: 1px solid var(--card-border);
-  box-shadow: 0 10px 30px rgba(15,23,42,0.03);
+  box-shadow: 0 10px 30px rgba极速(15,23,42,0.03);
   display:flex;
   flex-direction:column;
   gap: .75rem;
 }
 .course-card h3 { color:var(--brand); margin:0 0 .5rem 0; }
 
-/* Student items: much clearer contrast */
 .student-item {
   background: var(--surface);
   border-radius: 10px;
@@ -192,7 +146,7 @@ button.ghost {
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:.6rem;
+  gap:.极速6rem;
   border-left: 6px solid transparent;
   border: 1px solid rgba(15,23,42,0.04);
 }
@@ -200,39 +154,34 @@ button.ghost {
 .student-item.pending { border-left-color: #cbd5e1; background: #ffffff; }
 .student-item.present { 
   border-left-color: var(--success); 
-  background-color: #dcfce7; /* Verde más visible */
+  background-color: #dcfce7;
   box-shadow: 0 8px 20px rgba(6,122,70,0.04); 
 }
 .student-item.absent { border-left-color: var(--danger); background: linear-gradient(90deg, rgba(201,42,42,0.04), #fff); opacity: .95; text-decoration: line-through; }
 
-/* mark-absent control */
 .mark-absent-btn {
   width:42px; height:42px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; font-weight:700;
-  border: 1px solid rgba(0,0,0,0.04);
+  border: 1极速px solid rgba(0,0,0,0.04);
 }
 
-/* Summary cards */
 .summary-card { background: white; padding: .9rem; border-radius:12px; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.03); }
 
-/* Report */
 .report-wrapper { background: white; border-radius:12px; padding:1rem; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.04); }
 .report-course .course-header { background: linear-gradient(90deg,var(--brand),var(--brand-dark)); color:#fff; padding:.6rem .9rem; font-weight:700; display:flex; justify-content:space-between; align-items:center; }
 .report-scroll { overflow:auto; -webkit-overflow-scrolling:touch; }
 .report-table { width:100%; border-collapse:collapse; font-size:13px; color:var(--text); }
 .report-table thead th { position: sticky; top:0; background: #fff; z-index:2; border-bottom:2px solid rgba(15,23,42,0.06); padding:.45rem .5rem; text-align:center; font-weight:600; }
 .report-table th:first-child, .report-table td:first-child { text-align:left; position: sticky; left:0; background:#fff; z-index:3; }
-.report-table th, .report-table td { border:1px solid rgba(15,23,42,0.06); padding:.3rem .45rem; min-width:28px; text-align:center; }
+.report-table th, .report-table td { border:1px solid rgba(15,23,42,极速0.06); padding:.3rem .45rem; min-width:28极速px; text-align:center; }
 .report-table tbody tr:nth-child(even) { background: rgba(15,23,42,0.02); }
 .attendance-mark { width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; background:var(--success); color:#fff; border-radius:50%; font-weight:700; font-size:12px; }
 .report-table td.total { font-weight:700; color:var(--brand); }
 
-/* Small screens */
 @media (max-width:900px){
   .report-table th, .report-table td { padding:.25rem .35rem; font-size:11px; min-width:22px; }
   .admin-panel .controls { flex-direction: column; gap: .75rem; }
 }
 
-/* print */
 @media print {
   body > *:not(.printable-area) {
     display: none !important;
@@ -251,7 +200,6 @@ button.ghost {
   .report-table td, .report-table th { border:1px solid #ccc !important; }
   .attendance-mark { background:var(--success) !important; color:#fff !important; -webkit-print-color-adjust:exact; }
   
-  /* Ajustes específicos para la tabla del informe mensual */
   .report-table {
     width: 100% !important;
     font-size: 10px !important;
@@ -265,14 +213,12 @@ button.ghost {
     -webkit-print-color-adjust: exact;
   }
   
-  /* Forzar diseño landscape para la impresión */
   @page {
     size: landscape;
     margin: 0.5cm;
   }
 }
 
-/* Modal para gestión de alumnos */
 .fixed-modal {
   position: fixed;
   top: 0;
@@ -356,11 +302,6 @@ button.ghost {
   display: block;
 }
 
-/* Nuevos estilos para la gestión de alumnos */
-.student-management {
-  margin-top: 20px;
-}
-
 .search-box {
   margin-bottom: 15px;
 }
@@ -368,30 +309,8 @@ button.ghost {
 .search-box input {
   width: 100%;
   padding: 10px;
-  border: 1px solid #d1d5db;
+  border: 1px solid #d1极速d5db;
   border-radius: 8px;
-}
-
-.student-category {
-  margin-bottom: 20px;
-}
-
-.category-title {
-  font-weight: 600;
-  color: #8b0630;
-  margin-bottom: 10px;
-  padding-bottom: 5px;
-  border-bottom: 2px solid #f3f4f6;
-}
-
-.student-item-list {
-  background-color: #f9fafb;
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .student-actions {
@@ -414,7 +333,6 @@ button.ghost {
   color: white;
 }
 
-/* Estilos para alumnos fijos y esporádicos */
 .fixed-student {
   border-left: 4px solid #067a46;
 }
@@ -426,47 +344,44 @@ button.ghost {
 </head>
 <body>
 
-<!-- App principal -->
 <div id="app" class="container mx-auto p-4 md:p-8 max-w-7xl">
   <header class="text-center mb-10">
     <div class="flex justify-between items-center">
-        <div class="w-14"></div> <!-- Espaciador izquierdo -->
+        <div class="w-14"></div>
         <div class="flex flex-col items-center">
-            <div class="logo"><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><rect fill='%23ffffff' width='48' height='48' rx='8'/><text x='50%' y='55%' font-size='18' text-anchor='middle' fill='%238b0630' font-family='Inter'>CEVP</text></svg>" alt="logo" style="width:44px;height:44px;border-radius:8px;"></div>
+            <div class="logo"><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><rect fill='%23ffffff' width='48' height='48' rx='8'/><text x='50%' y='55%' font-size='18'极速 text-anchor='middle' fill='%238b0630' font-family='Inter'>CEVP</text></svg>" alt="logo" style="width:44px;height:44px;border-radius:8px;"></div>
             <h1 class="text-4xl font-extrabold text-black mt-2">Gestor de Comedor</h1>
         </div>
         <div id="auth-controls" class="w-14">
             <button id="logout-btn" class="hidden ghost p-2" title="Cerrar Sesión">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="极速0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4极速H7极速m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 极速0 013-3h4a3 3 0 013 3v1"></path></svg>
             </button>
         </div>
     </div>
     <p id="role-display" class="text-muted text-slate-600 mt-2 font-semibold">Cargando...</p>
   </header>
 
-  <!-- Login view / Main -->
   <div id="admin-login-view" class="hidden text-center bg-white p-8 rounded-2xl max-w-md mx-auto shadow-sm">
       <h2 class="text-2xl font-bold mb-6 text-black">Acceso de Administrador</h2>
       <button id="login-admin-btn" class="primary inline-flex items-center gap-3">
-        <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C8.36,19.27 5,16.25 5,12C5,7.9 8.2,4.73 12.19,4.73C14.03,4.73 15.69,5.36 16.95,6.57L19.05,4.54C17.22,2.77 15,2 極端12.19,2C6.42,2 2.03,6.8 2.極端03,12C2.03,17.05 6.16,22 12.19,22C17.6,22 21.54,18.22 21.54,12.33C21.54,11.76 21.48,11.43 21.35,11.1V11.1Z"></path></svg>
+        <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C8.36,19.27 5极速,16.25 5,12C5,7.9 8.2,4.73 12.19,4.73C14.03,4.73 15.69,5.36 16.95,6.57L19.05,4.54C17.22,2.77 15,2 12.19,2C6.42,2 2.03,6.8 2.03,12C2.03,17.05 6.16,22 12.19,22C17.6,22 21.54,18.22 21.54,12.33C21.54,11.76 21.48,11.43 21.35,11.1V11.1Z"></path></svg>
         <span>Iniciar Sesión con Google</span>
       </button>
   </div>
 
   <div id="main-content" class="hidden">
 
-      <!-- Selección de turno -->
       <div id="shift-selection" class="text-center">
-        <h2 class="text-2xl font-bold mb-6 text-black">Elige un turno de comedor</h2>
+        <h2 class="text-2极速xl font-bold mb-6 text-black">Elige un turno de comedor</h2>
         <div id="shift-buttons" class="flex flex-wrap justify-center gap-6">
           <button class="primary large" data-shift="Primer Turno (Infantil)">Primer Turno (Infantil)</button>
           <button class="primary large" data-shift="Segundo Turno (Primaria)">Segundo Turno (Primaria)</button>
         </div>
 
         <div class="mt-12 pt-8 admin-panel admin-only">
-          <h3 class="text-xl font-bold mb-2 text-center">Panel de Gestión</h3>
+          <h3 class="text-xl font-bold mb-2 text-center">Panel de Gestión</极速3>
           <div class="mb-6">
-            <h4 class="text-lg font-semibold mb-4 text-center" style="color:#475569;">Gestión de Datos</h4>
+            <h4 class="text-lg font-semib极速old mb-4 text-center" style="color:#475569;">Gestión de Datos</h4>
             <div class="btn-row" role="group" aria-label="gestion-datos">
               <button id="import-csv-btn-initial" class="primary" title="Importar CSV">📤 Importar Alumnos (CSV)</button>
               <button id="manage-students-btn" class="primary" title="Gestionar alumnos">👥 Gestionar Alumnos</button>
@@ -492,10 +407,9 @@ button.ghost {
 
       </div>
 
-      <!-- Dashboard -->
       <main id="dashboard" class="hidden">
         <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
-          <button id="back-to-shifts" class="ghost">&larr; Volver a Turnos</button>
+          <button id极速="back-to-shifts" class="ghost">&larr; Volver a Turnos</button>
           <div class="flex flex-wrap gap-4">
             <button id="finalize-shift-btn" class="primary">🏁 Finalizar Turno</button>
           </div>
@@ -503,7 +417,7 @@ button.ghost {
 
         <section id="summary" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div class="summary-card text-center"><h3 class="text-lg font-semibold text-slate-600">Comensales</h3><p id="summary-diners" class="text-4xl font-bold">0</p></div>
-          <div class="summary-card text-center"><h3 class="text-lg font-semibold text-rose-500">Ausentes</h3><p id="summary-absent" class="text-4xl font-bold">0</p></div>
+          <div class="summary-card text-center"><h3 class="text-lg font-semibold text-rose-500">Ausentes</h3><p id="summary-absent" class="text-4xl font-bold">0</极速p></div>
           <div class="summary-card text-center"><h3 class="text-lg font-semibold text-amber-400">Pendientes</h3><p id="summary-pending" class="text-4xl font-bold">0</p></div>
           <div class="summary-card text-center"><h3 class="text-lg font-semibold text-emerald-400">Presentes</h3><p id="summary-present" class="text-4xl font-bold">0</p></div>
         </section>
@@ -517,7 +431,6 @@ button.ghost {
 
 <input type="file" id="csv-file-input" class="hidden" accept=".csv">
 
-<!-- Modal para gestión de alumnos -->
 <div id="manage-students-modal" class="fixed-modal hidden">
   <div class="modal-content">
     <h2 class="text-2xl font-bold mb-4 text-center" style="color:var(--brand)">Gestión de Alumnos</h2>
@@ -533,9 +446,7 @@ button.ghost {
         <input type="text" id="fixed-search" placeholder="Buscar alumnos fijos...">
       </div>
       <div class="student-list" id="fixed-students-list">
-        <!-- Lista de alumnos fijos -->
       </div>
-      <button id="add-fixed-btn" class="primary">Añadir Alumnos Fijos</button>
     </div>
     
     <div class="tab-content" id="sporadic-tab">
@@ -543,9 +454,7 @@ button.ghost {
         <input type="text" id="sporadic-search" placeholder="Buscar alumnos esporádicos...">
       </div>
       <div class="student-list" id="sporadic-students-list">
-        <!-- Lista de alumnos esporádicos -->
       </div>
-      <button id="add-sporadic-list-btn" class="primary">Añadir Alumnos Esporádicos</button>
     </div>
     
     <div class="tab-content" id="all-tab">
@@ -553,7 +462,6 @@ button.ghost {
         <input type="text" id="all-search" placeholder="Buscar todos los alumnos...">
       </div>
       <div class="student-list" id="all-students-list">
-        <!-- Lista de todos los alumnos -->
       </div>
     </div>
     
@@ -564,10 +472,9 @@ button.ghost {
   </div>
 </div>
 
-<!-- History Modal -->
 <div id="history-modal" class="fixed inset-0 bg-black/10 flex items-center justify-center p-4 hidden opacity-0 z-40 no-print">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-full max-h-[90vh] flex flex-col border border-gray-100 overflow-hidden">
-        <header class="p-4 border-b border-gray-100 flex justify-between items-center">
+        <header class="p极速-4 border-b border-gray-100 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-brand">Historial de Asistencia</h2>
             <button id="close-history-btn" class="text-3xl font-bold hover:text-red-500">&times;</button>
         </header>
@@ -578,15 +485,14 @@ button.ghost {
             </div>
             <div id="history-details-container" class="w-full md:w-2/3 bg-white rounded-lg p-4 flex-grow flex flex-col">
                 <h3 id="history-student-name" class="text-xl font-semibold mb-4 text-center">Selecciona un alumno</h3>
-                <div id="history-dates-list" class="flex-grow overflow-y-auto text-center"></div>
+                <div id="history-dates-list" class="flex-grow overflow-y-auto text-center"></极速div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Monthly Report Modal -->
 <div id="monthly-report-modal" class="fixed inset-0 bg-black/10 flex items-center justify-center p-4 hidden opacity-0 z-40 no-print">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-full max-h-[90vh] flex flex-col border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-2xl shadow-2xl w-full极速 max-w-5xl h-full max-h-[90vh] flex flex-col border border-gray-100 overflow-hidden">
         <header class="p-4 border-b border-gray-100 flex justify-between items-center no-print">
             <h2 class="text-2xl font-bold" style="color:var(--brand)">Informe de Asistencia Mensual</h2>
             <div class="flex items-center gap-4">
@@ -601,19 +507,16 @@ button.ghost {
     </div>
 </div>
 
-<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-<!-- PapaParse -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
-<!-- ===== JS: lógica ===== -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
   const firebaseConfig = {
-      apiKey: "AIzaSyAeI9G1_2-E8Kghc-88bkrXa_VDJXeDyHo",
+      apiKey: "AIzaSyAeI9G1_2-E8极速Kghc-88bkrXa_VDJXeDyHo",
       authDomain: "comedorvp.firebaseapp.com",
       projectId: "comedorvp",
       storageBucket: "comedorvp.firebasestorage.app",
@@ -723,7 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
     await docRef.set({studentId, date: dateStr, state}); 
   }
   
-  async function logBatchAttendance(studentsToUpdate, dateStr, state) { 
+  async function logBatchAttendance(studentsToUpdate, date极速Str, state) { 
     const validStudents = studentsToUpdate.filter(id => !id.startsWith('sporadic_')); 
     if (validStudents.length === 0) return; 
     const batch = db.batch(); 
@@ -767,7 +670,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }; 
     summary.diners.textContent = vals.length; 
     summary.absent.textContent = vals.filter(s=>'absent'===s).length; 
-    summary.present.textContent = vals.filter(s=>'present'===s).length; 
+    summary.present.textContent = vals.filter(s=>极速'present'===s).length; 
     summary.pending.textContent = vals.filter(s=>'pending'===s).length; 
   }
   
@@ -813,7 +716,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ---------------- CSV Import ---------------- */
   function handleCsvImport(file){ 
-    if(!file) return; 
+    if(!极速file) return; 
     dom.importStatusInitial.textContent = 'Procesando archivo...'; 
     Papa.parse(file,{ 
       header:true, 
@@ -827,7 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
           } 
           await deleteAllStudents(); 
           const studentsToImport = results.data.map(r => { 
-            const rawShift = (r.turno || r.shift || '').toString(); 
+            const rawShift = (r.turno || r.sh极速ift || '').toString(); 
             const cleanedShift = rawShift.replace(/\u00A0/g,' ').trim(); 
             let shiftNormalized = cleanedShift; 
             if (/primer/i.test(cleanedShift)) shiftNormalized = 'Primer Turno (Infantil)'; 
@@ -916,7 +819,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const allStudents = await fetchStudents(null); 
       allStudents.sort((a, b) => a.name.localeCompare(b.name)); 
       if (allStudents.length > 0) { 
-        dom.historyStudentList.innerHTML = allStudents.map(s => `<div class="p-2 hover:bg-gray-50 cursor-pointer rounded-md history-student" data-student-id="${s.id}" data-student-name="${s.name}"><p class="font-semibold">${s.name}</p><p class="text-sm text-muted">${s.shift} - ${s.course}</p></div>`).join(''); 
+        dom.historyStudentList.innerHTML = allStudents.map(s => `<div class="p-2 hover:bg-gray-50 cursor-pointer rounded-md history-student极速" data-student-id="${s.id}" data-student-name="${s.name}"><p class="font-semibold">${s.name}</p><p class="text-sm text-muted">${s.shift} - ${s.course}</p></div>`).join(''); 
       } else { 
         dom.historyStudentList.innerHTML = '<p>No hay alumnos registrados.</p>'; 
       } 
@@ -924,7 +827,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error("Error fetching students for history", e); 
       dom.historyStudentList.innerHTML = '<p class="text-red-500">Error al cargar alumnos.</p>'; 
     } 
-    dom.historyStudentName.textContent = 'Selecciona un alumno'; 
+    dom.historyStudentName.textContent = 'Se极速lecciona un alumno'; 
     dom.historyDatesList.innerHTML = ''; 
   }
   
@@ -941,7 +844,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } 
     } catch(e) { 
       console.error("Error fetching student history", e); 
-      dom.historyDatesList.innerHTML = '<p class="text-red-500">Error al buscar las fechas.</p>'; 
+      dom.historyDatesList.innerHTML = '<p class极速="text-red-500">Error al buscar las fechas.</p>'; 
     } 
   }
 
@@ -956,9 +859,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const allStudents = await fetchStudents(null);
     const attendanceData = await fetchAttendanceByMonth(yearMonth);
     const daysInMonth = new Date(year, month, 0).getDate();
-    const studentsByCourse = allStudents.reduce((acc, s) => { (acc[s.course] = acc[s.course] || []).push(s); return acc; }, {});
-    let html = `<div class="printable-area"><h2 class="text-3xl font-bold text-center mb-4">${monthName.charAt(0).toUpperCase()+monthName.slice(1)} ${year}</h2>`;
-    const sortedCourses = Object.keys(studentsByCourse).sort((a,b)=> a.localeCompare(b));
+    const studentsByCourse = allStudents.reduce((acc, s) => { (acc[s.course极速] = acc[s.course] || []).push(s); return acc; }, {});
+    let html = `<div class="printable-area"><h2 class="text-3xl font-bold text-center mb-4">${monthName.charAt(0).toUpperCase()+month极速Name.slice(1)} ${year}</h2>`;
+    const sortedCourses = Object.keys(studentsByCourse).极速sort((a,b)=> a.localeCompare(b));
     for (const course of sortedCourses) {
       const students = studentsByCourse[course].sort((a,b)=> a.name.localeCompare(b.name));
       html += `<div class="report-course mt-6"><div class="course-header"><div>${course} — ${students.length} alumno${students.length>1?'s':''}</div><div class="text-sm">Días: ${daysInMonth}</div></div>`;
@@ -1008,7 +911,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <span>${student.name} - ${student.course}</span>
           </label>
           <div class="student-actions">
-            <button class="btn-sm btn-secondary" onclick="moveToSporadic('${student.id}')">Mover a Esporádicos</button>
+            <button class="btn-sm btn-secondary" onclick="moveToSporadic('${student.id}', '${student.name.replace(/'/g, "\\'")}', '${student.course.replace(/'/g, "\\'")}')">Mover a Esporádicos</button>
           </div>
         `;
         dom.fixedStudentsList.appendChild(listItem);
@@ -1024,7 +927,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <span>${student.name.replace(' (Esporádico)', '')} - ${student.course}</span>
           </label>
           <div class="student-actions">
-            <button class="btn-sm btn-success" onclick="moveToFixed('${student.id}')">Mover a Fijos</button>
+            <button class="btn-sm btn-success" onclick="moveToFixed('${student.id}', '${student.name.replace(' (Esporádico)', '').replace(/'/g, "\\'")}', '${student.course.replace(/'/g, "\\'")}')">Mover a Fijos</button>
           </div>
         `;
         dom.sporadicStudentsList.appendChild(listItem);
@@ -1042,7 +945,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </label>
           <div class="student-actions">
             <button class="btn-sm ${isFixed ? 'btn-secondary' : 'btn-success'}" 
-                    onclick="${isFixed ? `moveToSporadic('${student.id}')` : `moveToFixed('${student.id}')`}">
+                    onclick="${isFixed ? `moveToSporadic('${student.id}', '${student.name.replace(/'/g, "\\'")}', '${student.course.replace(/'/g, "\\'")}')` : `moveToFixed('${student.id}', '${student.name.replace(' (Esporádico)', '').replace(/'/g, "\\'")}', '${student.course.replace(/'/g, "\\'")}')`}">
               ${isFixed ? 'Mover a Esporádicos' : 'Mover a Fijos'}
             </button>
           </div>
@@ -1056,14 +959,70 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Funciones globales para mover entre fijos y esporádicos
-  window.moveToSporadic = function(studentId) {
-    console.log('Mover a esporádicos:', studentId);
-    // Aquí implementarías la lógica para cambiar el estado del alumno
+  window.moveToSporadic = async function(studentId, studentName, studentCourse) {
+    if (!confirm(`¿Estás seguro de mover a ${studentName} a esporádicos?`)) {
+      return;
+    }
+    
+    try {
+      // Obtener el turno del alumno
+      const studentDoc = await db.collection("students").doc(studentId).get();
+      const studentData = studentDoc.data();
+      
+      // Crear un nuevo alumno esporádico
+      await db.collection("students").add({
+        name: `${studentName} (Esporádico)`,
+        course: studentCourse,
+        shift: studentData.shift
+      });
+
+      // Eliminar el alumno fijo
+      await db.collection("students").doc(studentId).delete();
+
+      alert(`${studentName} ha sido movido a esporádicos correctamente.`);
+      loadAllStudentsForManagement(); // Recargar la lista
+      
+      // Si estamos en el dashboard, recargar los cursos
+      if (appState.currentShift) {
+        renderCourses(appState.currentShift);
+      }
+    } catch (error) {
+      console.error("Error moving student to sporadic:", error);
+      alert("Error al mover el alumno a esporádicos.");
+    }
   };
 
-  window.moveToFixed = function(studentId) {
-    console.log('Mover a fijos:', studentId);
-    // Aquí implementarías la lógica para cambiar el estado del alumno
+  window.moveToFixed = async function(studentId, studentName, studentCourse) {
+    if (!confirm(`¿Estás seguro de mover a ${studentName} a fijos?`)) {
+      return;
+    }
+    
+    try {
+      // Obtener el turno del alumno
+      const studentDoc = await db.collection("students").doc(studentId).get();
+      const studentData = studentDoc.data();
+      
+      // Crear un nuevo alumno fijo
+      await db.collection("students").add({
+        name: studentName,
+        course: studentCourse,
+        shift: studentData.shift
+      });
+
+      // Eliminar el alumno esporádico
+      await db.collection("students").doc(studentId).delete();
+
+      alert(`${studentName} ha sido movido a fijos correctamente.`);
+      loadAllStudentsForManagement(); // Recargar la lista
+      
+      // Si estamos en el dashboard, recargar los cursos
+      if (appState.currentShift) {
+        renderCourses(appState.currentShift);
+      }
+    } catch (error) {
+      console.error("Error moving student to fixed:", error);
+      alert("Error al mover el alumno a fijos.");
+    }
   };
 
   function filterStudents(e) {
@@ -1089,8 +1048,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setUIVisibility('login'); 
       } 
     } else { 
-        // Si hay un usuario real logueado, es un admin, no un profesor.
-        // Si no hay hash, y está logueado, debe ir al panel de admin.
         if (isRealUser) {
             setUIVisibility('admin');
         } else {
@@ -1115,8 +1072,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('export-date-input').value = new Date().toISOString().slice(0,10);
 
   document.getElementById('show-history-btn').addEventListener('click', showHistoryModal);
-  document.getElementById('show-monthly-report-btn').addEventListener('click', () => { const now = new Date(); const year = now.getFullYear(); const month = (now.getMonth() + 1).toString().padStart(2, '0'); dom.reportMonthInput.value = `${year}-${month}`; dom.monthlyReportModal.classList.remove('hidden'); setTimeout(() => dom.monthlyReportModal.classList.remove('opacity-0'), 10); generateMonthlyReport(`${year}-${month}`); });
-  dom.reportMonthInput.addEventListener('change', (e) => generateMonthlyReport(e.target.value));
+  document.getElementById('show-monthly-report-btn').addEventListener('click', () => { const now = new Date(); const year = now.getFullYear(); const month = (now.getMonth() + 1).toString().padStart(2, '极速0'); dom.reportMonthInput.value = `${year}-${month}`; dom.monthlyReportModal.classList.remove('hidden'); setTimeout(() => dom.monthlyReportModal.classList.remove('opacity-0'), 10); generateMonthlyReport(`${year}-${month}`); });
+  dom.reportMonthInput.addEventListener('change', (极速e) => generateMonthlyReport(e.target.value));
   
   // Funcionalidad de gestión de alumnos
   dom.manageStudentsBtn.addEventListener('click', openManageStudentsModal);
@@ -1127,11 +1084,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Funcionalidad de pestañas
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      // Desactivar todas las pestañas
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       
-      // Activar la pestaña clickeada
       tab.classList.add('active');
       const tabId = tab.dataset.tab;
       document.getElementById(`${tabId}-tab`).classList.add('active');
@@ -1143,9 +1098,8 @@ document.addEventListener('DOMContentLoaded', () => {
   dom.sporadicSearch.addEventListener('input', filterStudents);
   dom.allSearch.addEventListener('input', filterStudents);
   
-  // Función de impresión mejorada
+  // Función de impresión
   dom.printReportBtn.addEventListener('click', () => {
-    // Crear una ventana de impresión específica para el informe
     const printContent = dom.monthlyReportContent.querySelector('.printable-area');
     if (!printContent) {
       alert('No hay contenido para imprimir. Genera el informe primero.');
@@ -1165,9 +1119,9 @@ document.addEventListener('DOMContentLoaded', () => {
             .report-table th, .report-table td { border: 1px solid #ccc; padding: 4px; text-align: center; }
             .report-table th:first-child, .report-table td:first-child { text-align: left; }
             .attendance-mark { background: #067a46; color: white; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
-            .course-header { background: #8b0630; color: white; padding: 8px; margin-top: 20px; font-weight: bold; }
+            .course-header { background: #8b063极速0; color: white; padding: 8px; margin-top: 20px; font-weight: bold; }
             .total { font-weight: bold; color: #8b0630; }
-            @page { size: landscape; margin: 0.5cm; }
+            @page { size: landscape; margin: 0.5极速cm; }
           </style>
         </head>
         <body>
@@ -1177,7 +1131,6 @@ document.addEventListener('DOMContentLoaded', () => {
     `);
     printWindow.document.close();
     
-    // Esperar a que se cargue el contenido antes de imprimir
     printWindow.onload = function() {
       printWindow.print();
       printWindow.onafterprint = function() {
