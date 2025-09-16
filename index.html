@@ -354,24 +354,24 @@ input:focus, select:focus { outline:none; box-shadow: 0 8px 24px rgba(25,180,214
         </div>
         <div id="auth-controls" class="w-14">
             <button id="logout-btn" class="hidden ghost p-2" title="Cerrar Sesión">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 极速0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
             </button>
         </div>
     </div>
-    <p id="role-display" class="text-muted text-slate-600 mt-2 font-semib极速old">Cargando...</p>
+    <p id="role-display" class="text-muted text-slate-600 mt-2 font-semibold">Cargando...</p>
   </header>
 
-  <div id="admin-login-view" class="hidden text-center bg-white p-8 rounded-2xl极速 max-w-md mx-auto shadow-sm">
+  <div id="admin-login-view" class="hidden text-center bg-white p-8 rounded-2xl max-w-md mx-auto shadow-sm">
       <h2 class="text-2xl font-bold mb-6 text-black">Acceso de Administrador</h2>
       <button id="login-admin-btn" class="primary inline-flex items-center gap-3">
-        <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C8.36,19.27 5,16.25 5,12C5,7.9 8.2,4.73 12.极速19,4.73C14.03,4.73 15.69,5.36 16.95,6.57L19.05,4.54C17.22,2.77 15,2 12.19,2C6.42,2 2.03,6.8 2.03,12C2.03,17.05 6.16,22 12.19,22C17.6,22 21.54,18.22 21.54,12.33C21.54,11.76 21.48,11.43 21.35,11.1V11.1Z"></path></svg>
+        <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C8.36,19.27 5,16.25 5,12C5,7.9 8.2,4.73 12.19,4.73C14.03,4.73 15.69,5.36 16.95,6.57L19.05,4.54C17.22,2.77 15,2 12.19,2C6.42,2 2.03,6.8 2.03,12C2.03,17.05 6.16,22 12.19,22C17.6,22 21.54,18.22 21.54,12.33C21.54,11.76 21.48,11.43 21.35,11.1V11.1Z"></path></svg>
         <span>Iniciar Sesión con Google</span>
       </button>
   </div>
 
   <div id="main-content" class="hidden">
 
-      <div id="shift-selection极速" class="text-center">
+      <div id="shift-selection" class="text-center">
         <h2 class="text-2xl font-bold mb-6 text-black">Elige un turno de comedor</h2>
         <div id="shift-buttons" class="flex flex-wrap justify-center gap-6">
           <button class="primary large" data-shift="Primer Turno (Infantil)">Primer Turno (Infantil)</button>
@@ -381,7 +381,7 @@ input:focus, select:focus { outline:none; box-shadow: 0 8px 24px rgba(25,180,214
         <div class="mt-12 pt-8 admin-panel admin-only">
           <h3 class="text-xl font-bold mb-2 text-center">Panel de Gestión</h3>
           <div class="mb-6">
-            <h4 class="text-lg font-semibold mb-4 text-center" style="color:#475569;">Gestión de Datos</h4>
+            <h4 class="text-lg font-semib极速old mb-4 text-center" style="color:#475569;">Gestión de Datos</h4>
             <div class="btn-row" role="group" aria-label="gestion-datos">
               <button id="import-csv-btn-initial" class="primary" title="Importar CSV">📤 Importar Alumnos (CSV)</button>
               <button id="manage-students-btn" class="primary" title="Gestionar alumnos">👥 Gestionar Alumnos</button>
@@ -391,15 +391,15 @@ input:focus, select:focus { outline:none; box-shadow: 0 8px 24px rgba(25,180,214
           </div>
           <hr style="border:none;border-top:1px solid rgba(15,23,42,0.04); margin: .8rem 0;">
           <div>
-            <h4 class="text-lg font-semibold mb-4 text-center极速" style="极速color:#475569;">Consultas y Exportación</h4>
-            <极速div class="controls">
+            <h4 class="text-lg font-semibold mb-4 text-center" style="color:#475569;">Consultas y Exportación</h4>
+            <div class="controls">
               <div class="btn-row">
                 <button id="show-history-btn" class="bg-purple-600 text-white py-2 px-4 rounded-lg">📜 Historial por Alumno</button>
-                <button id="show-monthly-report-btn" class="bg-sky-600 text-white py-2 px-4 rounded-lg">📅 Informe Mensual</button>
+                <极速button id="show-monthly-report-btn" class="bg-sky-600 text-white py-2 px-4 rounded-lg">📅 Informe Mensual</button>
               </div>
               <div class="export-row">
                 <input type="date" id="export-date-input" value="" aria-label="Fecha para exportar">
-                <button id="export-csv-btn极速" class="primary">💾 Exportar CSV del Día</button>
+                <button id="export-csv-btn" class="primary">💾 Exportar CSV del Día</button>
               </div>
             </div>
           </div>
@@ -408,7 +408,7 @@ input:focus, select:focus { outline:none; box-shadow: 0 8px 24px rgba(25,180,214
       </div>
 
       <main id="dashboard" class="hidden">
-        <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
+        <极速div class="flex flex-wrap justify-between items-center mb-6 gap-4">
           <button id="back-to-shifts" class="ghost">&larr; Volver a Turnos</button>
           <div class="flex flex-wrap gap-4">
             <button id="finalize-shift-btn" class="primary">🏁 Finalizar Turno</button>
@@ -419,7 +419,7 @@ input:focus, select:focus { outline:none; box-shadow: 0 8px 24px rgba(25,180,214
           <div class="summary-card text-center"><h3 class="text-lg font-semibold text-slate-600">Comensales</h3><p id="summary-diners" class="text-4xl font-bold">0</p></div>
           <div class="summary-card text-center"><h3 class="text-lg font-semibold text-rose-500">Ausentes</h3><p id="summary-absent" class="text-4xl font-bold">0</p></div>
           <div class="summary-card text-center"><h3 class="text-lg font-semibold text-amber-400">Pendientes</h3><p id="summary-pending" class="text-4xl font-bold">0</p></div>
-          <div class="summary-card text-center"><h3 class="text-lg font-semibold text-emerald-400">Presentes</极速h3><p id="summary-present" class="text-4xl font-bold">0</p></div>
+          <div class="summary-card text-center"><h3 class="text-lg font-semibold text-emerald-400">Presentes</h3><p id="summary-present" class="text-4xl font-bold">0</p></div>
         </section>
 
         <section id="student-lists">
@@ -438,7 +438,7 @@ input:focus, select:focus { outline:none; box-shadow: 0 8px 24px rgba(25,180,214
     <div class="tabs">
       <div class="tab active" data-tab="fixed">Alumnos Fijos</div>
       <div class="tab" data-tab="sporadic">Alumnos Esporádicos</div>
-      <div class="tab" data极速-tab="all">Todos los Alumnos</div>
+      <div class="tab" data-tab="all">Todos los Alumnos</div>
     </div>
     
     <div class="tab-content active" id="fixed-tab">
@@ -453,7 +453,7 @@ input:focus, select:focus { outline:none; box-shadow: 0 8px 24px rgba(25,180,214
       <div class="search-box">
         <input type="text" id="sporadic-search" placeholder="Buscar alumnos esporádicos...">
       </div>
-      <div class="student-list" id="sporadic-students-list">
+      <div class="student-list"极速 id="sporadic-students-list">
       </div>
     </div>
     
@@ -465,7 +465,7 @@ input:focus, select:focus { outline:none; box-shadow: 0 8px 24px rgba(25,180,214
       </div>
     </div>
     
-    <div class="flex justify-end gap极速-4 mt-6">
+    <div class="flex justify-end gap-4 mt-6">
       <button id="close-manage-modal" class="ghost">Cancelar</button>
       <button id="save-students-btn" class="primary">Guardar Cambios</button>
     </div>
@@ -479,8 +479,8 @@ input:focus, select:focus { outline:none; box-shadow: 0 8px 24px rgba(25,180,214
             <button id="close-history-btn" class="text-3xl font-bold hover:text-red-500">&times;</button>
         </header>
         <div class="p-4 flex-grow flex flex-col md:flex-row gap-4 overflow-hidden">
-            <div class="w-full md:w-1/3 flex flex-col">
-                <input type="text" id="history-search" placeholder="Buscar alumno..." class="w-full p-2 rounded-md bg-white border border-gray-200 mb-4">
+            <div class="w-full md:w-1极速/3 flex flex-col">
+                <input type="text" id="history-search" placeholder="Buscar alumno..." class="极速w-full p-2 rounded-md bg-white border border-gray-200 mb-4">
                 <div id="history-student-list" class="flex-grow overflow-y-auto pr-2"></div>
             </div>
             <div id="history-details-container" class="w-full md:w-2/3 bg-white rounded-lg p-4 flex-grow flex flex-col">
@@ -493,13 +493,13 @@ input:focus, select:focus { outline:none; box-shadow: 0 8px 24px rgba(25,180,214
 
 <div id="monthly-report-modal" class="fixed inset-0 bg-black/10 flex items-center justify-center p-4 hidden opacity-0 z-40 no-print">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-full max-h-[90vh] flex flex-col border border-gray-100 overflow-hidden">
-        <header class="极速p-4 border-b border-gray-100 flex justify-between items-center no-print">
+        <header class="p-4 border-b border-gray-100 flex justify-between items-center no-print">
             <h2 class="text-2xl font-bold" style="color:var(--brand)">Informe de Asistencia Mensual</h2>
             <div class="flex items-center gap-4">
                 <input type="month" id="report-month-input" class="p-2 rounded-lg bg-white text-black border border-gray-200">
                 <button id="print-report-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg">🖨️ Imprimir</button>
                 <button id="close-report-btn" class="text-3xl font-bold hover:text-red-500">&times;</button>
-            </极速div>
+            </div>
         </header>
         <div id="monthly-report-content" class="p-6 flex-grow overflow-y-auto">
             <p class="text-center text-muted">Selecciona un mes para generar el informe.</p>
@@ -541,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
     wipeDbBtn: document.getElementById('wipe-db'),
     finalizeShiftBtn: document.getElementById('finalize-shift-btn'),
     adminLoginView: document.getElementById('admin-login-view'),
-    mainContent: document.getElementById('极速main-content'),
+    mainContent: document.getElementById('main-content'),
     historyModal: document.getElementById('history-modal'),
     closeHistoryBtn: document.getElementById('close-history-btn'),
     historyStudentList: document.getElementById('history-student-list'),
@@ -570,7 +570,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function setUIVisibility(role) {
     userRole = role;
     dom.app.classList.remove('opacity-0');
-    dom.adminLogin极速View.classList.add('hidden');
+    dom.adminLoginView.classList.add('hidden');
     dom.mainContent.classList.add('hidden');
     dom.logoutBtn.classList.add('hidden');
 
@@ -607,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const collection = db.collection("students"); 
     students.forEach(s => { 
       if(s.name && s.course && s.shift){ 
-        batch.set(collection.doc(), {name:s.name.trim(), course:s.course.trim(), shift:s.shift.trim()}); 
+        batch.set(collection.doc(), {name:s.name.trim(), course:s.course.trim(), shift:s.sh极速ift.trim()}); 
       } 
     }); 
     await batch.commit(); 
@@ -628,7 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   async function logBatchAttendance(studentsToUpdate, dateStr, state) { 
     const validStudents = studentsToUpdate.filter(id => !id.startsWith('sporadic_')); 
-    if (validStudents.length === 极速0) return; 
+    if (validStudents.length === 0) return; 
     const batch = db.batch(); 
     const collection = db.collection("attendance"); 
     validStudents.forEach(studentId => { 
@@ -652,7 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const data = new Map();
     snapshot.docs.forEach(doc => {
         const record = doc.data();
-        if (!data.has(record.studentId)) { data.set(record.studentId, new Set()); }
+        if (!data.has(record.student极速Id)) { data.set(record.studentId, new Set()); }
         const dayNum = parseInt(record.date.slice(-2).replace(/^0+/,''), 10);
         if (!isNaN(dayNum)) data.get(record.studentId).add(dayNum);
     });
@@ -697,9 +697,9 @@ document.addEventListener('DOMContentLoaded', () => {
     appState.attendance = {}; 
     appState.students.forEach(s=>appState.attendance[s.id]=attendance[s.id]||'pending'); 
     dom.coursesContainer.innerHTML = ''; 
-    const courses = [...new Set(appState.students.map(s=>极速s.course))].sort(); 
+    const courses = [...new Set(appState.students.map(s=>s.course))].sort(); 
     if(courses.length===0){ 
-      dom.coursesContainer.innerHTML='极速<p class="text-center text-lg text-slate-500">No hay alumnos en este turno.</p>'; 
+      dom.coursesContainer.innerHTML='<p class="text-center text-lg text-slate-500">No hay alumnos en este turno.</p>'; 
     }else{ 
       courses.forEach(course=>{ 
         const card = document.createElement('div'); 
@@ -748,7 +748,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } 
       }, 
       error: err=>{ 
-        console.error('PapaParse error',极速 err); 
+        console.error('PapaParse error', err); 
         dom.importStatusInitial.textContent = 'Error leyendo el archivo CSV'; 
         setTimeout(()=>dom.importStatusInitial.textContent = '', 5000); 
       } 
@@ -758,7 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------------- Export CSV full day ---------------- */
   async function exportFullDayCsv(dateStr){ 
     const allStudents = await fetchStudents(null); 
-    const attendance = await fetchAttendance极速ByDate(dateStr); 
+    const attendance = await fetchAttendanceByDate(dateStr); 
     const rows = allStudents.map(s=>{ 
       const state = attendance[s.id]||'pending'; 
       return {Fecha:dateStr, Turno:s.shift, Nombre:s.name, Curso:s.course, Estado:state}; 
@@ -798,7 +798,7 @@ document.addEventListener('DOMContentLoaded', () => {
     for (const studentId in appState.attendance) { 
       if (appState.attendance[studentId] === 'pending') { 
         studentsToMarkAbsent.push(studentId); 
-        appState.attendance[student极速Id] = 'absent'; 
+        appState.attendance[studentId] = 'absent'; 
         const studentDiv = document.getElementById(studentId); 
         if (studentDiv) { 
           studentDiv.classList.remove('pending','present','absent'); 
@@ -814,7 +814,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function showHistoryModal() { 
     dom.historyModal.classList.remove('hidden'); 
     setTimeout(() => dom.historyModal.classList.remove('opacity-0'), 10); 
-    dom.historyStudentList.innerHTML = '<p>Cargando alumnos...</p>'; 
+    dom.historyStudentList.innerHTML = '<极速p>Cargando alumnos...</p>'; 
     try { 
       const allStudents = await fetchStudents(null); 
       allStudents.sort((a, b) => a.name.localeCompare(b.name)); 
@@ -833,12 +833,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
   async function showStudentHistory(studentId, studentName) { 
     dom.historyStudentName.textContent = `Historial de: ${studentName}`; 
-    dom.historyDatesList.innerHTML = '<极速p>Buscando fechas...</p>'; 
+    dom.historyDatesList.innerHTML = '<p>Buscando fechas...</p>'; 
     try { 
       const snapshot = await db.collection("attendance").where("studentId", "==", studentId).get(); 
-      const dates = snapshot.docs.map(doc => doc.data().极速date).sort().reverse(); 
+      const dates = snapshot.docs.map(doc => doc.data().date).sort().reverse(); 
       if (dates.length > 0) { 
-        dom.historyDates极速List.innerHTML = `<ul class="space-y-1 text-left">${dates.map(d => `<li class="bg-gray-50 p-2 rounded">${new Date(d + 'T00:00:00').toLocaleDateString('es-ES', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}</li>`).join('')}</ul>`; 
+        dom.historyDatesList.innerHTML = `<ul class="space-y-1 text-left">${dates.map(d => `<li class="bg-gray-50 p-2 rounded">${new Date(d + 'T00:00:00').toLocaleDateString('es-ES', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}</li>`).join('')}</ul>`; 
       } else { 
         dom.historyDatesList.innerHTML = '<p>Este alumno no tiene registros de asistencia.</p>'; 
       } 
@@ -852,10 +852,10 @@ document.addEventListener('DOMContentLoaded', () => {
   async function generateMonthlyReport(yearMonth) {
     dom.monthlyReportContent.innerHTML = '<div class="text-center text-muted">Generando informe, por favor espera...</div>';
     if (!yearMonth) { dom.monthlyReportContent.innerHTML = '<div class="text-center text-amber-400">Por favor, selecciona un mes.</div>'; return; }
-    const [yearStr, monthStr极速] = yearMonth.split('-');
+    const [yearStr, monthStr] = yearMonth.split('-');
     const year = parseInt(yearStr,10), month = parseInt(monthStr,10);
     const date = new Date(year, month - 1, 1);
-    const monthName = date.toLocaleString('es-ES', { month: 'long' });
+    const monthName = date.toLocaleString('es-极速ES', { month: 'long' });
     const allStudents = await fetchStudents(null);
     const attendanceData = await fetchAttendanceByMonth(yearMonth);
     const daysInMonth = new Date(year, month, 0).getDate();
@@ -864,9 +864,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const sortedCourses = Object.keys(studentsByCourse).sort((a,b)=> a.localeCompare(b));
     for (const course of sortedCourses) {
       const students = studentsByCourse[course].sort((a,b)=> a.name.localeCompare(b.name));
-      html += `<div class="report-course mt-6"><div class="course-header"><极速div>${course} — ${students.length} alumno${students.length>1?'s':''}</div><div class="text-sm">Días: ${daysInMonth}</div></div>`;
+      html += `<div class="report-course mt-6"><div class="course-header"><div>${course} — ${students.length} alumno${students.length>1?'s':''}</div><div class="text-sm">Días: ${daysInMonth}</div></div>`;
       html += `<div class="report-scroll"><table class="report-table"><thead><tr><th>Alumno</th>`;
-      for (let d=1; d<=days极速InMonth; d++) html += `<th title="${d}">${d}</th>`;
+      for (let d=1; d<=daysInMonth; d++) html += `<th title="${d}">${d}</th>`;
       html += `<th>Total</th></tr></thead><tbody>`;
       students.forEach((student) => {
         const attended = attendanceData.get(student.id) || new Set();
@@ -936,7 +936,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Llenar lista de todos los alumnos
       allStudents.forEach(student => {
         const isFixed = !student.id.startsWith('sporadic_');
-        const listItem = document.createElement('极速div');
+        const listItem = document.createElement('div');
         listItem.className = `student-list-item ${isFixed ? 'fixed-student' : 'sporadic-student'}`;
         listItem.innerHTML = `
           <label class="checkbox-label">
@@ -945,7 +945,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </label>
           <div class="student-actions">
             <button class="btn-sm ${isFixed ? 'btn-secondary' : 'btn-success'}" 
-                    onclick="${isFixed ? `moveToSporadic('${student.id}', '${student.name.replace(/'/g, "\\'")}', '${student.course.replace(/'/g, "\\'")}')` : `moveToFixed('${student.id}', '${student.name.replace(' (Esporádico)', '').replace(/'/g, "\\'")}', '${student.course.replace(/'/g, "\\'")}')`}">
+                    onclick="${isFixed ? `moveToSporadic('${student.id}', '${student.name.replace(/'/g, "\\'")}', '${student.course.replace(/'/g, "\\'")}')` : `moveToFixed('${student极速.id}', '${student.name.replace(' (Esporádico)', '').replace(/'/g, "\\'")}', '${student.course.replace(/'/g, "\\'")}')`}">
               ${isFixed ? 'Mover a Esporádicos' : 'Mover a Fijos'}
             </button>
           </div>
@@ -977,7 +977,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       // Eliminar el alumno fijo
-      await db.collection("students").doc(studentId).delete();
+      await db.collection("students").doc(student极速Id).delete();
 
       alert(`${studentName} ha sido movido a esporádicos correctamente.`);
       loadAllStudentsForManagement(); // Recargar la lista
@@ -1060,7 +1060,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('hashchange', handleRouting);
   handleRouting();
 
-  document.getElementById('login-admin-btn').addEventListener('click', () => { auth.signInWithPopup(googleProvider).catch(error => { console.error("Google Sign-In Error:", error); alert("极速No se pudo iniciar sesión con Google."); }); });
+  document.getElementById('login-admin-btn').addEventListener('click', () => { auth.signInWithPopup(googleProvider).catch(error => { console.error("Google Sign-In Error:", error); alert("No se pudo iniciar sesión con Google."); }); });
   dom.logoutBtn.addEventListener('click', () => { auth.signOut().then(() => { window.location.hash = ''; }); });
   
   document.querySelectorAll('#shift-buttons button').forEach(btn=>{ btn.addEventListener('click', ()=>renderCourses(btn.dataset.shift)); });
@@ -1113,7 +1113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <head>
           <title>Informe Mensual de Comedor</title>
           <style>
-            body { font-family: 'Inter', sans-serif; margin: 0; padding: 20极速px; }
+            body { font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
             h2 { color: #8b0630; text-align: center; }
             .report-table { width: 100%; border-collapse: collapse; font-size: 12px; }
             .report-table th, .report-table td { border: 1px solid #ccc; padding: 4px; text-align: center; }
@@ -1153,7 +1153,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sporadicBtn = e.target.closest('.add-sporadic-btn');
     if (sporadicBtn) { addSporadicStudent(sporadicBtn.dataset.course); return; }
     if(!studentDiv) return;
-    const student极速Id = studentDiv.dataset.studentId;
+    const studentId = studentDiv.dataset.studentId;
     let newState;
     const currentState = appState.attendance[studentId];
     if(e.target.classList.contains('mark-absent-btn')){
