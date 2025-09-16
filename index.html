@@ -4,15 +4,15 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Gestor de Comedor Escolar</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+<link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap)" rel="stylesheet">
 <!-- PWA Meta Tags -->
 <meta name="theme-color" content="#ffffff">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Comedor">
-<link rel="apple-touch-icon" href="https://placehold.co/192x192/8b0630/FFFFFF?text=CEVP">
+<link rel="apple-touch-icon" href="[https://placehold.co/192x192/8b0630/FFFFFF?text=CEVP](https://placehold.co/192x192/8b0630/FFFFFF?text=CEVP)">
 <link rel="manifest" href="/manifest.json">
 
 <!-- ===== Diseño claro con colores corporativos ===== -->
@@ -263,12 +263,12 @@ button.ghost {
     <div class="flex justify-between items-center">
         <div class="w-14"></div> <!-- Espaciador izquierdo -->
         <div class="flex flex-col items-center">
-            <div class="logo"><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><rect fill='%23ffffff' width='48' height='48' rx='8'/><text x='50%' y='55%' font-size='18' text-anchor='middle' fill='%238b0630' font-family='Inter'>CEVP</text></svg>" alt="logo" style="width:44px;height:44px;border-radius:8px;"></div>
+            <div class="logo"><img src="data:image/svg+xml;utf8,<svg xmlns='[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)' width='48' height='48'><rect fill='%23ffffff' width='48' height='48' rx='8'/><text x='50%' y='55%' font-size='18' text-anchor='middle' fill='%238b0630' font-family='Inter'>CEVP</text></svg>" alt="logo" style="width:44px;height:44px;border-radius:8px;"></div>
             <h1 class="text-4xl font-extrabold text-black mt-2">Gestor de Comedor</h1>
         </div>
         <div id="auth-controls" class="w-14">
             <button id="logout-btn" class="hidden ghost p-2" title="Cerrar Sesión">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
             </button>
         </div>
     </div>
@@ -370,11 +370,11 @@ button.ghost {
 </div>
 
 <!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="[https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js](https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js)"></script>
+<script src="[https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js](https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js)"></script>
+<script src="[https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js](https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js)"></script>
 <!-- PapaParse -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="[https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js](https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js)"></script>
 
 <!-- ===== JS: lógica (sin tocar la estructura principal) ===== -->
 <script>
@@ -536,6 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const hash = window.location.hash; 
     const user = auth.currentUser; 
     const isRealUser = user && !user.isAnonymous; 
+    
     if (hash === '#admin') { 
       if (isRealUser) {
         setUIVisibility('admin');
@@ -543,7 +544,12 @@ document.addEventListener('DOMContentLoaded', () => {
         setUIVisibility('login'); 
       } 
     } else { 
-        setUIVisibility('user'); 
+        if (isRealUser) {
+          // If logged in but not on #admin, treat as admin on user page
+          setUIVisibility('admin');
+        } else {
+          setUIVisibility('user');
+        }
     } 
   }
 
@@ -567,7 +573,12 @@ document.addEventListener('DOMContentLoaded', () => {
   dom.reportMonthInput.addEventListener('change', (e) => generateMonthlyReport(e.target.value));
   
   dom.printReportBtn.addEventListener('click', () => {
-    window.print();
+    // Escondemos el modal para que no interfiera, pero su contenido (ya marcado como printable) se imprimirá
+    dom.monthlyReportModal.classList.add('hidden');
+    setTimeout(() => {
+        window.print();
+        dom.monthlyReportModal.classList.remove('hidden');
+    }, 100);
   });
   dom.closeReportBtn.addEventListener('click', () => { dom.monthlyReportModal.classList.add('opacity-0'); setTimeout(() => dom.monthlyReportModal.classList.add('hidden'), 300); });
   
