@@ -4,15 +4,15 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Gestor de Comedor Escolar</title>
-<script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-<link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap)" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <!-- PWA Meta Tags -->
 <meta name="theme-color" content="#ffffff">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Comedor">
-<link rel="apple-touch-icon" href="[https://placehold.co/192x192/8b0630/FFFFFF?text=CEVP](https://placehold.co/192x192/8b0630/FFFFFF?text=CEVP)">
+<link rel="apple-touch-icon" href="https://placehold.co/192x192/8b0630/FFFFFF?text=CEVP">
 <link rel="manifest" href="/manifest.json">
 
 <!-- ===== Diseño claro con colores corporativos ===== -->
@@ -200,7 +200,7 @@ button.ghost {
 .student-item.pending { border-left-color: #cbd5e1; background: #ffffff; }
 .student-item.present { 
   border-left-color: var(--success); 
-  background-color: #dcfce7; /* Verde más visible */
+  background-color: #dcfce7;
   box-shadow: 0 8px 20px rgba(6,122,70,0.04); 
 }
 .student-item.absent { border-left-color: var(--danger); background: linear-gradient(90deg, rgba(201,42,42,0.04), #fff); opacity: .95; text-decoration: line-through; }
@@ -226,56 +226,190 @@ button.ghost {
 .attendance-mark { width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; background:var(--success); color:#fff; border-radius:50%; font-weight:700; font-size:12px; }
 .report-table td.total { font-weight:700; color:var(--brand); }
 
-/* Small screens */
 @media (max-width:900px){
   .report-table th, .report-table td { padding:.25rem .35rem; font-size:11px; min-width:22px; }
   .admin-panel .controls { flex-direction: column; gap: .75rem; }
 }
 
-/* print */
 @media print {
   body > *:not(.printable-area) {
     display: none !important;
   }
-  .printable-area, .printable-area * {
-    visibility: visible !important;
-  }
   .printable-area {
+    display: block !important;
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
+    background: white;
+    padding: 20px;
   }
   body { background:#fff !important; color:#000 !important; margin: 0; padding: 0; }
   .report-table thead th { background:#eee !important; -webkit-print-color-adjust:exact; }
   .report-table td, .report-table th { border:1px solid #ccc !important; }
   .attendance-mark { background:var(--success) !important; color:#fff !important; -webkit-print-color-adjust:exact; }
+  
+  .report-table {
+    width: 100% !important;
+    font-size: 10px !important;
+  }
+  .report-table th, .report-table td {
+    padding: 2px !important;
+    min-width: 20px !important;
+  }
+  .report-course .course-header {
+    background: #8b0630 !important;
+    -webkit-print-color-adjust: exact;
+  }
+  
+  @page {
+    size: landscape;
+    margin: 0.5cm;
+  }
+}
+
+.fixed-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.student-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+
+.student-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.student-list-item:last-child {
+  border-bottom: none;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 15px;
+}
+
+.tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+}
+
+.tab.active {
+  border-bottom-color: #8b0630;
+  color: #8b0630;
+  font-weight: 600;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.search-box {
+  margin-bottom: 15px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+.student-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 0.875rem;
+}
+
+.btn-success {
+  background-color: #067a46;
+  color: white;
+}
+
+.btn-secondary {
+  background-color: #6b7280;
+  color: white;
+}
+
+.fixed-student {
+  border-left: 4px solid #067a46;
+}
+
+.sporadic-student {
+  border-left: 4px solid #19b4d6;
 }
 </style>
-
-<!-- ===== end styles ===== -->
 </head>
 <body>
 
-<!-- App principal -->
 <div id="app" class="container mx-auto p-4 md:p-8 max-w-7xl">
   <header class="text-center mb-10">
     <div class="flex justify-between items-center">
-        <div class="w-14"></div> <!-- Espaciador izquierdo -->
+        <div class="w-14"></div>
         <div class="flex flex-col items-center">
-            <div class="logo"><img src="data:image/svg+xml;utf8,<svg xmlns='[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)' width='48' height='48'><rect fill='%23ffffff' width='48' height='48' rx='8'/><text x='50%' y='55%' font-size='18' text-anchor='middle' fill='%238b0630' font-family='Inter'>CEVP</text></svg>" alt="logo" style="width:44px;height:44px;border-radius:8px;"></div>
+            <div class="logo"><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><rect fill='%23ffffff' width='48' height='48' rx='8'/><text x='50%' y='55%' font-size='18' text-anchor='middle' fill='%238b0630' font-family='Inter'>CEVP</text></svg>" alt="logo" style="width:44px;height:44px;border-radius:8px;"></div>
             <h1 class="text-4xl font-extrabold text-black mt-2">Gestor de Comedor</h1>
         </div>
         <div id="auth-controls" class="w-14">
             <button id="logout-btn" class="hidden ghost p-2" title="Cerrar Sesión">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
             </button>
         </div>
     </div>
     <p id="role-display" class="text-muted text-slate-600 mt-2 font-semibold">Cargando...</p>
   </header>
 
-  <!-- Login view / Main -->
   <div id="admin-login-view" class="hidden text-center bg-white p-8 rounded-2xl max-w-md mx-auto shadow-sm">
       <h2 class="text-2xl font-bold mb-6 text-black">Acceso de Administrador</h2>
       <button id="login-admin-btn" class="primary inline-flex items-center gap-3">
@@ -286,13 +420,12 @@ button.ghost {
 
   <div id="main-content" class="hidden">
 
-      <!-- Selección de turno -->
       <div id="shift-selection" class="text-center">
         <h2 class="text-2xl font-bold mb-6 text-black">Elige un turno de comedor</h2>
         <div id="shift-buttons" class="flex flex-wrap justify-center gap-6">
-  <button class="primary large" data-shift="Primer Turno (Infantil)">Primer Turno (Infantil)</button>
-  <button class="primary large" data-shift="Segundo Turno (Primaria)">Segundo Turno (Primaria)</button>
-</div>
+          <button class="primary large" data-shift="Primer Turno (Infantil)">Primer Turno (Infantil)</button>
+          <button class="primary large" data-shift="Segundo Turno (Primaria)">Segundo Turno (Primaria)</button>
+        </div>
 
         <div class="mt-12 pt-8 admin-panel admin-only">
           <h3 class="text-xl font-bold mb-2 text-center">Panel de Gestión</h3>
@@ -300,6 +433,7 @@ button.ghost {
             <h4 class="text-lg font-semibold mb-4 text-center" style="color:#475569;">Gestión de Datos</h4>
             <div class="btn-row" role="group" aria-label="gestion-datos">
               <button id="import-csv-btn-initial" class="primary" title="Importar CSV">📤 Importar Alumnos (CSV)</button>
+              <button id="manage-students-btn" class="primary" title="Gestionar alumnos">👥 Gestionar Alumnos</button>
               <button id="wipe-db" class="ghost" title="Borrar todos los alumnos">🗑️ Borrar todos los alumnos</button>
             </div>
             <p id="import-status-initial" class="text-center mt-3" style="min-height:18px"></p>
@@ -322,7 +456,6 @@ button.ghost {
 
       </div>
 
-      <!-- Dashboard -->
       <main id="dashboard" class="hidden">
         <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
           <button id="back-to-shifts" class="ghost">&larr; Volver a Turnos</button>
@@ -347,7 +480,47 @@ button.ghost {
 
 <input type="file" id="csv-file-input" class="hidden" accept=".csv">
 
-<!-- History Modal -->
+<div id="manage-students-modal" class="fixed-modal hidden">
+  <div class="modal-content">
+    <h2 class="text-2xl font-bold mb-4 text-center" style="color:var(--brand)">Gestión de Alumnos</h2>
+    
+    <div class="tabs">
+      <div class="tab active" data-tab="fixed">Alumnos Fijos</div>
+      <div class="tab" data-tab="sporadic">Alumnos Esporádicos</div>
+      <div class="tab" data-tab="all">Todos los Alumnos</div>
+    </div>
+    
+    <div class="tab-content active" id="fixed-tab">
+      <div class="search-box">
+        <input type="text" id="fixed-search" placeholder="Buscar alumnos fijos...">
+      </div>
+      <div class="student-list" id="fixed-students-list">
+      </div>
+    </div>
+    
+    <div class="tab-content" id="sporadic-tab">
+      <div class="search-box">
+        <input type="text" id="sporadic-search" placeholder="Buscar alumnos esporádicos...">
+      </div>
+      <div class="student-list" id="sporadic-students-list">
+      </div>
+    </div>
+    
+    <div class="tab-content" id="all-tab">
+      <div class="search-box">
+        <input type="text" id="all-search" placeholder="Buscar todos los alumnos...">
+      </div>
+      <div class="student-list" id="all-students-list">
+      </div>
+    </div>
+    
+    <div class="flex justify-end gap-4 mt-6">
+      <button id="close-manage-modal" class="ghost">Cancelar</button>
+      <button id="save-students-btn" class="primary">Guardar Cambios</button>
+    </div>
+  </div>
+</div>
+
 <div id="history-modal" class="fixed inset-0 bg-black/10 flex items-center justify-center p-4 hidden opacity-0 z-40 no-print">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-full max-h-[90vh] flex flex-col border border-gray-100 overflow-hidden">
         <header class="p-4 border-b border-gray-100 flex justify-between items-center">
@@ -355,28 +528,39 @@ button.ghost {
             <button id="close-history-btn" class="text-3xl font-bold hover:text-red-500">&times;</button>
         </header>
         <div class="p-4 flex-grow flex flex-col md:flex-row gap-4 overflow-hidden">
-            <div class="w-full md:w-1/3 flex flex-col"><input type="text" id="history-search" placeholder="Buscar alumno..." class="w-full p-2 rounded-md bg-white border border-gray-200 mb-4"><div id="history-student-list" class="flex-grow overflow-y-auto pr-2"></div></div>
-            <div id="history-details-container" class="w-full md:w-2/3 bg-white rounded-lg p-4 flex-grow flex flex-col"><h3 id="history-student-name" class="text-xl font-semibold mb-4 text-center">Selecciona un alumno</h3><div id="history-dates-list" class="flex-grow overflow-y-auto text-center"></div></div>
+            <div class="w-full md:w-1/3 flex flex-col">
+                <input type="text" id="history-search" placeholder="Buscar alumno..." class="w-full p-2 rounded-md bg-white border border-gray-200 mb-4">
+                <div id="history-student-list" class="flex-grow overflow-y-auto pr-2"></div>
+            </div>
+            <div id="history-details-container" class="w-full md:w-2/3 bg-white rounded-lg p-4 flex-grow flex flex-col">
+                <h3 id="history-student-name" class="text-xl font-semibold mb-4 text-center">Selecciona un alumno</h3>
+                <div id="history-dates-list" class="flex-grow overflow-y-auto text-center"></div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Monthly Report Modal -->
-<div id="monthly-report-modal" class="fixed inset-0 bg-black/10 flex items-center justify-center p-4 hidden opacity-0 z-40">
+<div id="monthly-report-modal" class="fixed inset-0 bg-black/10 flex items-center justify-center p-4 hidden opacity-0 z-40 no-print">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-full max-h-[90vh] flex flex-col border border-gray-100 overflow-hidden">
-        <header class="p-4 border-b border-gray-100 flex justify-between items-center no-print"><h2 class="text-2xl font-bold" style="color:var(--brand)">Informe de Asistencia Mensual</h2><div class="flex items-center gap-4"><input type="month" id="report-month-input" class="p-2 rounded-lg bg-white text-black border border-gray-200"><button id="print-report-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg">🖨️ Imprimir</button><button id="close-report-btn" class="text-3xl font-bold hover:text-red-500">&times;</button></div></header>
-        <div id="monthly-report-content" class="p-6 flex-grow overflow-y-auto"><p class="text-center text-muted">Selecciona un mes para generar el informe.</p></div>
+        <header class="p-4 border-b border-gray-100 flex justify-between items-center no-print">
+            <h2 class="text-2xl font-bold" style="color:var(--brand)">Informe de Asistencia Mensual</h2>
+            <div class="flex items-center gap-4">
+                <input type="month" id="report-month-input" class="p-2 rounded-lg bg-white text-black border border-gray-200">
+                <button id="print-report-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg">🖨️ Imprimir</button>
+                <button id="close-report-btn" class="text-3xl font-bold hover:text-red-500">&times;</button>
+            </div>
+        </header>
+        <div id="monthly-report-content" class="p-6 flex-grow overflow-y-auto">
+            <p class="text-center text-muted">Selecciona un mes para generar el informe.</p>
+        </div>
     </div>
 </div>
 
-<!-- Firebase SDKs -->
 <script src="[https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js](https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js)"></script>
 <script src="[https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js](https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js)"></script>
 <script src="[https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js](https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js)"></script>
-<!-- PapaParse -->
 <script src="[https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js](https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js)"></script>
 
-<!-- ===== JS: lógica (sin tocar la estructura principal) ===== -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -418,7 +602,17 @@ document.addEventListener('DOMContentLoaded', () => {
     reportMonthInput: document.getElementById('report-month-input'),
     logoutBtn: document.getElementById('logout-btn'),
     closeReportBtn: document.getElementById('close-report-btn'),
-    printReportBtn: document.getElementById('print-report-btn')
+    printReportBtn: document.getElementById('print-report-btn'),
+    manageStudentsBtn: document.getElementById('manage-students-btn'),
+    manageStudentsModal: document.getElementById('manage-students-modal'),
+    closeManageModal: document.getElementById('close-manage-modal'),
+    saveStudentsBtn: document.getElementById('save-students-btn'),
+    fixedStudentsList: document.getElementById('fixed-students-list'),
+    sporadicStudentsList: document.getElementById('sporadic-students-list'),
+    allStudentsList: document.getElementById('all-students-list'),
+    fixedSearch: document.getElementById('fixed-search'),
+    sporadicSearch: document.getElementById('sporadic-search'),
+    allSearch: document.getElementById('all-search')
   };
 
   /* ---------------- UI visibility ---------------- */
@@ -448,12 +642,58 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ---------------- Firestore helpers ---------------- */
-  async function fetchStudents(shift) { let query = db.collection("students"); if (shift) { query = query.where("shift", "==", shift); } const snapshot = await query.get(); return snapshot.docs.map(doc => ({id:doc.id, ...doc.data()})); }
-  async function addStudentBatch(students) { const batch = db.batch(); const collection = db.collection("students"); students.forEach(s => { if(s.name && s.course && s.shift){ batch.set(collection.doc(), {name:s.name.trim(), course:s.course.trim(), shift:s.shift.trim()}); } }); await batch.commit(); }
-  async function deleteAllStudents() { const snapshot = await db.collection("students").get(); const batch = db.batch(); snapshot.docs.forEach(doc => batch.delete(doc.ref)); await batch.commit(); }
-  async function logAttendance(studentId, dateStr, state) { if (studentId.startsWith('sporadic_')) return; const docRef = db.collection("attendance").doc(`${studentId}_${dateStr}`); await docRef.set({studentId, date: dateStr, state}); }
-  async function logBatchAttendance(studentsToUpdate, dateStr, state) { const validStudents = studentsToUpdate.filter(id => !id.startsWith('sporadic_')); if (validStudents.length === 0) return; const batch = db.batch(); const collection = db.collection("attendance"); validStudents.forEach(studentId => { const docRef = collection.doc(`${studentId}_${dateStr}`); batch.set(docRef, { studentId, date: dateStr, state }); }); await batch.commit(); }
-  async function fetchAttendanceByDate(dateStr) { const snapshot = await db.collection("attendance").where("date","==",dateStr).get(); const data = {}; snapshot.docs.forEach(doc=>data[doc.data().studentId]=doc.data().state); return data; }
+  async function fetchStudents(shift) { 
+    let query = db.collection("students"); 
+    if (shift) { 
+      query = query.where("shift", "==", shift); 
+    } 
+    const snapshot = await query.get(); 
+    return snapshot.docs.map(doc => ({id:doc.id, ...doc.data()})); 
+  }
+  
+  async function addStudentBatch(students) { 
+    const batch = db.batch(); 
+    const collection = db.collection("students"); 
+    students.forEach(s => { 
+      if(s.name && s.course && s.shift){ 
+        batch.set(collection.doc(), {name:s.name.trim(), course:s.course.trim(), shift:s.shift.trim()}); 
+      } 
+    }); 
+    await batch.commit(); 
+  }
+  
+  async function deleteAllStudents() { 
+    const snapshot = await db.collection("students").get(); 
+    const batch = db.batch(); 
+    snapshot.docs.forEach(doc => batch.delete(doc.ref)); 
+    await batch.commit(); 
+  }
+  
+  async function logAttendance(studentId, dateStr, state) { 
+    if (studentId.startsWith('sporadic_')) return; 
+    const docRef = db.collection("attendance").doc(`${studentId}_${dateStr}`); 
+    await docRef.set({studentId, date: dateStr, state}); 
+  }
+  
+  async function logBatchAttendance(studentsToUpdate, dateStr, state) { 
+    const validStudents = studentsToUpdate.filter(id => !id.startsWith('sporadic_')); 
+    if (validStudents.length === 0) return; 
+    const batch = db.batch(); 
+    const collection = db.collection("attendance"); 
+    validStudents.forEach(studentId => { 
+      const docRef = collection.doc(`${studentId}_${dateStr}`); 
+      batch.set(docRef, { studentId, date: dateStr, state }); 
+    }); 
+    await batch.commit(); 
+  }
+  
+  async function fetchAttendanceByDate(dateStr) { 
+    const snapshot = await db.collection("attendance").where("date","==",dateStr).get(); 
+    const data = {}; 
+    snapshot.docs.forEach(doc=>data[doc.data().studentId]=doc.data().state); 
+    return data; 
+  }
+  
   async function fetchAttendanceByMonth(yearMonth) {
     const startDate = `${yearMonth}-01`;
     const endDate = `${yearMonth}-31`;
@@ -469,7 +709,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ---------------- Render & UI helpers ---------------- */
-  function updateSummary() { const vals = Object.values(appState.attendance); const summary = { diners: document.getElementById('summary-diners'), absent: document.getElementById('summary-absent'), pending: document.getElementById('summary-pending'), present: document.getElementById('summary-present') }; summary.diners.textContent = vals.length; summary.absent.textContent = vals.filter(s=>'absent'===s).length; summary.present.textContent = vals.filter(s=>'present'===s).length; summary.pending.textContent = vals.filter(s=>'pending'===s).length; }
+  function updateSummary() { 
+    const vals = Object.values(appState.attendance); 
+    const summary = { 
+      diners: document.getElementById('summary-diners'), 
+      absent: document.getElementById('summary-absent'), 
+      pending: document.getElementById('summary-pending'), 
+      present: document.getElementById('summary-present') 
+    }; 
+    summary.diners.textContent = vals.length; 
+    summary.absent.textContent = vals.filter(s=>'absent'===s).length; 
+    summary.present.textContent = vals.filter(s=>'present'===s).length; 
+    summary.pending.textContent = vals.filter(s=>'pending'===s).length; 
+  }
+  
   function createStudentElement(s){
     const studentDiv = document.createElement('div');
     studentDiv.id = s.id;
@@ -481,26 +734,176 @@ document.addEventListener('DOMContentLoaded', () => {
     studentDiv.classList.add(state);
     return studentDiv.outerHTML;
   }
-  async function renderCourses(shift) { appState.currentShift = shift; dom.shiftSelection.classList.add('hidden'); dom.dashboard.classList.remove('hidden'); dom.coursesContainer.innerHTML = '<p class="text-center text-lg">Cargando alumnos...</p>'; appState.students = await fetchStudents(shift); const today = new Date().toISOString().slice(0,10); const attendance = await fetchAttendanceByDate(today); appState.attendance = {}; appState.students.forEach(s=>appState.attendance[s.id]=attendance[s.id]||'pending'); dom.coursesContainer.innerHTML = ''; const courses = [...new Set(appState.students.map(s=>s.course))].sort(); if(courses.length===0){ dom.coursesContainer.innerHTML='<p class="text-center text-lg text-slate-500">No hay alumnos en este turno.</p>'; }else{ courses.forEach(course=>{ const card = document.createElement('div'); card.className = 'course-card'; const studentsInCourse = appState.students.filter(s => s.course === course).sort((a,b) => a.name.localeCompare(b.name)); const listHtml = studentsInCourse.map(createStudentElement).join(''); const sporadicBtn = userRole === 'user' ? `<button class="add-sporadic-btn mt-4 primary" data-course="${course}">+ Añadir Esporádico</button>` : ''; card.innerHTML = `<div class="flex-grow"><h3 class="text-xl font-bold mb-2">${course}</h3><div class="space-y-2" data-course-list="${course}">${listHtml}</div></div>${sporadicBtn}`; dom.coursesContainer.appendChild(card); }); } updateSummary(); }
+  
+  async function renderCourses(shift) { 
+    appState.currentShift = shift; 
+    dom.shiftSelection.classList.add('hidden'); 
+    dom.dashboard.classList.remove('hidden'); 
+    dom.coursesContainer.innerHTML = '<p class="text-center text-lg">Cargando alumnos...</p>'; 
+    appState.students = await fetchStudents(shift); 
+    const today = new Date().toISOString().slice(0,10); 
+    const attendance = await fetchAttendanceByDate(today); 
+    appState.attendance = {}; 
+    appState.students.forEach(s=>appState.attendance[s.id]=attendance[s.id]||'pending'); 
+    dom.coursesContainer.innerHTML = ''; 
+    const courses = [...new Set(appState.students.map(s=>s.course))].sort(); 
+    if(courses.length===0){ 
+      dom.coursesContainer.innerHTML='<p class="text-center text-lg text-slate-500">No hay alumnos en este turno.</p>'; 
+    }else{ 
+      courses.forEach(course=>{ 
+        const card = document.createElement('div'); 
+        card.className = 'course-card'; 
+        const studentsInCourse = appState.students.filter(s => s.course === course).sort((a,b) => a.name.localeCompare(b.name)); 
+        const listHtml = studentsInCourse.map(createStudentElement).join(''); 
+        const sporadicBtn = userRole === 'user' ? `<button class="add-sporadic-btn mt-4 primary" data-course="${course}">+ Añadir Esporádico</button>` : ''; 
+        card.innerHTML = `<div class="flex-grow"><h3 class="text-xl font-bold mb-2">${course}</h3><div class="space-y-2" data-course-list="${course}">${listHtml}</div></div>${sporadicBtn}`; 
+        dom.coursesContainer.appendChild(card); 
+      }); 
+    } 
+    updateSummary(); 
+  }
 
   /* ---------------- CSV Import ---------------- */
-  function handleCsvImport(file){ if(!file) return; dom.importStatusInitial.textContent = 'Procesando archivo...'; Papa.parse(file,{ header:true, skipEmptyLines:true, complete: async (results)=>{ try { const headers = (results.meta.fields || []).map(h => (h||'').toLowerCase().trim()); if(!headers.includes('nombre') || !headers.includes('curso') || !(headers.includes('turno') || headers.includes('shift'))){ dom.importStatusInitial.textContent = 'Error: CSV debe tener columnas "nombre", "curso" y "turno" (o "shift")'; return; } await deleteAllStudents(); const studentsToImport = results.data.map(r => { const rawShift = (r.turno || r.shift || '').toString(); const cleanedShift = rawShift.replace(/\u00A0/g,' ').trim(); let shiftNormalized = cleanedShift; if (/primer/i.test(cleanedShift)) shiftNormalized = 'Primer Turno (Infantil)'; else if (/segund/i.test(cleanedShift)) shiftNormalized = 'Segundo Turno (Primaria)'; return { name: r.nombre ? r.nombre.trim() : '', course: r.curso ? r.curso.trim() : '', shift: shiftNormalized }; }); await addStudentBatch(studentsToImport); dom.importStatusInitial.textContent = 'Importación completa ✅'; if (appState.currentShift) renderCourses(appState.currentShift); } catch (err) { console.error('Import error', err); dom.importStatusInitial.textContent = 'Error al procesar CSV. Mira la consola.'; } finally { setTimeout(()=>dom.importStatusInitial.textContent = '', 7000); } }, error: err=>{ console.error('PapaParse error', err); dom.importStatusInitial.textContent = 'Error leyendo el archivo CSV'; setTimeout(()=>dom.importStatusInitial.textContent = '', 5000); } }); }
+  function handleCsvImport(file){ 
+    if(!file) return; 
+    dom.importStatusInitial.textContent = 'Procesando archivo...'; 
+    Papa.parse(file,{ 
+      header:true, 
+      skipEmptyLines:true, 
+      complete: async (results)=>{ 
+        try { 
+          const headers = (results.meta.fields || []).map(h => (h||'').toLowerCase().trim()); 
+          if(!headers.includes('nombre') || !headers.includes('curso') || !(headers.includes('turno') || headers.includes('shift'))){ 
+            dom.importStatusInitial.textContent = 'Error: CSV debe tener columnas "nombre", "curso" y "turno" (o "shift")'; 
+            return; 
+          } 
+          await deleteAllStudents(); 
+          const studentsToImport = results.data.map(r => { 
+            const rawShift = (r.turno || r.shift || '').toString(); 
+            const cleanedShift = rawShift.replace(/\u00A0/g,' ').trim(); 
+            let shiftNormalized = cleanedShift; 
+            if (/primer/i.test(cleanedShift)) shiftNormalized = 'Primer Turno (Infantil)'; 
+            else if (/segund/i.test(cleanedShift)) shiftNormalized = 'Segundo Turno (Primaria)'; 
+            return { name: r.nombre ? r.nombre.trim() : '', course: r.curso ? r.curso.trim() : '', shift: shiftNormalized }; 
+          }); 
+          await addStudentBatch(studentsToImport); 
+          dom.importStatusInitial.textContent = 'Importación completa ✅'; 
+          if (appState.currentShift) renderCourses(appState.currentShift); 
+        } catch (err) { 
+          console.error('Import error', err); 
+          dom.importStatusInitial.textContent = 'Error al procesar CSV. Mira la consola.'; 
+        } finally { 
+          setTimeout(()=>dom.importStatusInitial.textContent = '', 7000); 
+        } 
+      }, 
+      error: err=>{ 
+        console.error('PapaParse error', err); 
+        dom.importStatusInitial.textContent = 'Error leyendo el archivo CSV'; 
+        setTimeout(()=>dom.importStatusInitial.textContent = '', 5000); 
+      } 
+    }); 
+  }
   
   /* ---------------- Export CSV full day ---------------- */
-  async function exportFullDayCsv(dateStr){ const allStudents = await fetchStudents(null); const attendance = await fetchAttendanceByDate(dateStr); const rows = allStudents.map(s=>{ const state = attendance[s.id]||'pending'; return {Fecha:dateStr, Turno:s.shift, Nombre:s.name, Curso:s.course, Estado:state}; }); rows.sort((a,b) => a.Turno.localeCompare(b.Turno) || a.Curso.localeCompare(b.Curso) || a.Nombre.localeCompare(b.Nombre)); const csv = Papa.unparse(rows); const blob = new Blob([`\uFEFF${csv}`],{type:'text/csv;charset=utf-8;'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=`asistencia_completa_${dateStr}.csv`; a.click(); URL.revokeObjectURL(url); }
+  async function exportFullDayCsv(dateStr){ 
+    const allStudents = await fetchStudents(null); 
+    const attendance = await fetchAttendanceByDate(dateStr); 
+    const rows = allStudents.map(s=>{ 
+      const state = attendance[s.id]||'pending'; 
+      return {Fecha:dateStr, Turno:s.shift, Nombre:s.name, Curso:s.course, Estado:state}; 
+    }); 
+    rows.sort((a,b) => a.Turno.localeCompare(b.Turno) || a.Curso.localeCompare(b.Curso) || a.Nombre.localeCompare(b.Nombre)); 
+    const csv = Papa.unparse(rows); 
+    const blob = new Blob([`\uFEFF${csv}`],{type:'text/csv;charset=utf-8;'}); 
+    const url = URL.createObjectURL(blob); 
+    const a = document.createElement('a'); 
+    a.href=url; 
+    a.download=`asistencia_completa_${dateStr}.csv`; 
+    a.click(); 
+    URL.revokeObjectURL(url); 
+  }
   
   /* ---------------- Sporadic, finalize, etc ---------------- */
-  function addSporadicStudent(course) { const name = prompt(`Nombre del alumno esporádico para ${course}:`); if (name && name.trim()) { const student = { id: `sporadic_${Date.now()}`, name: `${name.trim()} (Esporádico)`, course: course }; appState.students.push(student); appState.attendance[student.id] = 'pending'; const listContainer = document.querySelector(`[data-course-list="${course}"]`); if (listContainer) { listContainer.insertAdjacentHTML('beforeend', createStudentElement(student)); } updateSummary(); } }
-  async function finalizeShift() { if (!confirm("¿Seguro que quieres finalizar el turno? Todos los alumnos pendientes pasarán a estar ausentes.")) { return; } const today = new Date().toISOString().slice(0, 10); const studentsToMarkAbsent = []; for (const studentId in appState.attendance) { if (appState.attendance[studentId] === 'pending') { studentsToMarkAbsent.push(studentId); appState.attendance[studentId] = 'absent'; const studentDiv = document.getElementById(studentId); if (studentDiv) { studentDiv.classList.remove('pending','present','absent'); studentDiv.classList.add('absent'); } } } await logBatchAttendance(studentsToMarkAbsent, today, 'absent'); updateSummary(); }
+  function addSporadicStudent(course) { 
+    const name = prompt(`Nombre del alumno esporádico para ${course}:`); 
+    if (name && name.trim()) { 
+      const student = { id: `sporadic_${Date.now()}`, name: `${name.trim()} (Esporádico)`, course: course }; 
+      appState.students.push(student); 
+      appState.attendance[student.id] = 'pending'; 
+      const listContainer = document.querySelector(`[data-course-list="${course}"]`); 
+      if (listContainer) { 
+        listContainer.insertAdjacentHTML('beforeend', createStudentElement(student)); 
+      } 
+      updateSummary(); 
+    } 
+  }
+  
+  async function finalizeShift() { 
+    if (!confirm("¿Seguro que quieres finalizar el turno? Todos los alumnos pendientes pasarán a estar ausentes.")) { 
+      return; 
+    } 
+    const today = new Date().toISOString().slice(0, 10); 
+    const studentsToMarkAbsent = []; 
+    for (const studentId in appState.attendance) { 
+      if (appState.attendance[studentId] === 'pending') { 
+        studentsToMarkAbsent.push(studentId); 
+        appState.attendance[studentId] = 'absent'; 
+        const studentDiv = document.getElementById(studentId); 
+        if (studentDiv) { 
+          studentDiv.classList.remove('pending','present','absent'); 
+          studentDiv.classList.add('absent'); 
+        } 
+      } 
+    } 
+    await logBatchAttendance(studentsToMarkAbsent, today, 'absent'); 
+    updateSummary(); 
+  }
 
   /* ---------------- History modal ---------------- */
-  async function showHistoryModal() { dom.historyModal.classList.remove('hidden'); setTimeout(() => dom.historyModal.classList.remove('opacity-0'), 10); dom.historyStudentList.innerHTML = '<p>Cargando alumnos...</p>'; try { const allStudents = await fetchStudents(null); allStudents.sort((a, b) => a.name.localeCompare(b.name)); if (allStudents.length > 0) { dom.historyStudentList.innerHTML = allStudents.map(s => `<div class="p-2 hover:bg-gray-50 cursor-pointer rounded-md history-student" data-student-id="${s.id}" data-student-name="${s.name}"><p class="font-semibold">${s.name}</p><p class="text-sm text-muted">${s.shift} - ${s.course}</p></div>`).join(''); } else { dom.historyStudentList.innerHTML = '<p>No hay alumnos registrados.</p>'; } } catch(e) { console.error("Error fetching students for history", e); dom.historyStudentList.innerHTML = '<p class="text-red-500">Error al cargar alumnos.</p>'; } dom.historyStudentName.textContent = 'Selecciona un alumno'; dom.historyDatesList.innerHTML = ''; }
-  async function showStudentHistory(studentId, studentName) { dom.historyStudentName.textContent = `Historial de: ${studentName}`; dom.historyDatesList.innerHTML = '<p>Buscando fechas...</p>'; try { const snapshot = await db.collection("attendance").where("studentId", "==", studentId).get(); const dates = snapshot.docs.map(doc => doc.data().date).sort().reverse(); if (dates.length > 0) { dom.historyDatesList.innerHTML = `<ul class="space-y-1 text-left">${dates.map(d => `<li class="bg-gray-50 p-2 rounded">${new Date(d + 'T00:00:00').toLocaleDateString('es-ES', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}</li>`).join('')}</ul>`; } else { dom.historyDatesList.innerHTML = '<p>Este alumno no tiene registros de asistencia.</p>'; } } catch(e) { console.error("Error fetching student history", e); dom.historyDatesList.innerHTML = '<p class="text-red-500">Error al buscar las fechas.</p>'; } }
+  async function showHistoryModal() { 
+    dom.historyModal.classList.remove('hidden'); 
+    setTimeout(() => dom.historyModal.classList.remove('opacity-0'), 10); 
+    dom.historyStudentList.innerHTML = '<p>Cargando alumnos...</p>'; 
+    try { 
+      const allStudents = await fetchStudents(null); 
+      allStudents.sort((a, b) => a.name.localeCompare(b.name)); 
+      if (allStudents.length > 0) { 
+        dom.historyStudentList.innerHTML = allStudents.map(s => `<div class="p-2 hover:bg-gray-50 cursor-pointer rounded-md history-student" data-student-id="${s.id}" data-student-name="${s.name}"><p class="font-semibold">${s.name}</p><p class="text-sm text-muted">${s.shift} - ${s.course}</p></div>`).join(''); 
+      } else { 
+        dom.historyStudentList.innerHTML = '<p>No hay alumnos registrados.</p>'; 
+      } 
+    } catch(e) { 
+      console.error("Error fetching students for history", e); 
+      dom.historyStudentList.innerHTML = '<p class="text-red-500">Error al cargar alumnos.</p>'; 
+    } 
+    dom.historyStudentName.textContent = 'Selecciona un alumno'; 
+    dom.historyDatesList.innerHTML = ''; 
+  }
+  
+  async function showStudentHistory(studentId, studentName) { 
+    dom.historyStudentName.textContent = `Historial de: ${studentName}`; 
+    dom.historyDatesList.innerHTML = '<p>Buscando fechas...</p>'; 
+    try { 
+      const snapshot = await db.collection("attendance").where("studentId", "==", studentId).get(); 
+      const dates = snapshot.docs.map(doc => doc.data().date).sort().reverse(); 
+      if (dates.length > 0) { 
+        dom.historyDatesList.innerHTML = `<ul class="space-y-1 text-left">${dates.map(d => `<li class="bg-gray-50 p-2 rounded">${new Date(d + 'T00:00:00').toLocaleDateString('es-ES', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}</li>`).join('')}</ul>`; 
+      } else { 
+        dom.historyDatesList.innerHTML = '<p>Este alumno no tiene registros de asistencia.</p>'; 
+      } 
+    } catch(e) { 
+      console.error("Error fetching student history", e); 
+      dom.historyDatesList.innerHTML = '<p class="text-red-500">Error al buscar las fechas.</p>'; 
+    } 
+  }
 
   /* ---------------- Monthly report ---------------- */
   async function generateMonthlyReport(yearMonth) {
     dom.monthlyReportContent.innerHTML = '<div class="text-center text-muted">Generando informe, por favor espera...</div>';
-    if (!yearMonth) { dom.monthlyReportContent.innerHTML = '<div class="text-center text-amber-400">Por favor, selecciona un mes.</div>'; return; }
+    if (!yearMonth) { 
+      dom.monthlyReportContent.innerHTML = '<div class="text-center text-amber-400">Por favor, selecciona un mes.</div>'; 
+      return; 
+    }
     const [yearStr, monthStr] = yearMonth.split('-');
     const year = parseInt(yearStr,10), month = parseInt(monthStr,10);
     const date = new Date(year, month - 1, 1);
@@ -508,7 +911,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const allStudents = await fetchStudents(null);
     const attendanceData = await fetchAttendanceByMonth(yearMonth);
     const daysInMonth = new Date(year, month, 0).getDate();
-    const studentsByCourse = allStudents.reduce((acc, s) => { (acc[s.course] = acc[s.course] || []).push(s); return acc; }, {});
+    const studentsByCourse = allStudents.reduce((acc, s) => { 
+      (acc[s.course] = acc[s.course] || []).push(s); 
+      return acc; 
+    }, {});
     let html = `<div class="printable-area"><h2 class="text-3xl font-bold text-center mb-4">${monthName.charAt(0).toUpperCase()+monthName.slice(1)} ${year}</h2>`;
     const sortedCourses = Object.keys(studentsByCourse).sort((a,b)=> a.localeCompare(b));
     for (const course of sortedCourses) {
@@ -574,10 +980,11 @@ document.addEventListener('DOMContentLoaded', () => {
   
   dom.printReportBtn.addEventListener('click', () => {
     // Escondemos el modal para que no interfiera, pero su contenido (ya marcado como printable) se imprimirá
-    dom.monthlyReportModal.classList.add('hidden');
+    const reportModal = document.getElementById('monthly-report-modal');
+    reportModal.classList.add('hidden');
     setTimeout(() => {
         window.print();
-        dom.monthlyReportModal.classList.remove('hidden');
+        reportModal.classList.remove('hidden');
     }, 100);
   });
   dom.closeReportBtn.addEventListener('click', () => { dom.monthlyReportModal.classList.add('opacity-0'); setTimeout(() => dom.monthlyReportModal.classList.add('hidden'), 300); });
@@ -625,4 +1032,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
