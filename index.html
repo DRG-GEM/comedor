@@ -556,10 +556,10 @@ button.ghost {
     </div>
 </div>
 
-<script src="[https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js](https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js)"></script>
-<script src="[https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js](https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js)"></script>
-<script src="[https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js](https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js)"></script>
-<script src="[https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js](https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js)"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -942,7 +942,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const hash = window.location.hash; 
     const user = auth.currentUser; 
     const isRealUser = user && !user.isAnonymous; 
-    
     if (hash === '#admin') { 
       if (isRealUser) {
         setUIVisibility('admin');
@@ -1032,5 +1031,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-
 
