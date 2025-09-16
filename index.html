@@ -184,6 +184,89 @@
       document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
     });
   });
+// Añadir referencias DOM
+dom.manageStudentsBtn = document.createElement('button');
+dom.manageStudentsBtn.id = 'manage-students-btn';
+dom.manageStudentsBtn.className = 'primary';
+dom.manageStudentsBtn.textContent = '👥 Gestionar Alumnos';
+document.querySelector('[aria-label="gestion-datos"]').appendChild(dom.manageStudentsBtn);
+
+dom.manageStudentsModal = document.getElementById('manage-students-modal');
+dom.closeManageModal = document.getElementById('close-manage-modal');
+dom.fixedStudentsList = document.getElementById('fixed-students-list');
+dom.sporadicStudentsList = document.getElementById('sporadic-students-list');
+dom.allStudentsList = document.getElementById('all-students-list');
+
+// Abrir modal
+dom.manageStudentsBtn.addEventListener('click', async () => {
+  await renderStudentLists();
+  dom.manageStudentsModal.classList.remove('hidden');
+  setTimeout(() => dom.manageStudentsModal.classList.remove('opacity-0'), 10);
+});
+
+// Cerrar modal
+dom.closeManageModal.addEventListener('click', () => {
+  dom.manageStudentsModal.classList.add('opacity-0');
+  setTimeout(() => dom.manageStudentsModal.classList.add('hidden'), 300);
+});
+
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+  });
+});
+
+// Renderizar alumnos en el modal
+async function renderStudentLists() {
+  const allStudents = await fetchStudents(null);
+  const fixed = allStudents.filter(s => s.shift);
+  const sporadic = allStudents.filter(s => !s.shift);
+
+  const renderItem = (s) => `
+    <div class="student-list-item" data-id="${s.id}">
+      <span class="font-semibold">${s.name}</span>
+      <label class="checkbox-label">
+        <input type="checkbox" class="alergic-toggle" data-id="${s.id}" ${s.alergic ? 'checked' : ''}>
+        <span>Alérgico</span>
+      </label>
+      <select class="shift-selector" data-id="${s.id}">
+        <option value="" ${!s.shift ? 'selected' : ''}>Sin turno</option>
+        <option value="Primer Turno (Infantil)" ${s.shift === 'Primer Turno (Infantil)' ? 'selected' : ''}>Primer Turno</option>
+        <option value="Segundo Turno (Primaria)" ${s.shift === 'Segundo Turno (Primaria)' ? 'selected' : ''}>Segundo Turno</option>
+      </select>
+    </div>
+  `;
+
+  dom.fixedStudentsList.innerHTML = fixed.map(renderItem).join('');
+  dom.sporadicStudentsList.innerHTML = sporadic.map(renderItem).join('');
+  dom.allStudentsList.innerHTML = allStudents.map(renderItem).join('');
+
+  activateStudentControls();
+}
+
+// Guardar cambios
+function activateStudentControls() {
+  document.querySelectorAll('.alergic-toggle').forEach(input => {
+    input.addEventListener('change', async () => {
+      const studentId = input.dataset.id;
+      const isAlergic = input.checked;
+      await db.collection("students").doc(studentId).update({ alergic: isAlergic });
+    });
+  });
+
+  document.querySelectorAll('.shift-selector').forEach(select => {
+    select.addEventListener('change', async () => {
+      const studentId = select.dataset.id;
+      const newShift = select.value || null;
+      await db.collection("students").doc(studentId).update({ shift: newShift });
+      if (appState.currentShift) renderCourses(appState.currentShift);
+    });
+  });
+}
 
   // 🔄 Obtener alumnos
   async function fetchStudents() {
@@ -301,5 +384,34 @@ document.addEventListener('click', async (e) => {
     });
   }
 </script>
+  <!-- Modal de Gestión de Alumnos -->
+<div id="manage-students-modal" class="fixed-modal hidden opacity-0 z-50">
+  <div class="modal-content">
+    <h2 class="text-2xl font-bold mb-4 text-center" style="color:var(--brand)">Gestión de Alumnos</h2>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="fixed">Fijos</div>
+      <div class="tab" data-tab="sporadic">Esporádicos</div>
+      <div class="tab" data-tab="all">Todos</div>
+    </div>
+
+    <div class="tab-content active" id="fixed-tab">
+      <div class="student-list" id="fixed-students-list"></div>
+    </div>
+
+    <div class="tab-content" id="sporadic-tab">
+      <div class="student-list" id="sporadic-students-list"></div>
+    </div>
+
+    <div class="tab-content" id="all-tab">
+      <div class="student-list" id="all-students-list"></div>
+    </div>
+
+    <div class="flex justify-end gap-4 mt-6">
+      <button id="close-manage-modal" class="ghost">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
