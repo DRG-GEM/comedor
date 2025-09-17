@@ -204,7 +204,6 @@ button.ghost {
   box-shadow: 0 8px 20px rgba(6,122,70,0.04); 
 }
 .student-item.absent { border-left-color: var(--danger); background: linear-gradient(90deg, rgba(201,42,42,0.04), #fff); opacity: .95; text-decoration: line-through; }
-
 .student-item.allergic {
   box-shadow: 0 0 0 2px var(--danger);
 }
@@ -245,8 +244,10 @@ button.ghost {
   body > *:not(.printable-area) {
     display: none !important;
   }
+  .printable-area, .printable-area * {
+    visibility: visible !important;
+  }
   .printable-area {
-    display: block !important;
     position: absolute;
     left: 0;
     top: 0;
@@ -768,6 +769,7 @@ document.addEventListener('DOMContentLoaded', () => {
   dom.reportMonthInput.addEventListener('change', (e) => generateMonthlyReport(e.target.value));
   
   dom.printReportBtn.addEventListener('click', () => {
+    // Escondemos el modal para que no interfiera, pero su contenido (ya marcado como printable) se imprimirá
     const reportModal = document.getElementById('monthly-report-modal');
     reportModal.classList.add('printable-area'); // Add class to print this modal
     window.print();
