@@ -245,10 +245,8 @@ button.ghost {
   body > *:not(.printable-area) {
     display: none !important;
   }
-  .printable-area, .printable-area * {
-    visibility: visible !important;
-  }
   .printable-area {
+    display: block !important;
     position: absolute;
     left: 0;
     top: 0;
@@ -770,16 +768,10 @@ document.addEventListener('DOMContentLoaded', () => {
   dom.reportMonthInput.addEventListener('change', (e) => generateMonthlyReport(e.target.value));
   
   dom.printReportBtn.addEventListener('click', () => {
-    const reportContent = document.getElementById('monthly-report-content').innerHTML;
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write('<html><head><title>Informe Mensual</title>');
-    printWindow.document.write('<style>body{font-family: Inter, sans-serif;} table{width:100%; border-collapse:collapse;} td,th{border:1px solid #ccc; padding: 4px; text-align:center;} .course-header{background:#8b0630; color:white; padding:8px;} .attendance-mark{background: #067a46; color:white; border-radius:50%;} @page { size: landscape; margin: 0.5cm; }</style>');
-    printWindow.document.write('</head><body>');
-    printWindow.document.write(reportContent);
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(function(){printWindow.print();},500);
+    const reportModal = document.getElementById('monthly-report-modal');
+    reportModal.classList.add('printable-area'); // Add class to print this modal
+    window.print();
+    reportModal.classList.remove('printable-area'); // Clean up after print
   });
   dom.closeReportBtn.addEventListener('click', () => { dom.monthlyReportModal.classList.add('opacity-0'); setTimeout(() => dom.monthlyReportModal.classList.add('hidden'), 300); });
   
