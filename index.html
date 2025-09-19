@@ -26,7 +26,7 @@
     }
 
     *{box-sizing:border-box}
-    html,body{overflow-x:hidden}
+    html,body{width:100%; overflow-x:hidden; -webkit-overflow-scrolling:touch;}
     body {
       font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
       background:var(--bg);
@@ -34,35 +34,48 @@
       margin:0;
       -webkit-font-smoothing:antialiased;
     }
-    .container { max-width:1100px; margin:0 auto; padding:20px; }
+
+    /* Container responsive */
+    .container { max-width:1100px; width:100%; margin:0 auto; padding:20px; box-sizing:border-box; }
     .header-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .logo { width:54px;height:54px;border-radius:10px;background:#fff;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(15,23,42,0.04);border:1px solid var(--card-border); }
-    .title-wrap { text-align:center; flex:1; }
+    .title-wrap { text-align:center; flex:1; min-width:0; }
     h1 { margin:8px 0 0; color:var(--brand); font-weight:800; font-size:28px; }
     .subtle { color:var(--muted); }
 
     .header-actions { display:flex; gap:8px; align-items:center; justify-content:flex-end; min-width:150px; }
 
     /* Paneles */
-    .admin-panel { background:var(--paper); border-radius:12px; padding:18px; border:1px solid var(--card-border); box-shadow:0 14px 36px rgba(15,23,42,0.04); margin-top:18px; }
+    .admin-panel { background:var(--paper); border-radius:12px; padding:18px; border:1px solid var(--card-border); box-shadow:0 14px 36px rgba(15,23,42,0.04); margin-top:18px; overflow:hidden; }
     .btn-row { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
-    button.primary { background:linear-gradient(180deg,var(--brand),var(--brand-dark)); color:#fff; padding:10px 16px; border-radius:999px; font-weight:700; border:0; cursor:pointer; }
+    button.primary { background:linear-gradient(180deg,var(--brand),var(--brand-dark)); color:#fff; padding:10px 16px; border-radius:999px; font-weight:700; border:0; cursor:pointer; white-space:nowrap; }
     button.ghost { background:#fff; border:1px solid rgba(15,23,42,0.06); padding:10px 14px; border-radius:10px; cursor:pointer; }
     button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 
     /* Summary + grid */
     .summary-card { background:var(--paper); padding:14px; border-radius:10px; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.03); text-align:center; }
-    #courses-container { margin-top:14px; display:grid; gap:14px; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); }
+    #courses-container { margin-top:14px; display:grid; gap:14px; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); }
 
     /* Course card */
-    .course-card { background:var(--paper); border-radius:10px; padding:12px; border:1px solid var(--card-border); box-shadow:0 8px 24px rgba(15,23,42,0.03); display:flex; flex-direction:column; gap:8px; }
-    .course-card h3 { color:var(--brand); margin:0; font-weight:700; }
+    .course-card { background:var(--paper); border-radius:10px; padding:12px; border:1px solid var(--card-border); box-shadow:0 8px 24px rgba(15,23,42,0.03); display:flex; flex-direction:column; gap:8px; overflow:hidden; min-width:0; }
+    .course-card h3 { color:var(--brand); margin:0; font-weight:700; white-space:normal; }
 
     /* Student item */
-    .student-item { background:#ffffff; border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:space-between; gap:12px; border-left:6px solid transparent; border:1px solid rgba(15,23,42,0.04); transition: background .12s ease, box-shadow .12s ease, transform .06s ease; word-break:break-word; }
-    .student-left { display:flex; gap:12px; align-items:center; }
+    .student-item { background:#ffffff; border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:space-between; gap:12px; border-left:6px solid transparent; border:1px solid rgba(15,23,42,0.04); transition: background .12s ease, box-shadow .12s ease, transform .06s ease; word-break:break-word; min-width:0; }
+    .student-left { display:flex; gap:12px; align-items:center; min-width:0; }
     .student-name { font-weight:700; font-size:1.02rem; }
     .student-meta { color:var(--muted); font-size:0.92rem; }
+
+    /* Prevent long names causing horizontal overflow */
+    .student-item .name, .student-item .student-name {
+      max-width:100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      word-break:break-word;
+      overflow-wrap:anywhere;
+      min-width:0;
+    }
 
     /* States */
     .student-item.pending { border-left-color:#cbd5e1; background:#fff; color:var(--text); }
@@ -83,7 +96,7 @@
 
     /* cuando está presente y alérgico, dejamos el recuadro legible sobre el fondo oscuro */
     .student-item.present.allergic .name {
-      border-color: rgba(255,255,255,0.8);
+      border-color: rgba(255,255,255,0.85);
       background: rgba(255,255,255,0.06);
       color: #fff;
     }
@@ -91,20 +104,23 @@
     /* X button */
     .mark-absent-btn { width:40px; height:40px; border-radius:8px; border:1px solid rgba(0,0,0,0.04); background:#fff; font-weight:700; cursor:pointer; }
 
-    /* Report styling */
-    .report-wrapper { background:var(--paper); border-radius:12px; padding:10px; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.03); }
-    .report-table { width:100%; border-collapse:collapse; font-size:13px; }
+    /* Report styling (tables grandes --> scroll dentro del wrapper para no romper el layout) */
+    .report-wrapper { background:var(--paper); border-radius:12px; padding:10px; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.03); overflow:auto; -webkit-overflow-scrolling:touch; }
+    .report-table { width:100%; border-collapse:collapse; font-size:13px; min-width:700px; }
     .report-table th, .report-table td { border:1px solid rgba(15,23,42,0.06); padding:6px 6px; text-align:center; min-width:28px; }
     .report-table thead th { background:#fff; position:sticky; top:0; z-index:2; }
     .report-table td.total { font-weight:700; color:var(--brand); }
     .attendance-mark { display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px;border-radius:50%; background:var(--success); color:#fff; font-weight:700; }
 
     /* Modal */
-    .fixed-modal { position:fixed; left:0; top:0; width:100%; height:100%; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.28); z-index:90; }
+    .fixed-modal { position:fixed; left:0; top:0; width:100%; height:100%; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.28); z-index:90; padding:12px; box-sizing:border-box; }
     .fixed-modal.active { display:flex; }
-    .modal-content { background:#fff; border-radius:12px; padding:16px; width:92%; max-width:840px; max-height:90vh; overflow:auto; box-shadow:0 18px 40px rgba(0,0,0,0.12); }
+    .modal-content { background:#fff; border-radius:12px; padding:16px; width:92%; max-width:840px; max-height:90vh; overflow:auto; box-shadow:0 18px 40px rgba(0,0,0,0.12); min-width:0; }
 
     .small-muted { color:var(--muted); font-size:0.85rem; }
+
+    /* Make images and svg responsive */
+    img, svg { max-width:100%; height:auto; display:block; }
 
     @media (max-width:800px){
       #courses-container { grid-template-columns:1fr; }
@@ -136,6 +152,9 @@
       .printable-area { position:absolute; left:0; top:0; width:100%; background:#fff; padding:8px; }
       @page { size: landscape; margin:0.4cm; }
     }
+
+    /* utility hidden class fallback (if tailwind not available) */
+    .hidden { display:none !important; }
   </style>
 </head>
 <body>
@@ -143,7 +162,7 @@
   <div class="container">
     <header class="header-row" role="banner">
       <div class="logo" aria-hidden="true">
-        <svg width="34" height="34" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <svg width="34" height="34" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
           <rect fill="#fff" width="48" height="48" rx="8"/>
           <text x="50%" y="56%" font-size="16" fill="#8b0630" text-anchor="middle" font-family="Inter">CEVP</text>
         </svg>
@@ -193,7 +212,7 @@
       </section>
 
       <main id="dashboard" class="hidden" style="margin-top:18px">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
           <button id="back-to-shifts" class="ghost">&larr; Volver a Turnos</button>
           <div>
             <button id="finalize-shift-btn" class="primary">🏁 Finalizar Turno</button>
@@ -392,7 +411,6 @@
           : 'pending';
 
         div.className = `student-item ${stateClass}${s.allergic ? ' allergic' : ''}`;
-        // keep identification via data attributes (existing code uses dataset)
         div.dataset.studentId = s.id;
         div.dataset.studentName = s.name;
 
@@ -420,7 +438,6 @@
 
         dom.coursesContainer.innerHTML = '';
 
-        // show only students assigned to this shift OR those tempSporadic added for today
         const assigned = appState.students.filter(s => (s.shift && s.shift === shift) || appState.tempSporadic.has(s.id));
         const courses = [...new Set(assigned.map(s => s.course))].sort();
 
@@ -696,6 +713,7 @@
           document.querySelectorAll('.admin-only').forEach(el=>el.style.display='none');
           dom.logoutBtn.style.display = 'none';
         }
+        // always show shift-selection to start (profesor-side entry)
         document.getElementById('dashboard').classList.add('hidden');
         document.getElementById('shift-selection').style.display = 'block';
       }
@@ -737,6 +755,30 @@
       // initial UI
       setUIForRole(false);
       document.getElementById('export-date-input').value = new Date().toISOString().slice(0,10);
+
+      // Hash handling: permitir /#admin
+      function handleHash() {
+        const h = (location.hash || '').replace('#','');
+        if (h === 'admin') {
+          // mostrar vista admin-login-view y ocultar la selección por defecto
+          dom.adminLoginView.classList.remove('hidden');
+          dom.adminLoginView.style.display = 'block';
+          document.getElementById('shift-selection').style.display = 'none';
+          document.getElementById('dashboard').classList.add('hidden');
+          window.scrollTo(0,0);
+          // opcional: dar foco al botón de login
+          try { dom.loginAdminBtn.focus(); } catch(e){}
+        } else {
+          // si hash distinto, asegurarse de que la vista admin no se quede visible
+          if (!auth.currentUser) {
+            dom.adminLoginView.classList.add('hidden');
+          }
+          // leave default UI as setUIForRole
+        }
+      }
+      window.addEventListener('hashchange', handleHash);
+      // Llamada inicial
+      handleHash();
 
       // service worker (no-fatal)
       if ('serviceWorker' in navigator) { navigator.serviceWorker.register && navigator.serviceWorker.register('/sw.js').then(()=>console.log('sw registered')).catch(()=>{}); }
