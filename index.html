@@ -58,20 +58,19 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 
 /* Si el alumno tiene la clase `allergic`, mostramos un borde rojo alrededor del nombre */
 .student-item.allergic .name {
-  border: 2px solid var(--danger);   /* usa tu variable --danger (o sustituye por #c92a2a) */
+  border: 2px solid #c92a2a;  /* rojo */
   padding: 6px 10px;
   border-radius: 8px;
   display: inline-block;
-  background: rgba(201,42,42,0.03);  /* ligero fondo para aumentar contraste */
-  color: inherit;
+  background: rgba(201,42,42,0.03);
   font-weight: 700;
 }
 
-/* Opcional: ligeramente más visible cuando está marcado PRESENT (si quieres) */
 .student-item.present.allergic .name {
-  border-color: #b91c1c; /* un rojo más oscuro */
+  border-color: #b91c1c;
   background: rgba(185,28,28,0.06);
 }
+
 
 /* Asegúrate de eliminar/ignorar cualquier regla que añada la palabra/badge "ALERGIA" */
 /* Por ejemplo elimina o comenta `.student-item .name.allergic::after { content: '⚠️'; }` si existe */
@@ -350,27 +349,24 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function createStudentElement(s) {
-  // no añadimos badge/etiqueta textual de "ALERGIA" aquí,
-  // sólo la clase 'allergic' para que el CSS lo estilice.
   const div = document.createElement('div');
-  div.id = s.id;
-  // añadimos el estado (pending/present/absent) como clase y 'allergic' si procede
-  const stateClass = appState.attendance && appState.attendance[s.id] ? appState.attendance[s.id] : 'pending';
+  const stateClass = appState.attendance && appState.attendance[s.id] 
+    ? appState.attendance[s.id] 
+    : 'pending';
+
   div.className = `student-item ${stateClass}${s.allergic ? ' allergic' : ''}`;
   div.dataset.studentId = s.id;
   div.dataset.studentName = s.name;
 
-  // Mostrar nombre y botón (sin texto "Alergia")
   div.innerHTML = `
     <span class="name ${s.allergic ? 'allergic' : ''}">${s.name}</span>
     <div class="flex items-center gap-2">
-      ${s.shift ? `<span class="small-muted">${s.shift}</span>` : `<span class="small-muted">(Esporádico)</span>`}
-      <button class="mark-absent-btn bg-rose-500/50 hover:bg-rose-500 text-white font-bold" title="Marcar ausente">&times;</button>
+      <button class="mark-absent-btn bg-rose-500/50 hover:bg-rose-500 text-white font-bold" 
+              title="Marcar ausente">&times;</button>
     </div>
   `;
   return div.outerHTML;
 }
-
 
   /* ----- Render courses ----- */
   async function renderCourses(shift) {
