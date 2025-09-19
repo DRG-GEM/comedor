@@ -1,4 +1,4 @@
-<!-- Cambios realizados: color de selección aumentado a --success: #004623 (verde más intenso); aplicado donde corresponde (estados .present, .attendance-mark, etc.). No se ha tocado JS ni la estructura funcional; solo CSS. -->
+<!-- Cambios realizados: color de selección aumentado a --success: #90EE90 (verde más intenso); aplicado donde corresponde (estados .present, .attendance-mark, etc.). No se ha tocado JS ni la estructura funcional; solo CSS. -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -15,7 +15,7 @@
 <style>
 :root{
   --bg:#f6f7f9; --paper:#fff; --text:#0f172a; --muted:#6b7280;
-  --brand:#8b0630; --brand-dark:#700424; --accent:#19b4d6; --success:#004623; --danger:#c92a2a;
+  --brand:#8b0630; --brand-dark:#700424; --accent:#19b4d6; --success:#90EE90; --danger:#c92a2a;
   --card-border: rgba(15,23,42,0.06);
 }
 *{box-sizing:border-box}
@@ -578,7 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const iframe = document.createElement('iframe'); iframe.style.position='fixed'; iframe.style.right='0'; iframe.style.bottom='0'; iframe.style.width='0'; iframe.style.height='0'; iframe.style.border='0';
     document.body.appendChild(iframe);
     const doc = iframe.contentWindow.document;
-    const styles = `<style>body{font-family:Inter,Arial;padding:18px;color:#111} .attendance-mark{display:inline-block;width:20px;height:20px;background:${getComputedStyle(document.documentElement).getPropertyValue('--success') || '#004623'};color:#fff;border-radius:50%;text-align:center;line-height:20px;font-weight:700}</style>`;
+    const styles = `<style>body{font-family:Inter,Arial;padding:18px;color:#111} .attendance-mark{display:inline-block;width:20px;height:20px;background:${getComputedStyle(document.documentElement).getPropertyValue('--success') || '#90EE90'};color:#fff;border-radius:50%;text-align:center;line-height:20px;font-weight:700}</style>`;
     doc.open(); doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Imprimir informe ${ym}</title>${styles}</head><body>${dom.monthlyReportContent.innerHTML}</body></html>`); doc.close();
     setTimeout(()=>{ try{ iframe.contentWindow.focus(); iframe.contentWindow.print(); } catch(e){ console.error(e); alert('Error al imprimir: '+e.message);} setTimeout(()=>{ try{ document.body.removeChild(iframe); } catch(e){} },800); },300);
   });
