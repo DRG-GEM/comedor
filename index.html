@@ -893,6 +893,69 @@ document.getElementById('confirm-sporadic-add').addEventListener('click', async 
 
   dom.finalizeShiftBtn.addEventListener('click', finalizeShift);
   document.getElementById('back-to-shifts').addEventListener('click', () => { dom.dashboard.classList.add('hidden'); dom.shiftSelection.classList.remove('hidden'); });
+// Abre un modal simple con la lista de alumnos sin turno del curso
+async function openSporadicPicker(course) {
+  // recogemos alumnos SIN turno asignado (status != 'fixed' o shift falsy)
+  const all = await fetchStudents(null);
+  // filtramos por curso y sin turno (o con status 'sporadic')
+  const candidates = all.filter(s => (s.course === course) && (!s.shift || s.shift === '' || s.status === 'sporadic' || s.status === 'temp' ) );
+
+  // construimos HTML básico para el modal (puedes conectarlo a tu modal real)
+  let html = `<div style="padding:12px;"><h3 style="margin:0 0 8px 0">Seleccionar esporádicos — ${course}</h3>`;
+  if (candidates.length === 0) {
+    html += `<p style="color:#555">No hay alumnos sin turno en este curso.</p>`;
+  } else {
+    html += `<div style="display:flex;flex-direction:column;gap:8px">`;
+    candidates.sort((a,b)=>a.name.localeCompare(b.name)).forEach(s => {
+      html += `<button data-id="${s.id}" class="sporadic-select-btn" style="text-align:left;padding:.6rem .8rem;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:#fff;">${s.name}</button>`;
+    });
+    html += `</div>`;
+  }
+  html += `<div style="margin-top:12px;"><button id="close-sporadic-picker" style="margin-right:8px;padding:.5rem .8rem;border-radius:8px">Cerrar</button></div></div>`;
+
+  // crea un modal simple
+  const wrapper = document.createElement('div');
+  wrapper.id = 'sporadic-picker-wrapper';
+  wrapper.style.position = 'fixed';
+  wrapper.style.left = '0';
+  wrapper.style.top = '0';
+  wrapper.style.width = '100%';
+  wrapper.style.height = '100%';
+  wrapper.style.display = 'flex';
+  wrapper.style.alignItems = 'center';
+  wrapper.style.justifyContent = 'center';
+  wrapper.style.background = 'rgba(0,0,0,0.35)';
+  wrapper.style.zIndex = 9999;
+  wrapper.innerHTML = `<div style="width:92%;max-width:560px;background:#f9fafb;border-radius:12px;padding:14px;">${html}</div>`;
+  document.body.appendChild(wrapper);
+
+  // listeners: selección de alumno esporádico
+  wrapper.addEventListener('click', async (ev) => {
+    const btn = ev.target.closest('.sporadic-select-btn');
+    if (btn) {
+      const id = btn.dataset.id;
+      // marcamos como esporádico en memoria y actualizamos UI (no tocar BD)
+      const student = appState.students.find(s => s.id === id);
+      if (student) {
+        student.status = 'sporadic';
+        student.shift = ''; // sin turno asignado
+        // si la vista actual es de ese curso y listado visible, actualizamos el DOM
+        const listEl = document.querySelector(`[data-course-list="${course}"]`);
+        if (listEl) {
+          // eliminamos el alumno del listado fijo (si lo tenía) y refrescamos curso
+          // para simplicidad, re-renderizamos el curso actual
+          if (appState.currentShift) renderCourses(appState.currentShift);
+        }
+      }
+      // cerramos modal
+      document.body.removeChild(wrapper);
+    }
+
+    if (ev.target.id === 'close-sporadic-picker') {
+      document.body.removeChild(wrapper);
+    }
+  });
+}
 
   // Delegación de clicks dentro del contenedor de cursos.
 // Reemplaza tu listener anterior por este bloque.
