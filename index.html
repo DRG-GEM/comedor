@@ -206,6 +206,22 @@ input:focus,select:focus{ outline:none; box-shadow:0 8px 24px rgba(25,180,214,0.
     </div>
   </div>
 </div>
+<!-- Sporadic picker modal (profesor) -->
+<div id="sporadic-picker-modal" class="fixed-modal hidden no-print">
+  <div class="modal-content">
+    <header class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-bold" style="color:var(--brand)">Añadir Esporádico</h2>
+      <button id="close-sporadic-picker" class="text-3xl font-bold hover:text-red-500">&times;</button>
+    </header>
+    <div id="sporadic-picker-content" style="max-height:60vh;overflow:auto;">
+      <!-- listado se inyecta aquí -->
+      <p class="text-muted">Cargando...</p>
+    </div>
+    <div class="mt-4 text-right">
+      <button id="confirm-sporadic-add" class="primary">Agregar seleccionados</button>
+    </div>
+  </div>
+</div>
 
 <!-- History Modal -->
 <div id="history-modal" class="fixed inset-0 bg-black/10 flex items-center justify-center p-4 hidden opacity-0 z-40 no-print">
@@ -266,7 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const auth = firebase.auth();
   const googleProvider = new firebase.auth.GoogleAuthProvider();
   let userRole = null;
-  const appState = { currentShift: null, students: [], attendance: {} };
+  const appState = { currentShift: null, students: [], attendance: {}, tempSporadic: new Set() };
 
   const dom = {
     app: document.getElementById('app'),
@@ -442,56 +458,110 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function renderCourses(shift) {
-    appState.currentShift = shift;
-    dom.shiftSelection.classList.add('hidden');
-    dom.dashboard.classList.remove('hidden');
-    dom.coursesContainer.innerHTML = '<p class="text-center text-lg">Cargando alumnos...</p>';
-    // fetch all students, then split into those with this shift and sporadic (no shift)
-    const all = await fetchStudents(null);
-    appState.students = all; // store all
-    const today = new Date().toISOString().slice(0, 10);
-    const attendance = await fetchAttendanceByDate(today);
-    appState.attendance = {};
-    appState.students.forEach(s => appState.attendance[s.id] = attendance[s.id] || 'pending');
+  appState.currentShift = shift;
+  dom.shiftSelection.classList.add('hidden');
+  dom.dashboard.classList.remove('hidden');
+  dom.coursesContainer.innerHTML = '<p class="text-center text-lg">Cargando alumnos...</p>';
+  appState.students = await fetchStudents(null); // ahora traemos todos
+  const today = new Date().toISOString().slice(0,10);
+  const attendance = await fetchAttendanceByDate(today);
+  appState.attendance = {};
+  appState.students.forEach(s => appState.attendance[s.id] = attendance[s.id] || 'pending');
 
-    // Partition
-    const assigned = appState.students.filter(s => (s.shift || '').trim() === shift);
-    const sporadic = appState.students.filter(s => !s.shift || (s.shift || '').trim() === '');
+  dom.coursesContainer.innerHTML = '';
 
-    dom.coursesContainer.innerHTML = '';
-
-    // Show sporadic students at top (grouped by course)
-    const sporadicByCourse = sporadic.reduce((acc, s) => { (acc[s.course] = acc[s.course] || []).push(s); return acc; }, {});
-    let sporadicHtml = '';
-    const sporadicCourses = Object.keys(sporadicByCourse).sort();
-    if (sporadicCourses.length > 0) {
-      sporadicHtml += `<div class="sporadic-section"><h3 class="text-lg font-bold mb-2">Esporádicos (sin turno asignado)</h3>`;
-      sporadicCourses.forEach(course => {
-        sporadicHtml += `<div class="mb-2"><strong>${course}</strong><div class="mt-2 space-y-2">`;
-        sporadicByCourse[course].sort((a,b)=>a.name.localeCompare(b.name)).forEach(s => sporadicHtml += createStudentElement(s));
-        sporadicHtml += `</div></div>`;
-      });
-      sporadicHtml += `</div>`;
-    }
-    dom.sporadicContainer.innerHTML = sporadicHtml;
-
-    // Now assigned by courses for the selected shift
-    const courses = [...new Set(assigned.map(s => s.course))].sort();
-    if (courses.length === 0) {
-      dom.coursesContainer.innerHTML = '<p class="text-center text-lg text-slate-500">No hay alumnos en este turno.</p>';
-    } else {
-      courses.forEach(course => {
-        const card = document.createElement('div');
-        card.className = 'course-card';
-        const studentsInCourse = assigned.filter(s => s.course === course).sort((a,b) => a.name.localeCompare(b.name));
-        const listHtml = studentsInCourse.map(createStudentElement).join('');
-        const sporadicBtn = userRole === 'user' ? `<button class="add-sporadic-btn mt-4 primary" data-course="${course}">+ Añadir Esporádico</button>` : '';
-        card.innerHTML = `<div class="flex-grow"><h3 class="text-xl font-bold mb-2">${course}</h3><div class="space-y-2" data-course-list="${course}">${listHtml}</div></div>${sporadicBtn}`;
-        dom.coursesContainer.appendChild(card);
-      });
-    }
-    updateSummary();
+  // Esporádicos **reales** (los que tienen status:'sporadic' o id empieza por 'sporadic_')
+  const realSporadics = appState.students.filter(s => (s.status === 'sporadic' || (s.id && s.id.startsWith && s.id.startsWith('sporadic_'))));
+  // Mostrar sólo esporádicos reales en la sección superior
+  if (realSporadics.length > 0) {
+    const grouped = realSporadics.reduce((acc, s) => { (acc[s.course] = acc[s.course] || []).push(s); return acc; }, {});
+    let html = `<div class="sporadic-section"><h3 class="text-lg font-bold mb-2">Esporádicos (sin turno asignado)</h3>`;
+    Object.keys(grouped).sort().forEach(course => {
+      html += `<div class="mb-2"><strong>${course}</strong><div class="mt-2 space-y-2">`;
+      grouped[course].sort((a,b)=>a.name.localeCompare(b.name)).forEach(s => html += createStudentElement(s));
+      html += `</div></div>`;
+    });
+    html += `</div>`;
+    dom.sporadicContainer.innerHTML = html;
+  } else {
+    dom.sporadicContainer.innerHTML = '';
   }
+
+  // Assigned students for the opened shift OR those temporarily added by prof for this shift
+  const assigned = appState.students.filter(s => (s.shift && s.shift === shift) || appState.tempSporadic.has(s.id));
+  const courses = [...new Set(assigned.map(s => s.course))].sort();
+
+  if (courses.length === 0) {
+    dom.coursesContainer.innerHTML = '<p class="text-center text-lg text-slate-500">No hay alumnos en este turno.</p>';
+  } else {
+    courses.forEach(course => {
+      const card = document.createElement('div');
+      card.className = 'course-card';
+      const studentsInCourse = assigned.filter(s => s.course === course).sort((a,b) => a.name.localeCompare(b.name));
+      const listHtml = studentsInCourse.map(createStudentElement).join('');
+      // ahora el botón abre el picker (modal) en lugar de añadir directamente
+      const sporadicBtn = `<button class="open-sporadic-picker mt-4 primary" data-course="${course}">+ Añadir Esporádico</button>`;
+      card.innerHTML = `<div class="flex-grow"><h3 class="text-xl font-bold mb-2">${course}</h3><div class="space-y-2" data-course-list="${course}">${listHtml}</div></div>${sporadicBtn}`;
+      dom.coursesContainer.appendChild(card);
+    });
+  }
+
+  updateSummary();
+}
+// Abrir picker de esporádicos para un curso (muestra alumnos sin turno asignado -> shift === '')
+function openSporadicPicker(course) {
+  const modal = document.getElementById('sporadic-picker-modal');
+  const content = document.getElementById('sporadic-picker-content');
+  modal.classList.remove('hidden');
+  // listar alumnos del mismo curso con shift vacío y que NO sean 'sporadic' reales
+  const candidates = appState.students.filter(s => (s.course === course) && (!s.shift || s.shift.trim() === '') && s.status !== 'sporadic' && !(s.id && s.id.startsWith && s.id.startsWith('sporadic_')));
+  if (candidates.length === 0) {
+    content.innerHTML = `<p class="text-muted">No hay alumnos sin turno asignado en ${course}.</p>`;
+    return;
+  }
+  let html = `<p class="small-muted mb-2">Selecciona uno o varios alumnos para añadir como esporádicos (se marcará su asistencia solo para hoy).</p>`;
+  html += `<div class="space-y-2">`;
+  candidates.forEach(s => {
+    html += `<label style="display:flex;align-items:center;gap:.6rem;padding:.4rem;border:1px solid rgba(15,23,42,0.03);border-radius:8px;">
+               <input type="checkbox" class="sporadic-candidate" data-id="${s.id}">
+               <span style="font-weight:600">${s.name}</span>
+               <small class="small-muted" style="margin-left:auto">${s.course}</small>
+             </label>`;
+  });
+  html += `</div>`;
+  content.innerHTML = html;
+}
+
+// cerrar modal
+document.getElementById('close-sporadic-picker').addEventListener('click', () => {
+  document.getElementById('sporadic-picker-modal').classList.add('hidden');
+});
+
+// confirmar añadir seleccionados
+document.getElementById('confirm-sporadic-add').addEventListener('click', async () => {
+  const checked = Array.from(document.querySelectorAll('.sporadic-candidate:checked')).map(el => el.dataset.id);
+  if (checked.length === 0) {
+    alert('Selecciona al menos un alumno.');
+    return;
+  }
+  const today = new Date().toISOString().slice(0,10);
+  for (const origId of checked) {
+    // marcar asistencia hoy como present (puedes ajustar a pending si prefieres)
+    try {
+      await logAttendance(origId, today, 'present');
+      // añadir a la colección temporal para que aparezca en el curso
+      appState.tempSporadic.add(origId);
+      // también actualizar appState.attendance para contar en resumen
+      appState.attendance[origId] = 'present';
+    } catch (e) {
+      console.error('Error al añadir esporádico', e);
+    }
+  }
+  // refrescar la vista del turno actual
+  if (appState.currentShift) renderCourses(appState.currentShift);
+  document.getElementById('sporadic-picker-modal').classList.add('hidden');
+});
+
 
   /* ---------------- CSV Import ---------------- */
   function handleCsvImport(file) {
@@ -824,30 +894,55 @@ document.addEventListener('DOMContentLoaded', () => {
   dom.finalizeShiftBtn.addEventListener('click', finalizeShift);
   document.getElementById('back-to-shifts').addEventListener('click', () => { dom.dashboard.classList.add('hidden'); dom.shiftSelection.classList.remove('hidden'); });
 
-  dom.coursesContainer.addEventListener('click', async e => {
-    const studentDiv = e.target.closest('.student-item');
-    const sporadicBtn = e.target.closest('.add-sporadic-btn');
-    if (sporadicBtn) { addSporadicStudent(sporadicBtn.dataset.course); return; }
-    if (!studentDiv) return;
-    const studentId = studentDiv.dataset.studentId;
-    let newState;
-    const currentState = appState.attendance[studentId];
-    if (e.target.classList.contains('mark-absent-btn')) {
-      newState = currentState === 'absent' ? 'pending' : 'absent';
-    } else {
-      newState = currentState === 'present' ? 'pending' : 'present';
-    }
-    appState.attendance[studentId] = newState;
-    studentDiv.classList.remove('pending', 'present', 'absent');
-    studentDiv.classList.add(newState);
-    updateSummary();
+  // Delegación de clicks dentro del contenedor de cursos.
+// Reemplaza tu listener anterior por este bloque.
+dom.coursesContainer.addEventListener('click', async (e) => {
+  // Si el click viene de un botón que abre el picker -> abrir modal
+  const openPickerBtn = e.target.closest('.open-sporadic-picker');
+  if (openPickerBtn) {
+    const course = openPickerBtn.dataset.course;
+    openSporadicPicker(course); // función que abre el modal y gestiona selección
+    return;
+  }
+
+  // Si el click viene de un botón "añadir esporádico" antiguo (por seguridad)
+  const legacySporadicBtn = e.target.closest('.add-sporadic-btn');
+  if (legacySporadicBtn) {
+    // Si todavía tienes botones con la clase antigua, redirigimos al nuevo flujo:
+    openSporadicPicker(legacySporadicBtn.dataset.course);
+    return;
+  }
+
+  // Click sobre un alumno
+  const studentDiv = e.target.closest('.student-item');
+  if (!studentDiv) return;
+
+  const studentId = studentDiv.dataset.studentId;
+  const currentState = appState.attendance[studentId] || 'pending';
+  let newState;
+
+  // Si pulsaron la X => togglear absent/pending
+  if (e.target.classList.contains('mark-absent-btn')) {
+    newState = currentState === 'absent' ? 'pending' : 'absent';
+  } else {
+    // Click en el panel del alumno => togglear present/pending
+    newState = currentState === 'present' ? 'pending' : 'present';
+  }
+
+  // Actualizamos estado en memoria + UI y lo registramos en BD
+  appState.attendance[studentId] = newState;
+  studentDiv.classList.remove('pending', 'present', 'absent');
+  studentDiv.classList.add(newState);
+  updateSummary();
+
+  // Guardar en attendance (si procede)
+  try {
     await logAttendance(studentId, new Date().toISOString().slice(0,10), newState);
-  });
-
-  dom.manageStudentsBtn.addEventListener('click', openManageStudentsModal);
-  dom.closeManageModal.addEventListener('click', () => dom.manageStudentsModal.classList.add('hidden'));
-
+  } catch (err) {
+    console.error('Error registrando asistencia:', err);
+  }
 });
+
 </script>
 
 <script>
