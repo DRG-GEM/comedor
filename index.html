@@ -1,1023 +1,812 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Gestor de Comedor Escolar</title>
+
+<!-- Tailwind CDN (ok para pruebas) -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <meta name="theme-color" content="#ffffff">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Comedor">
-<link rel="apple-touch-icon" href="https://placehold.co/192x192/8b0630/FFFFFF?text=CEVP">
 <link rel="manifest" href="/manifest.json">
 
 <style>
 :root{
   --bg: #f6f7f9;
-  --paper: #ffffff;
-  --surface: #f8fafc;
-  --text: #0f172a;
-  --muted: #6b7280;
-  --brand: #8b0630;
-  --brand-dark: #700424;
-  --accent: #19b4d6;
-  --success: #067a46;
-  --danger: #c92a2a;
+  --paper:#fff;
+  --text:#0f172a;
+  --muted:#6b7280;
+  --brand:#8b0630;
+  --brand-dark:#700424;
+  --accent:#19b4d6;
+  --success:#067a46;
+  --danger:#c92a2a;
   --card-border: rgba(15,23,42,0.06);
 }
-body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); margin:0; -webkit-font-smoothing:antialiased; }
-header{ padding:1.25rem 0; }
-header .logo{ width:56px;height:56px;border-radius:10px;background:white;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(15,23,42,0.04);border:1px solid var(--card-border); }
-h1,h2,h3,h4{ color: var(--brand); font-weight:700; margin-bottom:.35rem; }
-button{ transition: transform .12s ease, box-shadow .12s ease; border-radius: 10px; font-weight:600; padding:.6rem .9rem; box-shadow:0 6px 18px rgba(15,23,42,0.04); border:1px solid transparent; background: linear-gradient(180deg,#fff,#fbfbfb); color:var(--text); cursor:pointer;}
-button:hover{ transform: translateY(-2px); }
-button.primary{ background: linear-gradient(180deg,var(--brand),var(--brand-dark)); color:#fff; border-color: rgba(0,0,0,0.06); }
-button.ghost{ background: transparent; border:1px solid var(--card-border); color:var(--text); padding:.6rem .95rem; background:#fff; box-shadow:0 6px 18px rgba(15,23,42,0.03); }
-button.large{ padding:.9rem 1.4rem; font-size:1.05rem; border-radius:999px; box-shadow:0 12px 30px rgba(139,6,48,0.12); }
-input,select{ background:#fff; color:var(--text); border:1px solid var(--card-border); padding:.6rem .85rem; border-radius:10px; }
-input:focus,select:focus{ outline:none; box-shadow:0 8px 24px rgba(25,180,214,0.10); border-color:var(--accent); }
+body { font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:var(--text); margin:0; }
+.container { max-width:1100px; margin-left:auto; margin-right:auto; padding:20px; }
+header { padding: 10px 0 18px; text-align:center; }
+.logo { width:54px;height:54px;border-radius:10px;background:#fff;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(15,23,42,0.04);border:1px solid var(--card-border); }
+h1 { margin:8px 0 0; color:var(--brand); font-weight:800; font-size:28px; }
+.subtle { color:var(--muted); }
 
-/* admin panel */
-.admin-panel{ background:white; border-radius:14px; padding:1.25rem; border:1px solid var(--card-border); box-shadow:0 18px 40px rgba(15,23,42,0.04); }
-.admin-panel .controls{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; align-items:center; justify-items:center; margin-top:.75rem; }
-@media(max-width:900px){ .admin-panel .controls{ grid-template-columns:1fr; } }
-.admin-panel .btn-row{ display:flex; gap:1rem; align-items:center; justify-content:center; flex-wrap:wrap; }
-.admin-panel .export-row{ display:flex; gap:1rem; align-items:center; justify-content:center; flex-wrap:wrap; margin-top:.75rem; }
-#import-status-initial,#import-status-dashboard{ margin-top:.6rem; color:#059669; min-height:1rem; text-align:center; }
+.admin-panel { background:var(--paper); border-radius:12px; padding:18px; border:1px solid var(--card-border); box-shadow:0 14px 36px rgba(15,23,42,0.04); margin-top:18px; }
+.btn-row { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+button.primary { background:linear-gradient(180deg,var(--brand),var(--brand-dark)); color:#fff; padding:10px 16px; border-radius:999px; font-weight:700; border:0; }
+button.ghost { background:#fff; border:1px solid rgba(15,23,42,0.06); padding:10px 14px; border-radius:10px; }
+button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 
-/* courses */
-#courses-container{ margin-top:0.5rem; }
-.course-card{ background:white; border-radius:12px; padding:1rem; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.03); display:flex; flex-direction:column; gap:.75rem; }
-.course-card h3{ color:var(--brand); margin:0 0 .5rem 0; }
+.summary-card { background:var(--paper); padding:14px; border-radius:10px; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.03); text-align:center; }
+#courses-container { margin-top:14px; display:grid; gap:14px; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); }
 
-/* student items */
-.student-item{ background:var(--surface); border-radius:10px; padding:.7rem .9rem; display:flex; align-items:center; justify-content:space-between; gap:.6rem; border-left:6px solid transparent; border:1px solid rgba(15,23,42,0.04); }
-.student-item .name{ font-weight:600; color:var(--text); font-size:.98rem; }
-.student-item.pending{ border-left-color:#cbd5e1; background:#fff; }
-.student-item.present{ border-left-color:var(--success); background-color:#dcfce7; box-shadow:0 8px 20px rgba(6,122,70,0.04); }
-.student-item.absent{ border-left-color:var(--danger); background:linear-gradient(90deg, rgba(201,42,42,0.04), #fff); opacity:.95; text-decoration:line-through; }
-.student-item.allergic{ box-shadow:0 0 0 2px var(--danger); }
-.student-item .name.allergic::after{ content:'⚠️'; margin-left:8px; font-size:.8em; }
+.course-card { background:var(--paper); border-radius:10px; padding:12px; border:1px solid var(--card-border); box-shadow:0 8px 24px rgba(15,23,42,0.03); display:flex; flex-direction:column; gap:8px; }
+.course-card h3 { color:var(--brand); margin:0; font-weight:700; }
 
-/* sporadic box */
-.sporadic-section{ background:#fff; border-radius:12px; padding:12px; border:1px solid var(--card-border); margin-bottom:.75rem; }
+.student-item { background:#ffffff; border-radius:8px; padding:10px; display:flex; align-items:center; justify-content:space-between; gap:8px; border-left:6px solid transparent; border:1px solid rgba(15,23,42,0.04); }
+.student-item .name { font-weight:600; }
+.student-item.pending { border-left-color:#cbd5e1; }
+.student-item.present { border-left-color:var(--success); background:#f0fdf4; }
+.student-item.absent { border-left-color:var(--danger); background:linear-gradient(90deg, rgba(201,42,42,0.04), #fff); text-decoration:line-through; opacity:0.96; }
+.student-item.allergic { box-shadow:0 0 0 2px rgba(201,42,42,0.06); }
 
-/* summary & report */
-.summary-card{ background:white; padding:.9rem; border-radius:12px; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.03); }
-.report-wrapper{ background:white; border-radius:12px; padding:1rem; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.04); }
-.report-course .course-header{ background: linear-gradient(90deg,var(--brand),var(--brand-dark)); color:#fff; padding:.6rem .9rem; font-weight:700; display:flex; justify-content:space-between; align-items:center; }
-.report-table{ width:100%; border-collapse:collapse; font-size:13px; color:var(--text); }
-.report-table thead th{ position:sticky; top:0; background:#fff; z-index:2; border-bottom:2px solid rgba(15,23,42,0.06); padding:.45rem .5rem; text-align:center; font-weight:600; }
-.report-table th:first-child, .report-table td:first-child{ text-align:left; position:sticky; left:0; background:#fff; z-index:3; }
-.report-table th, .report-table td{ border:1px solid rgba(15,23,42,0.06); padding:.3rem .45rem; min-width:28px; text-align:center; }
-.report-table tbody tr:nth-child(even){ background: rgba(15,23,42,0.02); }
-.attendance-mark{ width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; background:var(--success); color:#fff; border-radius:50%; font-weight:700; font-size:12px; }
-.report-table td.total{ font-weight:700; color:var(--brand); }
+.mark-absent-btn { width:40px;height:40px;border-radius:8px;border:1px solid rgba(0,0,0,0.04); background:#fff; font-weight:700; }
 
-@media (max-width:900px){ .report-table th, .report-table td{ padding:.25rem .35rem; font-size:11px; min-width:22px; } .admin-panel .controls{ flex-direction:column; gap:.75rem; } }
+.report-wrapper { background:var(--paper); border-radius:12px; padding:10px; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.03); }
+.report-table { width:100%; border-collapse:collapse; font-size:13px; }
+.report-table th, .report-table td { border:1px solid rgba(15,23,42,0.06); padding:6px 6px; text-align:center; min-width:28px; }
+.report-table thead th { background:#fff; position:sticky; top:0; z-index:2; }
+.report-table td.total { font-weight:700; color:var(--brand); }
+.attendance-mark { display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px;border-radius:50%; background:var(--success); color:#fff; font-weight:700; }
 
-@media print {
-  body > *:not(.printable-area){ display:none !important; }
-  .printable-area, .printable-area *{ visibility: visible !important; }
-  .printable-area{ position:absolute; left:0; top:0; width:100%; background:white; padding:20px; }
-  body{ background:#fff !important; color:#000 !important; margin:0; padding:0; }
-  .report-table thead th{ background:#eee !important; -webkit-print-color-adjust:exact; }
-  .report-table td, .report-table th{ border:1px solid #ccc !important; }
-  .attendance-mark{ background:var(--success) !important; color:#fff !important; -webkit-print-color-adjust:exact; }
-  .report-table{ width:100% !important; font-size:10px !important; }
-  .report-table th, .report-table td{ padding:2px !important; min-width:20px !important; }
-  .report-course .course-header{ background:#8b0630 !important; -webkit-print-color-adjust: exact; }
-  @page{ size: landscape; margin:0.5cm; }
+.fixed-modal { position:fixed; left:0; top:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.28); z-index:90; }
+.modal-content { background:#fff; border-radius:12px; padding:16px; width:92%; max-width:840px; max-height:90vh; overflow:auto; box-shadow:0 18px 40px rgba(0,0,0,0.12); }
+
+.sporadic-section { margin-bottom:12px; }
+.small-muted { color:var(--muted); font-size:0.85rem; }
+
+/* responsive */
+@media (max-width:800px){
+  .btn-row { justify-content:center; }
+  #courses-container { grid-template-columns: 1fr; }
 }
 
-.fixed-modal{ position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:1000; }
-.modal-content{ background:white; border-radius:12px; padding:20px; width:90%; max-width:800px; max-height:90vh; overflow-y:auto; box-shadow:0 10px 30px rgba(0,0,0,0.2); }
-
-.small-muted{ color:var(--muted); font-size:0.9rem; }
-.text-muted{ color:var(--muted); }
+/* print tweaks */
+@media print{
+  body * { visibility:hidden; }
+  .printable-area, .printable-area * { visibility:visible; }
+  .printable-area { position: absolute; left:0; top:0; width:100%; background:#fff; padding:8px; }
+  @page { size: landscape; margin: 0.4cm; }
+}
 </style>
 </head>
 <body>
 
-<div id="app" class="container mx-auto p-4 md:p-8 max-w-7xl">
-  <header class="text-center mb-10">
-    <div class="flex justify-between items-center">
-        <div class="w-14"></div>
-        <div class="flex flex-col items-center">
-            <div class="logo"><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><rect fill='%23ffffff' width='48' height='48' rx='8'/><text x='50%' y='55%' font-size='18' text-anchor='middle' fill='%238b0630' font-family='Inter'>CEVP</text></svg>" alt="logo" style="width:44px;height:44px;border-radius:8px;"></div>
-            <h1 class="text-4xl font-extrabold text-black mt-2">Gestor de Comedor</h1>
-        </div>
-        <div id="auth-controls" class="w-14">
-            <button id="logout-btn" class="hidden ghost p-2" title="Cerrar Sesión">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-            </button>
-        </div>
+<div class="container">
+  <header>
+    <div style="display:flex;justify-content:center;align-items:center;gap:12px;">
+      <div class="logo" aria-hidden="true"><svg width="34" height="34" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect fill="#fff" width="48" height="48" rx="8"/><text x="50%" y="56%" font-size="16" fill="#8b0630" text-anchor="middle" font-family="Inter">CEVP</text></svg></div>
+      <div style="text-align:center">
+        <h1>Gestor de Comedor</h1>
+        <div id="role-display" class="subtle">Cargando...</div>
+      </div>
     </div>
-    <p id="role-display" class="text-muted text-slate-600 mt-2 font-semibold">Cargando...</p>
   </header>
 
-  <div id="admin-login-view" class="hidden text-center bg-white p-8 rounded-2xl max-w-md mx-auto shadow-sm">
-      <h2 class="text-2xl font-bold mb-6 text-black">Acceso de Administrador</h2>
-      <button id="login-admin-btn" class="primary inline-flex items-center gap-3">
-        <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C8.36,19.27 5,16.25 5,12C5,7.9 8.2,4.73 12.19,4.73C14.03,4.73 15.69,5.36 16.95,6.57L19.05,4.54C17.22,2.77 15,2 12.19,2C6.42,2 2.03,6.8 2.03,12C2.03,17.05 6.16,22 12.19,22C17.6,22 21.54,18.22 21.54,12.33C21.54,11.76 21.48,11.43 21.35,11.1V11.1Z"></path></svg>
-        <span>Iniciar Sesión con Google</span>
-      </button>
+  <div id="admin-login-view" class="hidden" style="max-width:640px;margin:0 auto">
+    <div class="admin-panel" style="text-align:center">
+      <h2 style="margin-bottom:8px">Acceso de Administrador</h2>
+      <button id="login-admin-btn" class="primary" style="display:inline-flex;align-items:center;gap:8px;"><svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C8.36,19.27 5,16.25 5,12C5,7.9 8.2,4.73 12.19,4.73C14.03,4.73 15.69,5.36 16.95,6.57L19.05,4.54C17.22,2.77 15,2 12.19,2C6.42,2 2.03,6.8 2.03,12C2.03,17.05 6.16,22 12.19,22C17.6,22 21.54,18.22 21.54,12.33C21.54,11.76 21.48,11.43 21.35,11.1V11.1Z"/></svg> Iniciar sesión con Google</button>
+    </div>
   </div>
 
   <div id="main-content" class="hidden">
 
-      <div id="shift-selection" class="text-center">
-        <h2 class="text-2xl font-bold mb-6 text-black">Elige un turno de comedor</h2>
-        <div id="shift-buttons" class="flex flex-wrap justify-center gap-6">
-          <button class="primary large" data-shift="Primer Turno (Infantil)">Primer Turno (Infantil)</button>
-          <button class="primary large" data-shift="Segundo Turno (Primaria)">Segundo Turno (Primaria)</button>
-        </div>
-
-        <div class="mt-12 pt-8 admin-panel admin-only">
-          <h3 class="text-xl font-bold mb-2 text-center">Panel de Gestión</h3>
-          <div class="mb-6">
-            <h4 class="text-lg font-semibold mb-4 text-center" style="color:#475569;">Gestión de Datos</h4>
-            <div class="btn-row" role="group" aria-label="gestion-datos">
-              <button id="import-csv-btn-initial" class="primary" title="Importar CSV">📤 Importar Alumnos (CSV)</button>
-              <button id="manage-students-btn" class="primary" title="Gestionar alumnos">👥 Gestionar Alumnos</button>
-              <button id="wipe-db" class="ghost" title="Borrar todos los alumnos">🗑️ Borrar todos los alumnos</button>
-            </div>
-            <p id="import-status-initial" class="text-center mt-3" style="min-height:18px"></p>
-          </div>
-          <hr style="border:none;border-top:1px solid rgba(15,23,42,0.04); margin: .8rem 0;">
-          <div>
-            <h4 class="text-lg font-semibold mb-4 text-center" style="color:#475569;">Consultas y Exportación</h4>
-            <div class="controls">
-              <div class="btn-row">
-                <button id="show-history-btn" class="bg-purple-600 text-white py-2 px-4 rounded-lg">📜 Historial por Alumno</button>
-                <button id="show-monthly-report-btn" class="bg-sky-600 text-white py-2 px-4 rounded-lg">📅 Informe Mensual</button>
-              </div>
-              <div class="export-row">
-                <input type="date" id="export-date-input" value="" aria-label="Fecha para exportar">
-                <button id="export-csv-btn" class="primary">💾 Exportar CSV del Día</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
+    <section id="shift-selection" style="text-align:center">
+      <h2 style="margin-bottom:12px">Elige un turno de comedor</h2>
+      <div class="btn-row" id="shift-buttons" style="justify-content:center">
+        <button class="primary large" data-shift="Primer Turno (Infantil)">Primer Turno (Infantil)</button>
+        <button class="primary large" data-shift="Segundo Turno (Primaria)">Segundo Turno (Primaria)</button>
       </div>
 
-      <main id="dashboard" class="hidden">
-        <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
-          <button id="back-to-shifts" class="ghost">&larr; Volver a Turnos</button>
-          <div class="flex flex-wrap gap-4">
-            <button id="finalize-shift-btn" class="primary">🏁 Finalizar Turno</button>
-          </div>
+      <div class="admin-panel admin-only" style="margin-top:18px">
+        <h3 style="text-align:center;margin-bottom:10px">Panel de Gestión</h3>
+        <div class="btn-row" role="group" aria-label="gestion-datos">
+          <button id="import-csv-btn-initial" class="primary">📤 Importar Alumnos (CSV)</button>
+          <button id="manage-students-btn" class="primary">👥 Gestionar Alumnos</button>
+          <button id="wipe-db" class="ghost">🗑️ Borrar todos los alumnos</button>
         </div>
+        <div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap">
+          <input id="export-date-input" type="date" style="padding:8px;border-radius:8px;border:1px solid var(--card-border);background:#fff">
+          <button id="export-csv-btn" class="primary">💾 Exportar CSV del Día</button>
+        </div>
+        <p id="import-status-initial" style="text-align:center;margin-top:10px;min-height:18px;color:#059669"></p>
+      </div>
+    </section>
 
-        <section id="summary" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div class="summary-card text-center"><h3 class="text-lg font-semibold text-slate-600">Comensales</h3><p id="summary-diners" class="text-4xl font-bold">0</p></div>
-          <div class="summary-card text-center"><h3 class="text-lg font-semibold text-rose-500">Ausentes</h3><p id="summary-absent" class="text-4xl font-bold">0</p></div>
-          <div class="summary-card text-center"><h3 class="text-lg font-semibold text-amber-400">Pendientes</h3><p id="summary-pending" class="text-4xl font-bold">0</p></div>
-          <div class="summary-card text-center"><h3 class="text-lg font-semibold text-emerald-400">Presentes</h3><p id="summary-present" class="text-4xl font-bold">0</p></div>
-        </section>
+    <main id="dashboard" class="hidden" style="margin-top:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px">
+        <button id="back-to-shifts" class="ghost">← Volver a Turnos</button>
+        <div>
+          <button id="finalize-shift-btn" class="primary">🏁 Finalizar Turno</button>
+        </div>
+      </div>
 
-        <!-- Esporádicos (alumnos sin turno) -->
-        <section id="sporadic-container" class="mb-6">
-          <!-- generado dinámicamente -->
-        </section>
+      <section style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px">
+        <div class="summary-card"><div class="small-muted">Comensales</div><div id="summary-diners" style="font-size:22px;font-weight:800">0</div></div>
+        <div class="summary-card"><div class="small-muted">Ausentes</div><div id="summary-absent" style="font-size:22px;font-weight:800">0</div></div>
+        <div class="summary-card"><div class="small-muted">Pendientes</div><div id="summary-pending" style="font-size:22px;font-weight:800">0</div></div>
+        <div class="summary-card"><div class="small-muted">Presentes</div><div id="summary-present" style="font-size:22px;font-weight:800">0</div></div>
+      </section>
 
-        <section id="student-lists">
-          <div id="courses-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-        </section>
-      </main>
+      <section id="student-lists">
+        <div id="sporadic-container"></div>
+        <div id="courses-container"></div>
+      </section>
+    </main>
+
   </div>
 </div>
 
-<input type="file" id="csv-file-input" class="hidden" accept=".csv">
+<input id="csv-file-input" type="file" accept=".csv" style="display:none">
 
 <!-- Manage Students Modal -->
 <div id="manage-students-modal" class="fixed-modal hidden no-print">
   <div class="modal-content">
-    <header class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold" style="color:var(--brand)">Gestionar Alumnos</h2>
-        <button id="close-manage-modal" class="text-3xl font-bold hover:text-red-500">&times;</button>
+    <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h2 style="color:var(--brand)">Gestionar Alumnos</h2>
+      <button id="close-manage-modal" class="small">✕</button>
     </header>
-    <div id="manage-students-content" class="max-h-[70vh] overflow-y-auto">
-        <!-- Content generated dynamically -->
-    </div>
+    <div id="manage-students-content" style="max-height:62vh;overflow:auto"></div>
   </div>
 </div>
-<!-- Sporadic picker modal (profesor) -->
-<div id="sporadic-picker-modal" class="fixed-modal hidden no-print">
+
+<!-- Sporadic Picker Modal (profesor) -->
+<div id="sporadic-picker-modal" class="fixed-modal hidden no-print" aria-hidden="true">
   <div class="modal-content">
-    <header class="flex justify-between items-center mb-4">
-      <h2 class="text-2xl font-bold" style="color:var(--brand)">Añadir Esporádico</h2>
-      <button id="close-sporadic-picker" class="text-3xl font-bold hover:text-red-500">&times;</button>
+    <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h3 id="sporadic-picker-title">Seleccionar esporádicos</h3>
+      <button id="close-sporadic-picker" class="small">✕</button>
     </header>
-    <div id="sporadic-picker-content" style="max-height:60vh;overflow:auto;">
-      <!-- listado se inyecta aquí -->
-      <p class="text-muted">Cargando...</p>
-    </div>
-    <div class="mt-4 text-right">
-      <button id="confirm-sporadic-add" class="primary">Agregar seleccionados</button>
-    </div>
+    <div id="sporadic-picker-content" style="max-height:62vh;overflow:auto"></div>
+    <footer style="margin-top:8px;text-align:right">
+      <button id="confirm-sporadic-add" class="primary">Añadir seleccionados</button>
+    </footer>
   </div>
 </div>
 
 <!-- History Modal -->
-<div id="history-modal" class="fixed inset-0 bg-black/10 flex items-center justify-center p-4 hidden opacity-0 z-40 no-print">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-full max-h-[90vh] flex flex-col border border-gray-100 overflow-hidden">
-        <header class="p-4 border-b border-gray-100 flex justify-between items-center">
-            <h2 class="text-2xl font-bold" style="color:var(--brand)">Historial de Asistencia</h2>
-            <button id="close-history-btn" class="text-3xl font-bold hover:text-red-500">&times;</button>
-        </header>
-        <div class="p-4 flex-grow flex flex-col md:flex-row gap-4 overflow-hidden">
-            <div class="w-full md:w-1/3 flex flex-col">
-                <input type="text" id="history-search" placeholder="Buscar alumno..." class="w-full p-2 rounded-md bg-white border border-gray-200 mb-4">
-                <div id="history-student-list" class="flex-grow overflow-y-auto pr-2"></div>
-            </div>
-            <div id="history-details-container" class="w-full md:w-2/3 bg-white rounded-lg p-4 flex-grow flex flex-col">
-                <h3 id="history-student-name" class="text-xl font-semibold mb-4 text-center">Selecciona un alumno</h3>
-                <div id="history-dates-list" class="flex-grow overflow-y-auto text-center"></div>
-            </div>
-        </div>
+<div id="history-modal" class="fixed-modal hidden no-print">
+  <div class="modal-content">
+    <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h3 style="color:var(--brand)">Historial de Asistencia</h3>
+      <button id="close-history-btn" class="small">✕</button>
+    </header>
+    <div style="display:flex;gap:14px">
+      <div style="width:35%">
+        <input id="history-search" placeholder="Buscar alumno..." style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--card-border)">
+        <div id="history-student-list" style="margin-top:8px;max-height:52vh;overflow:auto"></div>
+      </div>
+      <div style="flex:1;background:#fff;border-radius:8px;padding:10px">
+        <h4 id="history-student-name">Selecciona un alumno</h4>
+        <div id="history-dates-list" style="margin-top:8px;max-height:52vh;overflow:auto"></div>
+      </div>
     </div>
+  </div>
 </div>
 
 <!-- Monthly Report Modal -->
-<div id="monthly-report-modal" class="fixed inset-0 bg-black/10 flex items-center justify-center p-4 hidden opacity-0 z-40 no-print">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-full max-h-[90vh] flex flex-col border border-gray-100 overflow-hidden">
-        <header class="p-4 border-b border-gray-100 flex justify-between items-center no-print">
-            <h2 class="text-2xl font-bold" style="color:var(--brand)">Informe de Asistencia Mensual</h2>
-            <div class="flex items-center gap-4">
-                <input type="month" id="report-month-input" class="p-2 rounded-lg bg-white text-black border border-gray-200">
-                <button id="print-report-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg">🖨️ Imprimir</button>
-                <button id="close-report-btn" class="text-3xl font-bold hover:text-red-500">&times;</button>
-            </div>
-        </header>
-        <div id="monthly-report-content" class="p-6 flex-grow overflow-y-auto">
-            <p class="text-center text-muted">Selecciona un mes para generar el informe.</p>
-        </div>
-    </div>
+<div id="monthly-report-modal" class="fixed-modal hidden no-print">
+  <div class="modal-content">
+    <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h3 style="color:var(--brand)">Informe de Asistencia Mensual</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="report-month-input" type="month" style="padding:8px;border-radius:8px;border:1px solid var(--card-border)">
+        <button id="print-report-btn" class="primary">🖨️ Imprimir</button>
+        <button id="close-report-btn" class="small">✕</button>
+      </div>
+    </header>
+    <div id="monthly-report-content" style="max-height:66vh;overflow:auto"></div>
+  </div>
 </div>
 
-<!-- Libraries -->
+<!-- Firebase + PapaParse -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
 <script>
+/* ----------------------------------------------
+   Index completo: manejo alumnos / esporádicos /
+   exportación / impresión / gestión admin
+   -----------------------------------------------*/
 document.addEventListener('DOMContentLoaded', () => {
 
+  // --- Firebase config (deja el tuyo) ---
   const firebaseConfig = {
-      apiKey: "AIzaSyAeI9G1_2-E8Kghc-88bkrXa_VDJXeDyHo",
-      authDomain: "comedorvp.firebaseapp.com",
-      projectId: "comedorvp",
-      storageBucket: "comedorvp.firebasestorage.app",
-      messagingSenderId: "821870274048",
-      appId: "1:821870274048:web:62b85d28ceace395245ae5"
+    apiKey: "AIzaSyAeI9G1_2-E8Kghc-88bkrXa_VDJXeDyHo",
+    authDomain: "comedorvp.firebaseapp.com",
+    projectId: "comedorvp",
+    storageBucket: "comedorvp.firebasestorage.app",
+    messagingSenderId: "821870274048",
+    appId: "1:821870274048:web:62b85d28ceace395245ae5"
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
   const auth = firebase.auth();
   const googleProvider = new firebase.auth.GoogleAuthProvider();
-  let userRole = null;
-  const appState = { currentShift: null, students: [], attendance: {}, tempSporadic: new Set() };
 
+  // --- App state ---
+  const appState = {
+    currentShift: null,
+    students: [],         // todos los alumnos (traídos de firestore)
+    attendance: {},       // estados para el día actual { studentId: 'present'|'absent'|'pending' }
+    tempSporadic: new Set() // ids que el profe marcó hoy como esporádicos para mostrarlos en el turno
+  };
+
+  // --- DOM refs ---
   const dom = {
-    app: document.getElementById('app'),
     roleDisplay: document.getElementById('role-display'),
-    shiftSelection: document.getElementById('shift-selection'),
-    dashboard: document.getElementById('dashboard'),
-    coursesContainer: document.getElementById('courses-container'),
-    csvFileInput: document.getElementById('csv-file-input'),
-    importStatusInitial: document.getElementById('import-status-initial'),
-    wipeDbBtn: document.getElementById('wipe-db'),
-    finalizeShiftBtn: document.getElementById('finalize-shift-btn'),
     adminLoginView: document.getElementById('admin-login-view'),
     mainContent: document.getElementById('main-content'),
+    coursesContainer: document.getElementById('courses-container'),
+    sporadicContainer: document.getElementById('sporadic-container'),
+    importStatusInitial: document.getElementById('import-status-initial'),
+    csvFileInput: document.getElementById('csv-file-input'),
+    manageStudentsModal: document.getElementById('manage-students-modal'),
+    manageStudentsContent: document.getElementById('manage-students-content'),
+    closeManageModal: document.getElementById('close-manage-modal'),
+    sporadicPickerModal: document.getElementById('sporadic-picker-modal'),
+    sporadicPickerContent: document.getElementById('sporadic-picker-content'),
+    sporadicPickerTitle: document.getElementById('sporadic-picker-title'),
+    closeSporadicPicker: document.getElementById('close-sporadic-picker'),
+    confirmSporadicAdd: document.getElementById('confirm-sporadic-add'),
+    monthlyReportModal: document.getElementById('monthly-report-modal'),
+    monthlyReportContent: document.getElementById('monthly-report-content'),
+    reportMonthInput: document.getElementById('report-month-input'),
+    printReportBtn: document.getElementById('print-report-btn'),
+    closeReportBtn: document.getElementById('close-report-btn'),
     historyModal: document.getElementById('history-modal'),
-    closeHistoryBtn: document.getElementById('close-history-btn'),
     historyStudentList: document.getElementById('history-student-list'),
     historyStudentName: document.getElementById('history-student-name'),
     historyDatesList: document.getElementById('history-dates-list'),
     historySearch: document.getElementById('history-search'),
-    monthlyReportModal: document.getElementById('monthly-report-modal'),
-    monthlyReportContent: document.getElementById('monthly-report-content'),
-    reportMonthInput: document.getElementById('report-month-input'),
-    logoutBtn: document.getElementById('logout-btn'),
-    closeReportBtn: document.getElementById('close-report-btn'),
-    printReportBtn: document.getElementById('print-report-btn'),
+    // controls
+    loginAdminBtn: document.getElementById('login-admin-btn'),
+    importCsvBtnInitial: document.getElementById('import-csv-btn-initial'),
     manageStudentsBtn: document.getElementById('manage-students-btn'),
-    manageStudentsModal: document.getElementById('manage-students-modal'),
-    closeManageModal: document.getElementById('close-manage-modal'),
-    manageStudentsContent: document.getElementById('manage-students-content'),
-    sporadicContainer: document.getElementById('sporadic-container')
+    wipeDbBtn: document.getElementById('wipe-db'),
+    exportCsvBtn: document.getElementById('export-csv-btn'),
+    exportDateInput: document.getElementById('export-date-input'),
+    showHistoryBtn: document.getElementById('show-history-btn'),
+    showMonthlyBtn: document.getElementById('show-monthly-report-btn'),
+    finalizeShiftBtn: document.getElementById('finalize-shift-btn'),
+    backToShiftsBtn: document.getElementById('back-to-shifts'),
+    summary: {
+      diners: document.getElementById('summary-diners'),
+      absent: document.getElementById('summary-absent'),
+      pending: document.getElementById('summary-pending'),
+      present: document.getElementById('summary-present')
+    }
   };
 
-  /* ---------------- UI visibility ---------------- */
-  function setUIVisibility(role) {
-    userRole = role;
-    dom.app.classList.remove('opacity-0');
-    dom.adminLoginView.classList.add('hidden');
-    dom.mainContent.classList.add('hidden');
-    dom.logoutBtn.classList.add('hidden');
-
-    if (userRole === 'admin') {
-        dom.mainContent.classList.remove('hidden');
-        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
-        document.querySelectorAll('.user-only').forEach(el => el.style.display = 'none');
-        const user = auth.currentUser;
-        dom.roleDisplay.textContent = user ? `Admin: ${user.displayName || 'Usuario'}` : 'Admin';
-        dom.logoutBtn.classList.remove('hidden');
-    } else if (userRole === 'user') {
-        dom.mainContent.classList.remove('hidden');
-        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.user-only').forEach(el => el.style.display = 'block');
-        dom.roleDisplay.textContent = 'Modo: Profesor / Cuidador';
-    } else if (userRole === 'login') {
-        dom.adminLoginView.classList.remove('hidden');
-        dom.roleDisplay.textContent = 'Acceso de Administrador';
-    }
+  // --- Helpers: Firestore ops ---
+  async function fetchStudents() {
+    const snapshot = await db.collection('students').get();
+    return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
   }
-
-  /* ---------------- Firestore helpers ---------------- */
-  async function fetchStudents(shift = null) {
-    // if shift is null -> fetch all students; else filter in client to be more flexible
-    const snapshot = await db.collection("students").get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  }
-
   async function addStudentBatch(students) {
     const batch = db.batch();
-    const collection = db.collection("students");
-    let count = 0;
+    const col = db.collection('students');
+    let added = 0;
     students.forEach(s => {
       if (s.name && s.course) {
-        const docRef = collection.doc();
-        const payload = {
+        const docRef = col.doc();
+        batch.set(docRef, {
           name: s.name.trim(),
           course: s.course.trim(),
-          shift: (s.shift || '').trim(),
-          status: 'fixed',
+          shift: s.shift ? s.shift.trim() : '',
+          status: s.status || (s.shift ? 'fixed' : 'sporadic'),
           allergic: !!s.allergic
-        };
-        batch.set(docRef, payload);
-        count++;
+        });
+        added++;
       }
     });
-    if (count === 0) return 0;
-    await batch.commit();
-    return count;
+    if (added > 0) await batch.commit();
+    return added;
   }
-
   async function updateStudentDoc(id, updates) {
     try {
       await db.collection('students').doc(id).update(updates);
       return true;
     } catch (e) {
-      console.error('Error updating student', e);
+      console.error('updateStudentDoc error', e);
       return false;
     }
   }
-
   async function deleteAllStudents() {
-    const snapshot = await db.collection("students").get();
+    const snapshot = await db.collection('students').get();
     const batch = db.batch();
-    snapshot.docs.forEach(doc => batch.delete(doc.ref));
+    snapshot.docs.forEach(d => batch.delete(d.ref));
     await batch.commit();
   }
 
   async function logAttendance(studentId, dateStr, state) {
     if (studentId.startsWith('sporadic_')) return;
-    const docRef = db.collection("attendance").doc(`${studentId}_${dateStr}`);
+    const docRef = db.collection('attendance').doc(`${studentId}_${dateStr}`);
     await docRef.set({ studentId, date: dateStr, state });
   }
-
   async function logBatchAttendance(studentsToUpdate, dateStr, state) {
-    const validStudents = studentsToUpdate.filter(id => !id.startsWith('sporadic_'));
-    if (validStudents.length === 0) return;
+    const valid = studentsToUpdate.filter(id => !id.startsWith('sporadic_'));
+    if (!valid.length) return;
     const batch = db.batch();
-    const collection = db.collection("attendance");
-    validStudents.forEach(studentId => {
-      const docRef = collection.doc(`${studentId}_${dateStr}`);
-      batch.set(docRef, { studentId, date: dateStr, state });
+    const col = db.collection('attendance');
+    valid.forEach(id => {
+      const r = col.doc(`${id}_${dateStr}`);
+      batch.set(r, { studentId: id, date: dateStr, state });
     });
     await batch.commit();
   }
-
   async function fetchAttendanceByDate(dateStr) {
-    const snapshot = await db.collection("attendance").where("date", "==", dateStr).get();
-    const data = {};
-    snapshot.docs.forEach(doc => data[doc.data().studentId] = doc.data().state);
-    return data;
+    const snapshot = await db.collection('attendance').where('date','==',dateStr).get();
+    const out = {};
+    snapshot.docs.forEach(d => out[d.data().studentId] = d.data().state);
+    return out;
   }
-
   async function fetchAttendanceByMonth(yearMonth) {
-    const startDate = `${yearMonth}-01`;
-    const endDate = `${yearMonth}-31`;
-    const snapshot = await db.collection("attendance").where('date', '>=', startDate).where('date', '<=', endDate).get();
-    const data = new Map();
-    snapshot.docs.forEach(doc => {
-      const record = doc.data();
-      if (!data.has(record.studentId)) { data.set(record.studentId, new Set()); }
-      const dayNum = parseInt(record.date.slice(-2).replace(/^0+/, ''), 10);
-      if (!isNaN(dayNum)) data.get(record.studentId).add(dayNum);
+    const start = `${yearMonth}-01`, end = `${yearMonth}-31`;
+    const snapshot = await db.collection('attendance').where('date','>=',start).where('date','<=',end).get();
+    const map = new Map();
+    snapshot.docs.forEach(d => {
+      const rec = d.data();
+      if (!map.has(rec.studentId)) map.set(rec.studentId, new Set());
+      const day = parseInt(rec.date.slice(-2).replace(/^0+/,''),10);
+      if (!isNaN(day)) map.get(rec.studentId).add(day);
     });
-    return data;
+    return map;
   }
 
-  /* ---------------- Render & UI helpers ---------------- */
+  // --- UI rendering ---
   function updateSummary() {
     const vals = Object.values(appState.attendance);
-    const summary = {
-      diners: document.getElementById('summary-diners'),
-      absent: document.getElementById('summary-absent'),
-      pending: document.getElementById('summary-pending'),
-      present: document.getElementById('summary-present')
-    };
-    summary.diners.textContent = vals.length;
-    summary.absent.textContent = vals.filter(s => 'absent' === s).length;
-    summary.present.textContent = vals.filter(s => 'present' === s).length;
-    summary.pending.textContent = vals.filter(s => 'pending' === s).length;
+    dom.summary.diners.textContent = vals.length;
+    dom.summary.absent.textContent = vals.filter(v=>'absent'===v).length;
+    dom.summary.present.textContent = vals.filter(v=>'present'===v).length;
+    dom.summary.pending.textContent = vals.filter(v=>'pending'===v).length;
   }
 
   function createStudentElement(s) {
-    const allergyIcon = s.allergic ? ' <span class="text-red-500 font-bold">⚠️</span>' : '';
     const div = document.createElement('div');
+    div.className = 'student-item ' + (appState.attendance[s.id]||'pending') + (s.allergic ? ' allergic' : '');
     div.id = s.id;
-    div.className = `student-item ${appState.attendance[s.id] || 'pending'}${s.allergic ? ' allergic' : ''}`;
     div.dataset.studentId = s.id;
-    div.dataset.studentName = s.name;
-    div.innerHTML = `<span class="name ${s.allergic ? 'allergic' : ''}">${s.name}${allergyIcon}</span>
-                     <div class="flex items-center gap-2">
-                       ${s.shift ? `<span class="small-muted">${s.shift}</span>` : `<span class="small-muted">(Esporádico)</span>`}
-                       <button class="mark-absent-btn bg-rose-500/50 hover:bg-rose-500 text-white font-bold" title="Marcar ausente">&times;</button>
+    div.innerHTML = `<span class="name">${s.name}${s.allergic ? ' ⚠️' : ''}</span>
+                     <div style="display:flex;align-items:center;gap:8px">
+                       <small class="small-muted">${s.shift || '(Esporádico)'}</small>
+                       <button class="mark-absent-btn" title="Marcar ausente">×</button>
                      </div>`;
     return div.outerHTML;
   }
 
+  // render main courses + sporadic real list
   async function renderCourses(shift) {
-  appState.currentShift = shift;
-  dom.shiftSelection.classList.add('hidden');
-  dom.dashboard.classList.remove('hidden');
-  dom.coursesContainer.innerHTML = '<p class="text-center text-lg">Cargando alumnos...</p>';
-  appState.students = await fetchStudents(null); // ahora traemos todos
-  const today = new Date().toISOString().slice(0,10);
-  const attendance = await fetchAttendanceByDate(today);
-  appState.attendance = {};
-  appState.students.forEach(s => appState.attendance[s.id] = attendance[s.id] || 'pending');
+    appState.currentShift = shift;
+    // show dashboard and hide selection
+    document.getElementById('shift-selection').style.display = 'none';
+    document.getElementById('dashboard').classList.remove('hidden');
+    dom.coursesContainer.innerHTML = '<p class="subtle">Cargando alumnos...</p>';
 
-  dom.coursesContainer.innerHTML = '';
+    // fetch all students then filter/organize
+    appState.students = await fetchStudents();
+    const today = new Date().toISOString().slice(0,10);
+    const attendance = await fetchAttendanceByDate(today);
+    appState.attendance = {};
+    appState.students.forEach(s => appState.attendance[s.id] = attendance[s.id] || 'pending');
 
-  // Esporádicos **reales** (los que tienen status:'sporadic' o id empieza por 'sporadic_')
-  const realSporadics = appState.students.filter(s => (s.status === 'sporadic' || (s.id && s.id.startsWith && s.id.startsWith('sporadic_'))));
-  // Mostrar sólo esporádicos reales en la sección superior
-  if (realSporadics.length > 0) {
-    const grouped = realSporadics.reduce((acc, s) => { (acc[s.course] = acc[s.course] || []).push(s); return acc; }, {});
-    let html = `<div class="sporadic-section"><h3 class="text-lg font-bold mb-2">Esporádicos (sin turno asignado)</h3>`;
-    Object.keys(grouped).sort().forEach(course => {
-      html += `<div class="mb-2"><strong>${course}</strong><div class="mt-2 space-y-2">`;
-      grouped[course].sort((a,b)=>a.name.localeCompare(b.name)).forEach(s => html += createStudentElement(s));
-      html += `</div></div>`;
-    });
-    html += `</div>`;
-    dom.sporadicContainer.innerHTML = html;
-  } else {
-    dom.sporadicContainer.innerHTML = '';
-  }
-
-  // Assigned students for the opened shift OR those temporarily added by prof for this shift
-  const assigned = appState.students.filter(s => (s.shift && s.shift === shift) || appState.tempSporadic.has(s.id));
-  const courses = [...new Set(assigned.map(s => s.course))].sort();
-
-  if (courses.length === 0) {
-    dom.coursesContainer.innerHTML = '<p class="text-center text-lg text-slate-500">No hay alumnos en este turno.</p>';
-  } else {
-    courses.forEach(course => {
-      const card = document.createElement('div');
-      card.className = 'course-card';
-      const studentsInCourse = assigned.filter(s => s.course === course).sort((a,b) => a.name.localeCompare(b.name));
-      const listHtml = studentsInCourse.map(createStudentElement).join('');
-      // ahora el botón abre el picker (modal) en lugar de añadir directamente
-      const sporadicBtn = `<button class="open-sporadic-picker mt-4 primary" data-course="${course}">+ Añadir Esporádico</button>`;
-      card.innerHTML = `<div class="flex-grow"><h3 class="text-xl font-bold mb-2">${course}</h3><div class="space-y-2" data-course-list="${course}">${listHtml}</div></div>${sporadicBtn}`;
-      dom.coursesContainer.appendChild(card);
-    });
-  }
-
-  updateSummary();
-}
-// Abrir picker de esporádicos para un curso (muestra alumnos sin turno asignado -> shift === '')
-function openSporadicPicker(course) {
-  const modal = document.getElementById('sporadic-picker-modal');
-  const content = document.getElementById('sporadic-picker-content');
-  modal.classList.remove('hidden');
-  // listar alumnos del mismo curso con shift vacío y que NO sean 'sporadic' reales
-  const candidates = appState.students.filter(s => (s.course === course) && (!s.shift || s.shift.trim() === '') && s.status !== 'sporadic' && !(s.id && s.id.startsWith && s.id.startsWith('sporadic_')));
-  if (candidates.length === 0) {
-    content.innerHTML = `<p class="text-muted">No hay alumnos sin turno asignado en ${course}.</p>`;
-    return;
-  }
-  let html = `<p class="small-muted mb-2">Selecciona uno o varios alumnos para añadir como esporádicos (se marcará su asistencia solo para hoy).</p>`;
-  html += `<div class="space-y-2">`;
-  candidates.forEach(s => {
-    html += `<label style="display:flex;align-items:center;gap:.6rem;padding:.4rem;border:1px solid rgba(15,23,42,0.03);border-radius:8px;">
-               <input type="checkbox" class="sporadic-candidate" data-id="${s.id}">
-               <span style="font-weight:600">${s.name}</span>
-               <small class="small-muted" style="margin-left:auto">${s.course}</small>
-             </label>`;
-  });
-  html += `</div>`;
-  content.innerHTML = html;
-}
-
-// cerrar modal
-document.getElementById('close-sporadic-picker').addEventListener('click', () => {
-  document.getElementById('sporadic-picker-modal').classList.add('hidden');
-});
-
-// confirmar añadir seleccionados
-document.getElementById('confirm-sporadic-add').addEventListener('click', async () => {
-  const checked = Array.from(document.querySelectorAll('.sporadic-candidate:checked')).map(el => el.dataset.id);
-  if (checked.length === 0) {
-    alert('Selecciona al menos un alumno.');
-    return;
-  }
-  const today = new Date().toISOString().slice(0,10);
-  for (const origId of checked) {
-    // marcar asistencia hoy como present (puedes ajustar a pending si prefieres)
-    try {
-      await logAttendance(origId, today, 'present');
-      // añadir a la colección temporal para que aparezca en el curso
-      appState.tempSporadic.add(origId);
-      // también actualizar appState.attendance para contar en resumen
-      appState.attendance[origId] = 'present';
-    } catch (e) {
-      console.error('Error al añadir esporádico', e);
+    // real esporádicos (status:'sporadic' OR explicit empty shift AND status not fixed)
+    const realSporadics = appState.students.filter(s => (s.status === 'sporadic' || (!s.shift || s.shift.trim()==='')) && !(s.id && s.id.startsWith && s.id.startsWith('sporadic_')));
+    if (realSporadics.length) {
+      const grouped = realSporadics.reduce((acc,s)=>{ (acc[s.course]=acc[s.course]||[]).push(s); return acc; },{});
+      let html = '<div class="sporadic-section report-wrapper" style="margin-bottom:12px"><strong>Alumnos sin turno asignado (Esporádicos reales)</strong>';
+      Object.keys(grouped).sort().forEach(course => {
+        html += `<div style="margin-top:8px"><div style="font-weight:700;margin-bottom:6px">${course}</div><div style="display:flex;flex-direction:column;gap:6px">`;
+        grouped[course].sort((a,b)=>a.name.localeCompare(b.name)).forEach(s=> html += createStudentElement(s));
+        html += '</div></div>';
+      });
+      html += '</div>';
+      dom.sporadicContainer.innerHTML = html;
+    } else {
+      dom.sporadicContainer.innerHTML = '';
     }
+
+    // students assigned to the chosen shift OR temporary sporadics chosen by prof for this session
+    const assigned = appState.students.filter(s => (s.shift && s.shift === shift) || appState.tempSporadic.has(s.id));
+    const courses = [...new Set(assigned.map(s => s.course))].sort();
+    dom.coursesContainer.innerHTML = '';
+    if (!courses.length) {
+      dom.coursesContainer.innerHTML = '<p class="subtle">No hay alumnos en este turno.</p>';
+    } else {
+      courses.forEach(course => {
+        const card = document.createElement('div');
+        card.className = 'course-card';
+        const studentsInCourse = assigned.filter(s => s.course === course).sort((a,b) => a.name.localeCompare(b.name));
+        const listHtml = studentsInCourse.map(createStudentElement).join('');
+        // button opens picker with candidates (only students of that course who have NO shift assigned)
+        const pickerBtn = `<div style="margin-top:8px"><button class="open-sporadic-picker primary" data-course="${course}">+ Añadir esporádico (picker)</button></div>`;
+        card.innerHTML = `<div><h3>${course}</h3><div style="display:flex;flex-direction:column;gap:8px" data-course-list="${course}">${listHtml}</div></div>${pickerBtn}`;
+        dom.coursesContainer.appendChild(card);
+      });
+    }
+    updateSummary();
   }
-  // refrescar la vista del turno actual
-  if (appState.currentShift) renderCourses(appState.currentShift);
-  document.getElementById('sporadic-picker-modal').classList.add('hidden');
-});
 
+  // --- Sporadic picker modal flow (profesor) ---
+  // open modal: list candidates (same course, no shift assigned & not real sporadic already)
+  let currentPickerCourse = null;
+  async function openSporadicPickerModal(course) {
+    currentPickerCourse = course;
+    dom.sporadicPickerTitle.textContent = `Seleccionar esporádicos — ${course}`;
+    // candidates = same course & shift falsy & status != 'sporadic' (they are in school list but not assigned)
+    const candidates = appState.students.filter(s => s.course === course && (!s.shift || s.shift.trim()==='') && s.status !== 'sporadic' && !(s.id && s.id.startsWith && s.id.startsWith('sporadic_')));
+    const container = dom.sporadicPickerContent;
+    if (!candidates.length) {
+      container.innerHTML = `<p class="small-muted">No hay alumnos sin turno asignado en ${course}.</p>`;
+    } else {
+      let html = `<div style="display:flex;flex-direction:column;gap:8px">`;
+      candidates.sort((a,b)=>a.name.localeCompare(b.name)).forEach(s => {
+        html += `<label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--card-border);border-radius:8px;background:#fff">
+                   <input type="checkbox" class="sporadic-candidate" data-id="${s.id}">
+                   <div style="flex:1"><strong>${s.name}</strong><div class="small-muted">${s.course}</div></div>
+                 </label>`;
+      });
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+    dom.sporadicPickerModal.classList.remove('hidden');
+  }
 
-  /* ---------------- CSV Import ---------------- */
+  dom.closeSporadicPicker.addEventListener('click', () => dom.sporadicPickerModal.classList.add('hidden'));
+  dom.confirmSporadicAdd.addEventListener('click', async () => {
+    const checked = Array.from(dom.sporadicPickerContent.querySelectorAll('.sporadic-candidate:checked')).map(cb => cb.dataset.id);
+    if (!checked.length) { alert('Selecciona al menos un alumno.'); return; }
+    const today = new Date().toISOString().slice(0,10);
+    // mark attendance for today as 'present' (prof selects them for today)
+    for (const id of checked) {
+      try {
+        await logAttendance(id, today, 'present');
+        appState.tempSporadic.add(id);               // show in current shift view
+        appState.attendance[id] = 'present';
+      } catch (e) { console.error('error add sporadic', e); }
+    }
+    // refresh UI
+    if (appState.currentShift) await renderCourses(appState.currentShift);
+    dom.sporadicPickerModal.classList.add('hidden');
+  });
+
+  // --- CSV import (admin) ---
   function handleCsvImport(file) {
     if (!file) return;
     dom.importStatusInitial.textContent = 'Procesando archivo...';
     Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
+      header:true, skipEmptyLines:true,
       complete: async (results) => {
         try {
-          const headers = (results.meta.fields || []).map(h => (h || '').toLowerCase().trim());
-          if (!headers.includes('nombre') || !headers.includes('curso')) {
-            dom.importStatusInitial.textContent = 'Error: CSV debe tener columnas "nombre" y "curso" (turno es opcional).';
+          const fields = (results.meta.fields || []).map(f => (f||'').toLowerCase().trim());
+          if (!fields.includes('nombre') || !fields.includes('curso')) {
+            dom.importStatusInitial.textContent = 'Error: CSV debe tener columnas "nombre" y "curso" (turno opcional).';
             return;
           }
           await deleteAllStudents();
-          const studentsToImport = results.data.map(r => {
-            const rawShift = (r.turno || r.shift || '').toString();
-            const cleanedShift = rawShift.replace(/\u00A0/g, ' ').trim();
-            let shiftNormalized = (cleanedShift || '').trim();
-            if (shiftNormalized) {
-              if (/primer/i.test(cleanedShift)) shiftNormalized = 'Primer Turno (Infantil)';
-              else if (/segund/i.test(cleanedShift)) shiftNormalized = 'Segundo Turno (Primaria)';
-            } else {
-              shiftNormalized = ''; // explicit empty -> sporadic
+          const mapped = results.data.map(r => {
+            const rawShift = (r.turno || r.shift || '').toString().trim();
+            let shift = '';
+            if (rawShift) {
+              if (/primer/i.test(rawShift)) shift = 'Primer Turno (Infantil)';
+              else if (/segund/i.test(rawShift)) shift = 'Segundo Turno (Primaria)';
+              else shift = rawShift;
             }
-            return { name: r.nombre ? r.nombre.trim() : '', course: r.curso ? r.curso.trim() : '', shift: shiftNormalized, allergic: false };
+            return { name: (r.nombre||'').toString().trim(), course: (r.curso||'').toString().trim(), shift, status: shift ? 'fixed' : 'sporadic', allergic: false };
           });
-          const added = await addStudentBatch(studentsToImport);
-          dom.importStatusInitial.textContent = `Importación completa ✅ (${added || 0})`;
-          if (appState.currentShift) renderCourses(appState.currentShift);
+          const added = await addStudentBatch(mapped);
+          dom.importStatusInitial.textContent = `Importación completa ✅ (${added})`;
+          // refresh students
+          appState.students = await fetchStudents();
+          if (appState.currentShift) await renderCourses(appState.currentShift);
         } catch (err) {
-          console.error('Import error', err);
+          console.error('CSV import error', err);
           dom.importStatusInitial.textContent = 'Error al procesar CSV. Mira la consola.';
         } finally {
-          setTimeout(() => dom.importStatusInitial.textContent = '', 7000);
+          setTimeout(() => dom.importStatusInitial.textContent = '', 5000);
         }
       },
-      error: err => {
+      error: (err) => {
         console.error('PapaParse error', err);
-        dom.importStatusInitial.textContent = 'Error leyendo el archivo CSV';
-        setTimeout(() => dom.importStatusInitial.textContent = '', 5000);
+        dom.importStatusInitial.textContent = 'Error leyendo archivo CSV';
       }
     });
   }
 
-  /* ---------------- Export CSV full day ---------------- */
+  // --- export CSV del día (full) ---
   async function exportFullDayCsv(dateStr) {
-    const allStudents = await fetchStudents(null);
+    const all = await fetchStudents();
     const attendance = await fetchAttendanceByDate(dateStr);
-    const rows = allStudents.map(s => {
-      const state = attendance[s.id] || 'pending';
-      return { Fecha: dateStr, Turno: s.shift || '(Esporádico)', Nombre: s.name, Curso: s.course, Estado: state };
-    });
-    rows.sort((a, b) => a.Turno.localeCompare(b.Turno) || a.Curso.localeCompare(b.Curso) || a.Nombre.localeCompare(b.Nombre));
+    const rows = all.map(s => ({ Fecha: dateStr, Turno: s.shift || '(Esporádico)', Nombre: s.name, Curso: s.course, Estado: attendance[s.id] || 'pending' }));
+    rows.sort((a,b) => (a.Turno||'').localeCompare(b.Turno||'') || a.Curso.localeCompare(b.Curso) || a.Nombre.localeCompare(b.Nombre));
     const csv = Papa.unparse(rows);
     const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `asistencia_completa_${dateStr}.csv`; a.click();
+    const a = document.createElement('a'); a.href = url; a.download = `asistencia_${dateStr}.csv`; a.click();
     URL.revokeObjectURL(url);
   }
 
-  /* ---------------- Sporadic, finalize, etc ---------------- */
-  function addSporadicStudent(course) {
-    const name = prompt(`Nombre del alumno esporádico para ${course}:`);
-    if (name && name.trim()) {
-      const student = { id: `sporadic_${Date.now()}`, name: `${name.trim()} (Esporádico)`, course: course, allergic: false };
-      appState.students.push(student);
-      appState.attendance[student.id] = 'pending';
-      const listContainer = document.querySelector(`[data-course-list="${course}"]`);
-      if (listContainer) { listContainer.insertAdjacentHTML('beforeend', createStudentElement(student)); }
-      updateSummary();
-    }
-  }
-
+  // --- finalize shift: pendientes -> ausentes ---
   async function finalizeShift() {
-    if (!confirm("¿Seguro que quieres finalizar el turno? Todos los alumnos pendientes pasarán a estar ausentes.")) return;
-    const today = new Date().toISOString().slice(0, 10);
-    const studentsToMarkAbsent = [];
-    for (const studentId in appState.attendance) {
-      if (appState.attendance[studentId] === 'pending') {
-        studentsToMarkAbsent.push(studentId);
-        appState.attendance[studentId] = 'absent';
-        const studentDiv = document.getElementById(studentId);
-        if (studentDiv) {
-          studentDiv.classList.remove('pending', 'present', 'absent');
-          studentDiv.classList.add('absent');
-        }
+    if (!confirm('¿Seguro que quieres finalizar el turno? Los pendientes pasan a ausentes.')) return;
+    const today = new Date().toISOString().slice(0,10);
+    const toMark = [];
+    for (const id in appState.attendance) {
+      if (appState.attendance[id] === 'pending') {
+        appState.attendance[id] = 'absent';
+        toMark.push(id);
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('pending','present','absent'); el.classList.add('absent'); }
       }
     }
-    await logBatchAttendance(studentsToMarkAbsent, today, 'absent');
+    await logBatchAttendance(toMark, today, 'absent');
     updateSummary();
   }
 
-  /* ---------------- History modal ---------------- */
+  // --- history modal functions ---
   async function showHistoryModal() {
-    dom.historyModal.classList.remove('hidden');
-    setTimeout(() => dom.historyModal.classList.remove('opacity-0'), 10);
-    dom.historyStudentList.innerHTML = '<p>Cargando alumnos...</p>';
-    try {
-      const allStudents = await fetchStudents(null);
-      allStudents.sort((a, b) => a.name.localeCompare(b.name));
-      if (allStudents.length > 0) {
-        dom.historyStudentList.innerHTML = allStudents.map(s => `<div class="p-2 hover:bg-gray-50 cursor-pointer rounded-md history-student" data-student-id="${s.id}" data-student-name="${s.name}"><p class="font-semibold">${s.name}</p><p class="text-sm text-muted">${s.shift || '(Esporádico)'} - ${s.course}</p></div>`).join('');
-      } else {
-        dom.historyStudentList.innerHTML = '<p>No hay alumnos registrados.</p>';
-      }
-    } catch (e) {
-      console.error("Error fetching students for history", e);
-      dom.historyStudentList.innerHTML = '<p class="text-red-500">Error al cargar alumnos.</p>';
-    }
-    dom.historyStudentName.textContent = 'Selecciona un alumno';
-    dom.historyDatesList.innerHTML = '';
-  }
-
-  async function showStudentHistory(studentId, studentName) {
-    dom.historyStudentName.textContent = `Historial de: ${studentName}`;
-    dom.historyDatesList.innerHTML = '<p>Buscando fechas...</p>';
-    try {
-      const snapshot = await db.collection("attendance").where("studentId", "==", studentId).get();
-      const dates = snapshot.docs.map(doc => doc.data().date).sort().reverse();
-      if (dates.length > 0) {
-        dom.historyDatesList.innerHTML = `<ul class="space-y-1 text-left">${dates.map(d => `<li class="bg-gray-50 p-2 rounded">${new Date(d + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</li>`).join('')}</ul>`;
-      } else {
-        dom.historyDatesList.innerHTML = '<p>Este alumno no tiene registros de asistencia.</p>';
-      }
-    } catch (e) {
-      console.error("Error fetching student history", e);
-      dom.historyDatesList.innerHTML = '<p class="text-red-500">Error al buscar las fechas.</p>';
+    document.getElementById('history-modal').classList.remove('hidden');
+    dom.historyStudentList.innerHTML = '<p class="small-muted">Cargando...</p>';
+    const all = await fetchStudents();
+    all.sort((a,b)=>a.name.localeCompare(b.name));
+    if (!all.length) dom.historyStudentList.innerHTML = '<p class="small-muted">No hay alumnos registrados.</p>';
+    else {
+      dom.historyStudentList.innerHTML = all.map(s => `<div class="p-2 history-student" data-id="${s.id}" data-name="${s.name}" style="border-bottom:1px solid var(--card-border);padding:8px;cursor:pointer"><strong>${s.name}</strong><div class="small-muted">${s.shift || '(Esporádico)'} • ${s.course}</div></div>`).join('');
     }
   }
+  async function showStudentHistory(id, name) {
+    dom.historyStudentName.textContent = `Historial de: ${name}`;
+    dom.historyDatesList.innerHTML = '<p class="small-muted">Buscando fechas...</p>';
+    const snap = await db.collection('attendance').where('studentId','==',id).get();
+    const dates = snap.docs.map(d=>d.data().date).sort().reverse();
+    if (!dates.length) dom.historyDatesList.innerHTML = '<p class="small-muted">Sin registros.</p>';
+    else dom.historyDatesList.innerHTML = dates.map(d=>`<div style="padding:6px;border-bottom:1px solid var(--card-border)">${new Date(d+'T00:00:00').toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>`).join('');
+  }
 
-  /* ---------------- Monthly report ---------------- */
+  // --- monthly report generation + printing via iframe (reliable) ---
   async function generateMonthlyReport(yearMonth) {
-    dom.monthlyReportContent.innerHTML = '<div class="text-center text-muted">Generando informe, por favor espera...</div>';
-    if (!yearMonth) { dom.monthlyReportContent.innerHTML = '<div class="text-center text-amber-400">Por favor, selecciona un mes.</div>'; return; }
-    const [yearStr, monthStr] = yearMonth.split('-');
-    const year = parseInt(yearStr, 10), month = parseInt(monthStr, 10);
-    const date = new Date(year, month - 1, 1);
-    const monthName = date.toLocaleString('es-ES', { month: 'long' });
-    const allStudents = await fetchStudents(null);
+    dom.monthlyReportContent.innerHTML = '<p class="small-muted">Generando informe...</p>';
+    if (!yearMonth) { dom.monthlyReportContent.innerHTML = '<p style="color:#b45309">Selecciona un mes.</p>'; return; }
+    const [y,m] = yearMonth.split('-').map(v=>parseInt(v,10));
+    const days = new Date(y,m,0).getDate();
+    const all = await fetchStudents();
     const attendanceData = await fetchAttendanceByMonth(yearMonth);
-    const daysInMonth = new Date(year, month, 0).getDate();
-    const studentsByCourse = allStudents.reduce((acc, s) => { (acc[s.course] = acc[s.course] || []).push(s); return acc; }, {});
-    let html = `<div class="printable-area"><h2 class="text-3xl font-bold text-center mb-4">${monthName.charAt(0).toUpperCase()+monthName.slice(1)} ${year}</h2>`;
-    const sortedCourses = Object.keys(studentsByCourse).sort((a,b)=> a.localeCompare(b));
-    for (const course of sortedCourses) {
-      const students = studentsByCourse[course].sort((a,b)=> a.name.localeCompare(b.name));
-      html += `<div class="report-course mt-6"><div class="course-header"><div>${course} — ${students.length} alumno${students.length>1?'s':''}</div><div class="text-sm">Días: ${daysInMonth}</div></div>`;
-      html += `<div class="report-scroll"><table class="report-table"><thead><tr><th>Alumno</th>`;
-      for (let d=1; d<=daysInMonth; d++) html += `<th title="${d}">${d}</th>`;
+    const byCourse = all.reduce((acc,s)=>{ (acc[s.course]=acc[s.course]||[]).push(s); return acc; },{});
+    let html = `<div class="printable-area"><h2 style="text-align:center">${new Date(y,m-1,1).toLocaleString('es-ES',{month:'long',year:'numeric'})}</h2>`;
+    Object.keys(byCourse).sort().forEach(course => {
+      const students = byCourse[course].sort((a,b)=>a.name.localeCompare(b.name));
+      html += `<div class="report-wrapper" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center"><strong>${course}</strong><small>Días: ${days} — ${students.length} alumno(s)</small></div><div style="overflow:auto;margin-top:8px"><table class="report-table"><thead><tr><th>Alumno</th>`;
+      for (let d=1; d<=days; d++) html += `<th>${d}</th>`;
       html += `<th>Total</th></tr></thead><tbody>`;
-      students.forEach((student) => {
-        const attended = attendanceData.get(student.id) || new Set();
-        html += `<tr><td style="white-space:nowrap;padding-left:.5rem;">${student.name}</td>`;
-        for (let d=1; d<=daysInMonth; d++) {
-          html += attended.has(d) ? `<td class="text-center"><span class="attendance-mark">✓</span></td>` : `<td></td>`;
-        }
-        html += `<td class="total text-center">${attended.size}</td></tr>`;
+      students.forEach(st => {
+        const attended = attendanceData.get(st.id) || new Set();
+        html += `<tr><td style="text-align:left;padding-left:6px">${st.name}</td>`;
+        for (let d=1; d<=days; d++) html += attended.has(d) ? `<td><span class="attendance-mark">✓</span></td>` : `<td></td>`;
+        html += `<td class="total">${attended.size}</td></tr>`;
       });
       html += `</tbody></table></div></div>`;
-    }
-    html += '</div>';
+    });
+    html += `</div>`;
     dom.monthlyReportContent.innerHTML = html;
   }
 
-  /* ---------------- Student Management (modal) ---------------- */
+  dom.printReportBtn.addEventListener('click', async () => {
+    let ym = dom.reportMonthInput.value;
+    if (!ym) {
+      const now = new Date();
+      ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+      dom.reportMonthInput.value = ym;
+    }
+    await generateMonthlyReport(ym);
+    // print via iframe
+    const content = dom.monthlyReportContent.innerHTML;
+    const iframe = document.createElement('iframe');
+    iframe.style.position='fixed'; iframe.style.right='0'; iframe.style.bottom='0'; iframe.style.width='0'; iframe.style.height='0'; iframe.style.border='0';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentWindow.document;
+    const styles = `<style>body{font-family:Inter,Arial;padding:18px;color:#111} .attendance-mark{display:inline-block;width:20px;height:20px;background:${getComputedStyle(document.documentElement).getPropertyValue('--success') || '#067a46'};color:#fff;border-radius:50%;text-align:center;line-height:20px;font-weight:700}</style>`;
+    doc.open();
+    doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Imprimir informe ${ym}</title>${styles}</head><body>${content}</body></html>`);
+    doc.close();
+    setTimeout(()=> {
+      try { iframe.contentWindow.focus(); iframe.contentWindow.print(); }
+      catch(err){ console.error('print error', err); alert('Error al imprimir: '+err.message); }
+      setTimeout(()=> { try { document.body.removeChild(iframe); } catch(e){} }, 800);
+    }, 300);
+  });
+
+  // --- manage students modal ---
   async function openManageStudentsModal() {
     dom.manageStudentsModal.classList.remove('hidden');
-    dom.manageStudentsContent.innerHTML = '<p class="text-center text-muted">Cargando alumnos...</p>';
-    const allStudents = await fetchStudents(null);
-    // group by course for nicer layout
-    const studentsByCourse = allStudents.reduce((acc, s) => { (acc[s.course] = acc[s.course] || []).push(s); return acc; }, {});
+    dom.manageStudentsContent.innerHTML = '<p class="small-muted">Cargando...</p>';
+    const all = await fetchStudents();
+    const byCourse = all.reduce((acc,s)=>{ (acc[s.course]=acc[s.course]||[]).push(s); return acc; },{});
     let html = '';
-    for (const course of Object.keys(studentsByCourse).sort()) {
-      html += `<h3 class="text-xl font-bold mb-2 mt-4" style="color:var(--brand)">${course}</h3>`;
-      studentsByCourse[course].sort((a,b)=> a.name.localeCompare(b.name)).forEach(s => {
+    Object.keys(byCourse).sort().forEach(course => {
+      html += `<h4 style="margin-top:12px;color:var(--brand)">${course}</h4>`;
+      byCourse[course].sort((a,b)=>a.name.localeCompare(b.name)).forEach(s => {
         const checkedPrimer = s.shift === 'Primer Turno (Infantil)' ? 'checked' : '';
         const checkedSegundo = s.shift === 'Segundo Turno (Primaria)' ? 'checked' : '';
-        const isSporadic = !s.shift || s.shift.trim() === '';
-        const isAllergic = s.allergic === true ? 'checked' : '';
-        html += `<div class="grid grid-cols-3 gap-4 items-center p-2 border-b border-gray-100">
-                    <div class="col-span-1 font-semibold">${s.name}</div>
-                    <div class="col-span-1 flex gap-2 items-center">
-                      <label style="display:flex;align-items:center;gap:.4rem;"><input type="checkbox" data-id="${s.id}" data-prop="primer" class="student-shift-checkbox" ${checkedPrimer}> Primer Turno</label>
-                      <label style="display:flex;align-items:center;gap:.4rem;"><input type="checkbox" data-id="${s.id}" data-prop="segundo" class="student-shift-checkbox" ${checkedSegundo}> Segundo Turno</label>
-                    </div>
-                    <div class="col-span-1 flex items-center justify-end gap-4">
-                      <label class="flex items-center gap-2"><input type="checkbox" data-id="${s.id}" data-prop="allergic" class="student-update-control" ${isAllergic}> Alergia</label>
-                      <button data-id="${s.id}" class="toggle-status-btn ghost btn-sm" data-status="${s.status || 'fixed'}">${isSporadic ? 'Hacer Fijo' : 'Hacer Esporádico'}</button>
-                    </div>
+        const isAllergic = s.allergic ? 'checked' : '';
+        const isSporadic = !s.shift || s.shift.trim()==='';
+        html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px;border-bottom:1px solid var(--card-border);align-items:center">
+                  <div><strong>${s.name}</strong></div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="primer" ${checkedPrimer}> Primer</label>
+                    <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="segundo" ${checkedSegundo}> Segundo</label>
+                  </div>
+                  <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center">
+                    <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-update-control" data-id="${s.id}" data-prop="allergic" ${isAllergic}> Alergia</label>
+                    <button class="toggle-status-btn ghost small" data-id="${s.id}" data-status="${s.status||'fixed'}">${isSporadic ? 'Hacer Fijo' : 'Hacer Esporádico'}</button>
+                  </div>
                  </div>`;
       });
-    }
+    });
     dom.manageStudentsContent.innerHTML = html;
 
-    // attach event listeners (delegation)
+    // wiring delegated events
     dom.manageStudentsContent.querySelectorAll('.student-shift-checkbox').forEach(cb => {
-      cb.addEventListener('change', async (e) => {
-        const id = e.target.dataset.id;
-        const prop = e.target.dataset.prop; // 'primer' or 'segundo'
-        // compute resulting shift based on both checkboxes
+      cb.addEventListener('change', async (ev) => {
+        const id = ev.target.dataset.id;
         const primer = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="primer"]`).checked;
         const segundo = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="segundo"]`).checked;
         let newShift = '';
         if (primer && !segundo) newShift = 'Primer Turno (Infantil)';
         else if (!primer && segundo) newShift = 'Segundo Turno (Primaria)';
-        else newShift = ''; // both or none -> sporadic / no shift assigned
-        const ok = await updateStudentDoc(id, { shift: newShift, status: (newShift ? 'fixed' : 'sporadic') });
+        else newShift = '';
+        const ok = await updateStudentDoc(id, { shift: newShift, status: newShift ? 'fixed' : 'sporadic' });
         if (ok) {
-          // instant visual feedback: update local appState and UI if open
-          const st = appState.students.find(x => x.id === id);
-          if (st) st.shift = newShift;
+          const s = appState.students.find(x=>x.id===id);
+          if (s) { s.shift = newShift; s.status = newShift ? 'fixed' : 'sporadic'; }
           dom.importStatusInitial.textContent = 'Guardado';
-          setTimeout(()=> dom.importStatusInitial.textContent = '', 1500);
+          setTimeout(()=> dom.importStatusInitial.textContent = '', 1200);
         }
       });
     });
 
     dom.manageStudentsContent.querySelectorAll('.student-update-control[data-prop="allergic"]').forEach(cb => {
-      cb.addEventListener('change', async (e) => {
-        const id = e.target.dataset.id;
-        const newVal = !!e.target.checked;
-        const ok = await updateStudentDoc(id, { allergic: newVal });
+      cb.addEventListener('change', async (ev) => {
+        const id = ev.target.dataset.id;
+        const val = !!ev.target.checked;
+        const ok = await updateStudentDoc(id, { allergic: val });
         if (ok) {
-          const st = appState.students.find(x => x.id === id);
-          if (st) st.allergic = newVal;
+          const s = appState.students.find(x=>x.id===id);
+          if (s) s.allergic = val;
           dom.importStatusInitial.textContent = 'Guardado';
-          setTimeout(()=> dom.importStatusInitial.textContent = '', 1500);
+          setTimeout(()=> dom.importStatusInitial.textContent = '', 1200);
         }
       });
     });
 
     dom.manageStudentsContent.querySelectorAll('.toggle-status-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const id = e.target.dataset.id;
-        const rowPrimer = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="primer"]`);
-        const rowSegundo = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="segundo"]`);
-        // If currently sporadic (no shift), set to fixed but keep no shift (admin should set shift checkboxes)
-        const current = e.target.dataset.status || 'fixed';
+      btn.addEventListener('click', async (ev) => {
+        const id = ev.target.dataset.id;
+        const current = ev.target.dataset.status || 'fixed';
         if (current === 'sporadic') {
-          // make fixed (no shift assigned yet)
           const ok = await updateStudentDoc(id, { status: 'fixed' });
-          if (ok) {
-            e.target.dataset.status = 'fixed';
-            e.target.textContent = 'Hacer Esporádico';
-            dom.importStatusInitial.textContent = 'Guardado';
-            setTimeout(()=> dom.importStatusInitial.textContent = '', 1500);
-          }
+          if (ok) { ev.target.dataset.status = 'fixed'; ev.target.textContent = 'Hacer Esporádico'; dom.importStatusInitial.textContent = 'Guardado'; setTimeout(()=>dom.importStatusInitial.textContent='',1200); }
         } else {
-          // make sporadic
           const ok = await updateStudentDoc(id, { status: 'sporadic', shift: '' });
           if (ok) {
-            e.target.dataset.status = 'sporadic';
-            e.target.textContent = 'Hacer Fijo';
-            // uncheck boxes
-            if (rowPrimer) rowPrimer.checked = false;
-            if (rowSegundo) rowSegundo.checked = false;
-            dom.importStatusInitial.textContent = 'Guardado';
-            setTimeout(()=> dom.importStatusInitial.textContent = '', 1500);
+            ev.target.dataset.status = 'sporadic'; ev.target.textContent = 'Hacer Fijo';
+            // also uncheck any shift boxes for that student
+            const p = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="primer"]`);
+            const sbox = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="segundo"]`);
+            if (p) p.checked=false; if (sbox) sbox.checked=false;
+            dom.importStatusInitial.textContent = 'Guardado'; setTimeout(()=>dom.importStatusInitial.textContent='',1200);
           }
         }
       });
     });
 
-  } // end openManageStudentsModal
+  }
 
-  /* ---------------- Routing & Events ---------------- */
+  dom.closeManageModal.addEventListener('click', () => dom.manageStudentsModal.classList.add('hidden'));
+
+  // --- click delegation in courses container (mark attendance, open picker) ---
+  document.getElementById('courses-container').addEventListener('click', async (e) => {
+    const openPickerBtn = e.target.closest('.open-sporadic-picker');
+    if (openPickerBtn) { openSporadicPickerModal(openPickerBtn.dataset.course); return; }
+    const legacyBtn = e.target.closest('.add-sporadic-btn');
+    if (legacyBtn) { openSporadicPickerModal(legacyBtn.dataset.course); return; }
+    const studentDiv = e.target.closest('.student-item');
+    if (!studentDiv) return;
+    const studentId = studentDiv.id;
+    const isX = e.target.closest('.mark-absent-btn');
+    const current = appState.attendance[studentId] || 'pending';
+    const newState = isX ? (current === 'absent' ? 'pending' : 'absent') : (current === 'present' ? 'pending' : 'present');
+    appState.attendance[studentId] = newState;
+    studentDiv.classList.remove('pending','present','absent');
+    studentDiv.classList.add(newState);
+    updateSummary();
+    try { await logAttendance(studentId, new Date().toISOString().slice(0,10), newState); } catch(err){ console.error('logAttendance err', err); }
+  });
+
+  // --- routing / UI visibility (simple) ---
+  function setUIVisibility(role) {
+    dom.roleDisplay.textContent = role === 'admin' ? `Admin: ${auth.currentUser ? (auth.currentUser.displayName || 'Usuario') : 'Admin'}` : (role === 'user' ? 'Modo: Profesor / Cuidador' : 'Acceso de Administrador');
+    if (role === 'login') { dom.adminLoginView.classList.remove('hidden'); dom.mainContent.classList.add('hidden'); }
+    else { dom.adminLoginView.classList.add('hidden'); dom.mainContent.classList.remove('hidden'); }
+    // for simplicity we show admin controls to admin; you can enhance with auth checks later
+    if (role === 'admin') document.querySelectorAll('.admin-only').forEach(el=>el.style.display='block'); else document.querySelectorAll('.admin-only').forEach(el=>el.style.display='none');
+  }
+
   function handleRouting() {
-    const hash = window.location.hash;
     const user = auth.currentUser;
-    const isRealUser = user && !user.isAnonymous;
-    if (hash === '#admin') {
-      if (isRealUser) setUIVisibility('admin'); else setUIVisibility('login');
-    } else {
-      if (isRealUser) setUIVisibility('admin'); else setUIVisibility('user');
-    }
+    if (user && !user.isAnonymous) setUIVisibility('admin'); else setUIVisibility('login');
   }
 
   auth.onAuthStateChanged(user => { handleRouting(); });
-  window.addEventListener('hashchange', handleRouting);
-  handleRouting();
 
-  document.getElementById('login-admin-btn').addEventListener('click', () => { auth.signInWithPopup(googleProvider).catch(error => { console.error("Google Sign-In Error:", error); alert("No se pudo iniciar sesión con Google."); }); });
-  dom.logoutBtn.addEventListener('click', () => { auth.signOut().then(() => { window.location.hash = ''; }); });
-
-  document.querySelectorAll('#shift-buttons button').forEach(btn => { btn.addEventListener('click', () => renderCourses(btn.dataset.shift)); });
+  // --- wire controls ---
+  dom.loginAdminBtn.addEventListener('click', ()=> auth.signInWithPopup(googleProvider).catch(e=>{ console.error(e); alert('Error login'); }));
+  dom.importCsvBtnInitial.addEventListener('click', ()=> dom.csvFileInput.click());
   dom.csvFileInput.addEventListener('change', e => handleCsvImport(e.target.files[0]));
-  document.getElementById('import-csv-btn-initial').addEventListener('click', () => dom.csvFileInput.click());
-  dom.wipeDbBtn.addEventListener('click', async () => { if (confirm('¿Seguro que quieres borrar todos los alumnos?')) { await deleteAllStudents(); if (appState.currentShift) { renderCourses(appState.currentShift); } } });
+  dom.manageStudentsBtn.addEventListener('click', openManageStudentsModal);
+  dom.wipeDbBtn.addEventListener('click', async () => { if (!confirm('¿Borrar todos los alumnos?')) return; await deleteAllStudents(); appState.students = []; if (appState.currentShift) renderCourses(appState.currentShift); });
+  dom.exportCsvBtn.addEventListener('click', () => {
+    const d = dom.exportDateInput.value || new Date().toISOString().slice(0,10);
+    exportFullDayCsv(d);
+  });
+  document.querySelectorAll('#shift-buttons button').forEach(btn => btn.addEventListener('click', ()=> renderCourses(btn.dataset.shift)));
+  dom.finalizeShiftBtn.addEventListener('click', finalizeShift);
+  dom.backToShiftsBtn.addEventListener('click', ()=> { document.getElementById('shift-selection').style.display='block'; document.getElementById('dashboard').classList.add('hidden'); });
 
-  document.getElementById('export-csv-btn').addEventListener('click', () => { const dateInput = document.getElementById('export-date-input'); const dateStr = dateInput.value; if (dateStr) { exportFullDayCsv(dateStr); } else { alert('Por favor, selecciona una fecha para exportar.'); } });
+  // history & monthly
+  document.getElementById('show-history-btn')?.addEventListener('click', showHistoryModal);
+  document.getElementById('show-monthly-report-btn')?.addEventListener('click', async () => {
+    const now = new Date();
+    const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    dom.reportMonthInput.value = ym;
+    dom.monthlyReportModal.classList.remove('hidden');
+    await generateMonthlyReport(ym);
+  });
+  document.getElementById('close-history-btn')?.addEventListener('click', ()=> document.getElementById('history-modal').classList.add('hidden'));
+  dom.historyStudentList.addEventListener('click', (ev) => {
+    const row = ev.target.closest('.history-student');
+    if (!row) return;
+    showStudentHistory(row.dataset.id, row.dataset.name);
+  });
+  dom.historySearch.addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('#history-student-list .history-student').forEach(el => {
+      el.style.display = (el.dataset.name.toLowerCase().includes(q) ? '' : 'none');
+    });
+  });
+  document.getElementById('close-report-btn')?.addEventListener('click', ()=> dom.monthlyReportModal.classList.add('hidden'));
+
+  // sporadic picker open by delegation on course buttons is handled above
+
+  // --- small global error capture to help depurar ---
+  window.addEventListener('error', ev => console.error('GLOBAL ERROR:', ev.message, ev.filename+':'+ev.lineno+':'+ev.colno));
+  window.addEventListener('unhandledrejection', ev => console.error('UNHANDLED REJECTION:', ev.reason));
+
+  // set default export date
   document.getElementById('export-date-input').value = new Date().toISOString().slice(0,10);
 
-  document.getElementById('show-history-btn').addEventListener('click', showHistoryModal);
-  document.getElementById('show-monthly-report-btn').addEventListener('click', () => { const now = new Date(); const year = now.getFullYear(); const month = (now.getMonth() + 1).toString().padStart(2, '0'); dom.reportMonthInput.value = `${year}-${month}`; dom.monthlyReportModal.classList.remove('hidden'); setTimeout(() => dom.monthlyReportModal.classList.remove('opacity-0'), 10); generateMonthlyReport(`${year}-${month}`); });
-  dom.reportMonthInput.addEventListener('change', (e) => generateMonthlyReport(e.target.value));
-
-  // Print using iframe approach (reliable, avoids popup blocking)
-  dom.printReportBtn.addEventListener('click', async () => {
-    let yearMonth = dom.reportMonthInput.value;
-    if (!yearMonth) {
-      const now = new Date();
-      yearMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-      dom.reportMonthInput.value = yearMonth;
-    }
-    await generateMonthlyReport(yearMonth);
-    // create iframe and print
-    const contentHtml = dom.monthlyReportContent.innerHTML;
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed'; iframe.style.right = '0'; iframe.style.bottom = '0'; iframe.style.width = '0'; iframe.style.height = '0'; iframe.style.border = '0';
-    document.body.appendChild(iframe);
-    const doc = iframe.contentWindow.document;
-    const styles = `<style>body{font-family:Inter,system-ui,Arial;padding:18px;color:#111} .attendance-mark{display:inline-block;width:20px;height:20px;background:#067a46;color:#fff;border-radius:50%;text-align:center;line-height:20px;font-weight:700}</style>`;
-    doc.open();
-    doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Imprimir informe ${yearMonth}</title>${styles}</head><body><div class="report-wrapper">${contentHtml}</div></body></html>`);
-    doc.close();
-    setTimeout(()=> {
-      try { iframe.contentWindow.focus(); iframe.contentWindow.print(); } catch(e){ console.error('print error', e); alert('Error al imprimir: '+e.message); }
-      setTimeout(()=> { try{ document.body.removeChild(iframe); } catch(e){} }, 800);
-    }, 300);
-  });
-
-  dom.closeReportBtn.addEventListener('click', () => { dom.monthlyReportModal.classList.add('opacity-0'); setTimeout(() => dom.monthlyReportModal.classList.add('hidden'), 300); });
-
-  dom.closeHistoryBtn.addEventListener('click', () => { dom.historyModal.classList.add('opacity-0'); setTimeout(() => dom.historyModal.classList.add('hidden'), 300); });
-  dom.historyStudentList.addEventListener('click', e => { const studentEl = e.target.closest('.history-student'); if (studentEl) { showStudentHistory(studentEl.dataset.studentId, studentEl.dataset.studentName); } });
-  dom.historySearch.addEventListener('input', e => { const searchTerm = e.target.value.toLowerCase(); document.querySelectorAll('#history-student-list .history-student').forEach(el => { el.style.display = el.dataset.studentName.toLowerCase().includes(searchTerm) ? '' : 'none'; }); });
-
-  dom.finalizeShiftBtn.addEventListener('click', finalizeShift);
-  document.getElementById('back-to-shifts').addEventListener('click', () => { dom.dashboard.classList.add('hidden'); dom.shiftSelection.classList.remove('hidden'); });
-// Abre un modal simple con la lista de alumnos sin turno del curso
-async function openSporadicPicker(course) {
-  // recogemos alumnos SIN turno asignado (status != 'fixed' o shift falsy)
-  const all = await fetchStudents(null);
-  // filtramos por curso y sin turno (o con status 'sporadic')
-  const candidates = all.filter(s => (s.course === course) && (!s.shift || s.shift === '' || s.status === 'sporadic' || s.status === 'temp' ) );
-
-  // construimos HTML básico para el modal (puedes conectarlo a tu modal real)
-  let html = `<div style="padding:12px;"><h3 style="margin:0 0 8px 0">Seleccionar esporádicos — ${course}</h3>`;
-  if (candidates.length === 0) {
-    html += `<p style="color:#555">No hay alumnos sin turno en este curso.</p>`;
-  } else {
-    html += `<div style="display:flex;flex-direction:column;gap:8px">`;
-    candidates.sort((a,b)=>a.name.localeCompare(b.name)).forEach(s => {
-      html += `<button data-id="${s.id}" class="sporadic-select-btn" style="text-align:left;padding:.6rem .8rem;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:#fff;">${s.name}</button>`;
-    });
-    html += `</div>`;
-  }
-  html += `<div style="margin-top:12px;"><button id="close-sporadic-picker" style="margin-right:8px;padding:.5rem .8rem;border-radius:8px">Cerrar</button></div></div>`;
-
-  // crea un modal simple
-  const wrapper = document.createElement('div');
-  wrapper.id = 'sporadic-picker-wrapper';
-  wrapper.style.position = 'fixed';
-  wrapper.style.left = '0';
-  wrapper.style.top = '0';
-  wrapper.style.width = '100%';
-  wrapper.style.height = '100%';
-  wrapper.style.display = 'flex';
-  wrapper.style.alignItems = 'center';
-  wrapper.style.justifyContent = 'center';
-  wrapper.style.background = 'rgba(0,0,0,0.35)';
-  wrapper.style.zIndex = 9999;
-  wrapper.innerHTML = `<div style="width:92%;max-width:560px;background:#f9fafb;border-radius:12px;padding:14px;">${html}</div>`;
-  document.body.appendChild(wrapper);
-
-  // listeners: selección de alumno esporádico
-  wrapper.addEventListener('click', async (ev) => {
-    const btn = ev.target.closest('.sporadic-select-btn');
-    if (btn) {
-      const id = btn.dataset.id;
-      // marcamos como esporádico en memoria y actualizamos UI (no tocar BD)
-      const student = appState.students.find(s => s.id === id);
-      if (student) {
-        student.status = 'sporadic';
-        student.shift = ''; // sin turno asignado
-        // si la vista actual es de ese curso y listado visible, actualizamos el DOM
-        const listEl = document.querySelector(`[data-course-list="${course}"]`);
-        if (listEl) {
-          // eliminamos el alumno del listado fijo (si lo tenía) y refrescamos curso
-          // para simplicidad, re-renderizamos el curso actual
-          if (appState.currentShift) renderCourses(appState.currentShift);
-        }
-      }
-      // cerramos modal
-      document.body.removeChild(wrapper);
-    }
-
-    if (ev.target.id === 'close-sporadic-picker') {
-      document.body.removeChild(wrapper);
-    }
-  });
-}
-
-  // Delegación de clicks dentro del contenedor de cursos.
-// Reemplaza tu listener anterior por este bloque.
-dom.coursesContainer.addEventListener('click', async (e) => {
-  // Si el click viene de un botón que abre el picker -> abrir modal
-  const openPickerBtn = e.target.closest('.open-sporadic-picker');
-  if (openPickerBtn) {
-    const course = openPickerBtn.dataset.course;
-    openSporadicPicker(course); // función que abre el modal y gestiona selección
-    return;
-  }
-
-  // Si el click viene de un botón "añadir esporádico" antiguo (por seguridad)
-  const legacySporadicBtn = e.target.closest('.add-sporadic-btn');
-  if (legacySporadicBtn) {
-    // Si todavía tienes botones con la clase antigua, redirigimos al nuevo flujo:
-    openSporadicPicker(legacySporadicBtn.dataset.course);
-    return;
-  }
-
-  // Click sobre un alumno
-  const studentDiv = e.target.closest('.student-item');
-  if (!studentDiv) return;
-
-  const studentId = studentDiv.dataset.studentId;
-  const currentState = appState.attendance[studentId] || 'pending';
-  let newState;
-
-  // Si pulsaron la X => togglear absent/pending
-  if (e.target.classList.contains('mark-absent-btn')) {
-    newState = currentState === 'absent' ? 'pending' : 'absent';
-  } else {
-    // Click en el panel del alumno => togglear present/pending
-    newState = currentState === 'present' ? 'pending' : 'present';
-  }
-
-  // Actualizamos estado en memoria + UI y lo registramos en BD
-  appState.attendance[studentId] = newState;
-  studentDiv.classList.remove('pending', 'present', 'absent');
-  studentDiv.classList.add(newState);
-  updateSummary();
-
-  // Guardar en attendance (si procede)
-  try {
-    await logAttendance(studentId, new Date().toISOString().slice(0,10), newState);
-  } catch (err) {
-    console.error('Error registrando asistencia:', err);
-  }
-});
-
-</script>
-
-<script>
+  // register service worker if present (optional)
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').then(registration => {
-        console.log('ServiceWorker registration successful');
-      }, err => {
-        console.log('ServiceWorker registration failed: ', err);
-      });
-    });
+    navigator.serviceWorker && navigator.serviceWorker.register && navigator.serviceWorker.register('/sw.js').then(()=>console.log('ServiceWorker registered')).catch(()=>{/*ignore*/});
   }
+}); // DOMContentLoaded end
 </script>
 
 </body>
