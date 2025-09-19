@@ -55,26 +55,70 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 .student-item.absent { border-left-color:var(--danger); background:linear-gradient(90deg, rgba(201,42,42,0.04), #fff); text-decoration:line-through; opacity:0.96; }
 
 /* Allergy: mucho más visible */
-.student-item.allergic { background: linear-gradient(90deg, rgba(139,6,48,0.03), #fff); border:1px solid rgba(139,6,48,0.12); box-shadow: 0 10px 30px rgba(139,6,48,0.06); }
-/* badge */
-.allergy-badge { background: rgba(139,6,48,0.12); color:var(--brand); border:1px solid rgba(139,6,48,0.18); padding:6px 10px; border-radius:10px; font-weight:800; font-size:0.86rem; display:inline-flex; align-items:center; gap:8px; }
+/* ---------- Alergia: badge mucho más visible y con contraste según estado ---------- */
+
+/* base del alumno alérgico (cuando no marcado present) */
+.student-item.allergic {
+  background: linear-gradient(90deg, rgba(139,6,48,0.03), #fff);
+  border: 1px solid rgba(139,6,48,0.12);
+  box-shadow: 0 10px 30px rgba(139,6,48,0.06);
+}
+
+/* badge grande y llamativa (siempre visible) */
+.allergy-badge {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:10px;
+  font-weight:800;
+  font-size:0.85rem;
+  border: 1px solid rgba(139,6,48,0.18);
+  background: rgba(139,6,48,0.12);
+  color: rgb(99,12,29);
+  box-shadow: 0 6px 16px rgba(139,6,48,0.06);
+}
+
+/* icono dentro del badge */
 .allergy-icon { font-size:18px; color: var(--danger); }
 
-/* IMPORTANT: when the student is allergic but also marked present,
-   we keep the green "present" visual while preserving the allergy badge.
-   These rules ensure present styling takes precedence but badge remains visible. */
+/* Cuando el alumno está marcado PRESENT => el contenedor vira a verde,
+   pero queremos que el badge DISTINTA claramente (amarillo con borde rojo)
+   para que destaque sobre el fondo verde. */
 .student-item.present.allergic {
+  /* keep present visuals for the card */
   border-left-color: var(--success) !important;
   background: linear-gradient(90deg, rgba(6,122,70,0.06), #fff) !important;
   box-shadow: 0 10px 28px rgba(6,122,70,0.05) !important;
   border: 1px solid rgba(6,122,70,0.06) !important;
 }
-/* make badge slightly desaturated on present to avoid clash */
+
+/* badge overrides cuando PRESENT para que contraste */
 .student-item.present.allergic .allergy-badge {
-  background: rgba(139,6,48,0.06);
-  color: rgb(109,27,40);
-  border-color: rgba(139,6,48,0.08);
+  background: linear-gradient(180deg, #fef3c7, #fde68a); /* amarillo suave -> más legible */
+  color: #7c2d12; /* marrón oscuro para legibilidad sobre amarillo */
+  border: 1px solid rgba(220,38,38,0.18); /* ligero borde rojo */
+  box-shadow: 0 6px 20px rgba(124,45,18,0.06);
 }
+
+/* badge overrides cuando AUSENTE para mantener el aviso rojo fuerte */
+.student-item.absent.allergic .allergy-badge,
+.student-item.pending.allergic .allergy-badge {
+  background: linear-gradient(90deg, rgba(139,6,48,0.12), rgba(139,6,48,0.06));
+  color: #6b0216;
+  border-color: rgba(139,6,48,0.18);
+}
+
+/* opcional: un pequeño pulso (sutil) para llamar la atención cuando está present+alergia */
+.student-item.present.allergic .allergy-badge {
+  animation: allergy-pulse 2.6s ease-in-out infinite;
+}
+@keyframes allergy-pulse {
+  0%   { transform: translateY(0); box-shadow: 0 6px 20px rgba(124,45,18,0.06); }
+  50%  { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(124,45,18,0.09); }
+  100% { transform: translateY(0); box-shadow: 0 6px 20px rgba(124,45,18,0.06); }
+}
+
 
 /* X button */
 .mark-absent-btn { width:40px; height:40px; border-radius:8px; border:1px solid rgba(0,0,0,0.04); background:#fff; font-weight:700; cursor:pointer; }
