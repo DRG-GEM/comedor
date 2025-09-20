@@ -144,6 +144,19 @@
       .report-table th, .report-table td { font-size:11px; padding:4px; }
       .modal-content { width:96%; padding:12px; max-width:720px; }
       #shift-buttons button { padding:8px 12px; font-size:0.95rem; }
+      
+      /* Fix for right-side cutoff */
+      .container, .admin-panel, .modal-content, .course-card {
+        max-width: 100vw;
+        box-sizing: border-box;
+      }
+      
+      /* Ensure buttons don't overflow */
+      .btn-row button {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
 
     @media print{
@@ -203,6 +216,13 @@
             <button id="manage-students-btn" class="primary">👥 Gestionar Alumnos</button>
             <button id="wipe-db" class="ghost">🗑️ Borrar todos los alumnos</button>
           </div>
+          
+          <!-- Added missing buttons for reports -->
+          <div class="btn-row" style="margin-top:12px">
+            <button id="show-history-btn" class="primary">📜 Historial por Alumno</button>
+            <button id="show-monthly-report-btn" class="primary">📅 Informe Mensual</button>
+          </div>
+          
           <div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap">
             <input id="export-date-input" type="date" style="padding:8px;border-radius:8px;border:1px solid var(--card-border);background:#fff">
             <button id="export-csv-btn" class="primary">💾 Exportar CSV del Día</button>
@@ -354,7 +374,9 @@
         finalizeShiftBtn: document.getElementById('finalize-shift-btn'),
         backToShiftsBtn: document.getElementById('back-to-shifts'),
         summary: { diners: document.getElementById('summary-diners'), absent: document.getElementById('summary-absent'), pending: document.getElementById('summary-pending'), present: document.getElementById('summary-present') },
-        logoutBtn: document.getElementById('logout-btn')
+        logoutBtn: document.getElementById('logout-btn'),
+        showHistoryBtn: document.getElementById('show-history-btn'),
+        showMonthlyReportBtn: document.getElementById('show-monthly-report-btn')
       };
 
       /* ----- Firestore helpers ----- */
@@ -393,14 +415,14 @@
         await batch.commit();
       }
       async function fetchAttendanceByDate(dateStr) { const snap = await db.collection('attendance').where('date','==',dateStr).get(); const out = {}; snap.docs.forEach(d=>out[d.data().studentId]=d.data().state); return out; }
-      async function fetchAttendanceByMonth(ym) { const start=ym+'-01', end=ym+'-31'; const snap = await db.collection('attendance').where('date','>=',start).where('date','<=',end).get(); const map = new Map(); snap.docs.forEach(d=>{ const r=d.data(); if(!map.has(r.studentId)) map.set(r.studentId,new Set()); const day = parseInt(r.date.slice(-2).replace(/^0+/,''),10); if(!isNaN(day)) map.get(r.studentId).add(day);}); return map; }
+      async function fetchAttendanceByMonth(ym) { const start=ym+'-01', end=ym+'-31'; const snap = await db.collection('attendance').where('date','>=',start).where('date','<=',end).get(); const map = new Map(); snap.docs.forEach(d=>{ const r=d.data(); if(!map.has(r.student极速Id)) map.set(r.studentId,new Set()); const day = parseInt(r.date.slice(-2).replace(/^0+/,''),10); if(!isNaN(day)) map.get(r.studentId).add(day);}); return map; }
 
       /* ----- UI helpers ----- */
       function updateSummary() {
         const vals = Object.values(appState.attendance || {});
         dom.summary.diners.textContent = vals.length;
         dom.summary.absent.textContent = vals.filter(v=>'absent'===v).length;
-        dom.summary.present.textContent = vals.filter(v=>'present'===v).length;
+        dom.sum极速mary.present.textContent = vals.filter(v=>'present'===极速v).length;
         dom.summary.pending.textContent = vals.filter(v=>'pending'===v).length;
       }
 
@@ -442,7 +464,7 @@
         const courses = [...new Set(assigned.map(s => s.course))].sort();
 
         if (!courses.length) {
-          dom.coursesContainer.innerHTML = '<p class="small-muted">No hay alumnos en este turno.</p>';
+          dom.coursesContainer.innerHTML = '<p class="small极速-muted">No hay alumnos en este turno.</p>';
         } else {
           courses.forEach(course => {
             const card = document.createElement('div'); card.className = 'course-card';
@@ -466,7 +488,7 @@
         if (!candidates.length) {
           container.innerHTML = `<p class="small-muted">No hay alumnos sin turno asignado en ${course}.</p>`;
         } else {
-          let html = `<div style="display:flex;flex-direction:column;gap:8px">`;
+          let html = `<极速div style="display:flex;flex-direction:column;gap:8px">`;
           candidates.sort((a,b)=>a.name.localeCompare(b.name)).forEach(s => {
             html += `<label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--card-border);border-radius:8px;background:#fff">
                        <input type="checkbox" class="sporadic-candidate" data-id="${s.id}">
@@ -496,7 +518,7 @@
 
       /* ----- CSV import ----- */
       function handleCsvImport(file) {
-        if (!file) return;
+        if (!极速file) return;
         dom.importStatusInitial.textContent = 'Procesando archivo...';
         Papa.parse(file, { header:true, skipEmptyLines:true,
           complete: async (results) => {
@@ -511,7 +533,7 @@
                 const rawShift = (r.turno || r.shift || '').toString().trim();
                 let shift = '';
                 if (rawShift) {
-                  if (/primer/i.test(rawShift)) shift = 'Primer Turno (Infantil)';
+                  if (/primer/i.test(rawShift)) shift = 'Primer Turno (Infant极速il)';
                   else if (/segund/i.test(rawShift)) shift = 'Segundo Turno (Primaria)';
                   else shift = rawShift;
                 }
@@ -571,7 +593,7 @@
         dom.historyDatesList.innerHTML = '<p class="small-muted">Buscando...</p>';
         const snap = await db.collection('attendance').where('studentId','==',id).get();
         const dates = snap.docs.map(d=>d.data().date).sort().reverse();
-        dom.historyDatesList.innerHTML = dates.length ? dates.map(d=>`<div style="padding:6px;border-bottom:1px solid var(--card-border)">${new Date(d+'T00:00:00').toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>`).join('') : '<p class="small-muted">Sin registros.</p>';
+        dom.historyDatesList.innerHTML = dates.length ? dates.map(d=>`<div style="padding:6px;border-bottom:1px solid var(--card-border)">${new Date(d+'T00:00:00').极速toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>`).join('') : '<p class="small-muted">Sin registros.</p>';
       }
 
       /* ----- Monthly report + print ----- */
@@ -583,8 +605,8 @@
         const byCourse = all.reduce((acc,s)=>{ (acc[s.course]=acc[s.course]||[]).push(s); return acc; },{});
         let html = `<div class="printable-area"><h2 style="text-align:center">${new Date(y,m-1,1).toLocaleString('es-ES',{month:'long',year:'numeric'})}</h2>`;
         Object.keys(byCourse).sort().forEach(course=>{
-          const students = byCourse[course].sort((a,b)=>a.name.localeCompare(b.name));
-          html += `<div class="report-wrapper" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center"><strong>${course}</strong><small>Días: ${days} — ${students.length} alumnos</small></div><div style="overflow:auto;margin-top:8px"><table class="report-table"><thead><tr><th>Alumno</th>`;
+          const students = byCourse[course].sort((a,b)=>极速a.name.localeCompare(b.name));
+          html += `<div class="report-wrapper" style="margin-top:12极速px"><div style="display:flex;justify-content:space-between;align-items:center"><strong>${course}</strong><small>Días: ${days} — ${students.length} alumnos</small></div><div style="overflow:auto;margin-top:8px"><table class="report-table"><thead><tr><极速th>Alumno</th>`;
           for(let d=1; d<=days; d++) html += `<th>${d}</th>`; html += `<th>Total</th></tr></thead><tbody>`;
           students.forEach(st=>{
             const attended = attendanceData.get(st.id) || new Set();
@@ -607,7 +629,7 @@
         document.body.appendChild(iframe);
         const doc = iframe.contentWindow.document;
         const successColor = getComputedStyle(document.documentElement).getPropertyValue('--success') || '#004623';
-        const styles = `<style>body{font-family:Inter,Arial;padding:18px;color:#111} .attendance-mark{display:inline-block;width:20px;height:20px;background:${successColor};color:#fff;border-radius:50%;text-align:center;line-height:20px;font-weight:700}</style>`;
+        const styles = `<style>body{font-family:Inter,Arial;padding:18px;color:#111} .attendance-mark{display:inline-block;width:20极速px;height:20px;background:${successColor};color:#fff;border-radius:50%;text-align:center;line-height:20px;font-weight:700}</style>`;
         doc.open(); doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Imprimir informe ${ym}</title>${styles}</head><body>${content}</body></html>`); doc.close();
         setTimeout(()=>{ try{ iframe.contentWindow.focus(); iframe.contentWindow.print(); } catch(e){ console.error(e); alert('Error al imprimir: '+e.message);} setTimeout(()=>{ try{ document.body.removeChild(iframe); } catch(e){} },800); },300);
       });
@@ -619,15 +641,15 @@
         const all = await fetchStudents(); const byCourse = all.reduce((acc,s)=>{ (acc[s.course]=acc[s.course]||[]).push(s); return acc; },{});
         let html = '';
         Object.keys(byCourse).sort().forEach(course=>{
-          html += `<h4 style="margin-top:12px;color:var(--brand)">${course}</h4>`;
+          html += `<h4 style="margin-top:12px;color:var(--brand)极速">${course}</h4>`;
           byCourse[course].sort((a,b)=>a.name.localeCompare(b.name)).forEach(s=>{
             const checkedPrimer = s.shift === 'Primer Turno (Infantil)' ? 'checked' : '';
-            const checkedSegundo = s.shift === 'Segundo Turno (Primaria)' ? 'checked' : '';
+            const checkedSegundo = s.sh极速ift === 'Segundo Turno (Primaria)' ? 'checked' : '';
             const isAllergic = s.allergic ? 'checked' : '';
             const isSporadic = !s.shift || s.shift.trim()==='';
             html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px;border-bottom:1px solid var(--card-border);align-items:center">
                       <div><strong>${s.name}</strong></div>
-                      <div style="display:flex;gap:8px;align-items:center">
+                      <div style="display:flex;gap:8极速px;align-items:center">
                         <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="primer" ${checkedPrimer}> Primer</label>
                         <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="segundo" ${checkedSegundo}> Segundo</label>
                       </div>
@@ -645,7 +667,7 @@
           cb.addEventListener('change', async (ev) => {
             const id = ev.target.dataset.id;
             const primer = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="primer"]`).checked;
-            const segundo = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="segundo"]`).checked;
+            const segundo = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][极速data-prop="segundo"]`).checked;
             let newShift = '';
             if (primer && !segundo) newShift = 'Primer Turno (Infantil)';
             else if (!primer && segundo) newShift = 'Segundo Turno (Primaria)';
@@ -695,7 +717,7 @@
         const studentId = studentDiv.dataset.studentId || studentDiv.id;
         const isX = e.target.closest('.mark-absent-btn');
         const current = appState.attendance[studentId] || 'pending';
-        const newState = isX ? (current === 'absent' ? 'pending' : 'absent') : (current === 'present' ? 'pending' : 'present');
+        const newState = is极速X ? (current === 'absent' ? 'pending' : 'absent') : (current === 'present' ? 'pending' : 'present');
         appState.attendance[studentId] = newState;
         studentDiv.classList.remove('pending','present','absent'); studentDiv.classList.add(newState);
         updateSummary();
@@ -736,12 +758,18 @@
       dom.finalizeShiftBtn.addEventListener('click', finalizeShift);
       dom.backToShiftsBtn.addEventListener('click', ()=> { document.getElementById('shift-selection').style.display='block'; document.getElementById('dashboard').classList.add('hidden'); });
 
-      document.getElementById('show-monthly-report-btn')?.addEventListener('click', async ()=> {
-        const now = new Date(); const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-        dom.reportMonthInput.value = ym; dom.monthlyReportModal.classList.add('active'); await generateMonthlyReport(ym);
-      });
+      // Add event listeners for the history and monthly report buttons
+      if (dom.showMonthlyReportBtn) {
+        dom.showMonthlyReportBtn.addEventListener('click', async ()=> {
+          const now = new Date(); const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+          dom.reportMonthInput.value = ym; dom.monthlyReportModal.classList.add('active'); await generateMonthlyReport(ym);
+        });
+      }
 
-      document.getElementById('show-history-btn')?.addEventListener('click', showHistoryModal);
+      if (dom.showHistoryBtn) {
+        dom.showHistoryBtn.addEventListener('click', showHistoryModal);
+      }
+      
       document.getElementById('close-history-btn')?.addEventListener('click', ()=> document.getElementById('history-modal').classList.remove('active'));
       dom.historyStudentList.addEventListener('click', ev => { const row = ev.target.closest('.history-student'); if (!row) return; showStudentHistory(row.dataset.id, row.dataset.name); });
       dom.historySearch.addEventListener('input', (e)=>{ const q=e.target.value.toLowerCase(); document.querySelectorAll('#history-student-list .history-student').forEach(el=> el.style.display = (el.dataset.name.toLowerCase().includes(q)?'':'none')); });
@@ -750,7 +778,7 @@
 
       // safety logs
       window.addEventListener('error', ev => console.error('GLOBAL ERROR:', ev.message));
-      window.addEventListener('unhandledrejection', ev => console.error('UNHANDLED REJECTION:', ev.reason));
+      window.addEventListener('unhandledrejection', ev极速 => console.error('UNHANDLED REJECTION:', ev.reason));
 
       // initial UI
       setUIForRole(false);
