@@ -318,7 +318,16 @@
       const auth = firebase.auth();
       const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-      const appState = { currentShift: null, students: [], attendance: {}, tempSporadic: new Set() };
+      // --- Cambios principales: tempSporadic por turno y persistencia ---
+      const appState = {
+        currentShift: null,
+        students: [],
+        attendance: {},
+        tempSporadic: {
+          'Primer Turno (Infantil)': new Set(),
+          'Segundo Turno (Primaria)': new Set()
+        }
+      };
 
       const dom = {
         roleDisplay: document.getElementById('role-display'),
@@ -357,7 +366,7 @@
         logoutBtn: document.getElementById('logout-btn')
       };
 
-      /* ----- Firestore helpers ----- */
+      /* ----- Firestore helpers (modificados para guardar shift + sporadic) ----- */
       async function fetchStudents() {
         const snap = await db.collection('students').get();
         return snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -380,10 +389,14 @@
       }
       async function deleteAllStudents() { const snap = await db.collection('students').get(); const batch = db.batch(); snap.docs.forEach(d => batch.delete(d.ref)); await batch.commit(); }
 
-      async function logAttendance(studentId, dateStr, state) {
+      // ahora acepta shift (opcional) y sporadic boolean (opcional)
+      async function logAttendance(studentId, dateStr, state, shift = '', sporadic = false) {
         if (studentId.startsWith && studentId.startsWith('sporadic_')) return;
         const docRef = db.collection('attendance').doc(`${studentId}_${dateStr}`);
-        await docRef.set({ studentId, date: dateStr, state });
+        const payload = { studentId, date: dateStr, state };
+        if (shift) payload.shift = shift;
+        if (sporadic) payload.sporadic = true;
+        await docRef.set(payload);
       }
       async function logBatchAttendance(ids, dateStr, state) {
         const valid = ids.filter(id => !(id.startsWith && id.startsWith('sporadic_')));
@@ -392,7 +405,19 @@
         valid.forEach(id => batch.set(col.doc(`${id}_${dateStr}`), { studentId: id, date: dateStr, state }));
         await batch.commit();
       }
-      async function fetchAttendanceByDate(dateStr) { const snap = await db.collection('attendance').where('date','==',dateStr).get(); const out = {}; snap.docs.forEach(d=>out[d.data().studentId]=d.data().state); return out; }
+
+      // Devuelve { states: {id: state}, records: [{studentId, date, state, shift?, sporadic?}, ...] }
+      async function fetchAttendanceByDate(dateStr) {
+        const snap = await db.collection('attendance').where('date','==',dateStr).get();
+        const states = {}; const records = [];
+        snap.docs.forEach(d=>{
+          const data = d.data();
+          states[data.studentId] = data.state;
+          records.push(data);
+        });
+        return { states, records };
+      }
+
       async function fetchAttendanceByMonth(ym) { const start=ym+'-01', end=ym+'-31'; const snap = await db.collection('attendance').where('date','>=',start).where('date','<=',end).get(); const map = new Map(); snap.docs.forEach(d=>{ const r=d.data(); if(!map.has(r.studentId)) map.set(r.studentId,new Set()); const day = parseInt(r.date.slice(-2).replace(/^0+/,''),10); if(!isNaN(day)) map.get(r.studentId).add(day);}); return map; }
 
       /* ----- UI helpers ----- */
@@ -432,13 +457,30 @@
 
         appState.students = await fetchStudents();
         const today = new Date().toISOString().slice(0,10);
-        const attendance = await fetchAttendanceByDate(today);
+        const attendanceData = await fetchAttendanceByDate(today);
+        const attendanceStates = attendanceData.states || {};
+        const attendanceRecords = attendanceData.records || [];
+
+        // reconstruir appState.attendance (map id -> 'present'|'absent'|'pending')
         appState.attendance = {};
-        appState.students.forEach(s => appState.attendance[s.id] = attendance[s.id] || 'pending');
+        appState.students.forEach(s => appState.attendance[s.id] = attendanceStates[s.id] || 'pending');
+
+        // reconstruir tempSporadic por turno a partir de attendanceRecords (persistidos como sporadic:true y con shift)
+        // limpiamos y reconstruimos (solo para los turnos que manejamos)
+        appState.tempSporadic['Primer Turno (Infantil)'] = new Set();
+        appState.tempSporadic['Segundo Turno (Primaria)'] = new Set();
+        attendanceRecords.forEach(rec => {
+          if (rec.sporadic && rec.shift) {
+            // sólo añadimos si el documento indica shift igual a uno de los turnos
+            if (rec.shift === 'Primer Turno (Infantil)') appState.tempSporadic['Primer Turno (Infantil)'].add(rec.studentId);
+            if (rec.shift === 'Segundo Turno (Primaria)') appState.tempSporadic['Segundo Turno (Primaria)'].add(rec.studentId);
+          }
+        });
 
         dom.coursesContainer.innerHTML = '';
 
-        const assigned = appState.students.filter(s => (s.shift && s.shift === shift) || appState.tempSporadic.has(s.id));
+        // ahora, asignados = alumnos con shift == turno OR esporádicos registrados para este turno
+        const assigned = appState.students.filter(s => (s.shift && s.shift === shift) || (appState.tempSporadic[shift] && appState.tempSporadic[shift].has(s.id)));
         const courses = [...new Set(assigned.map(s => s.course))].sort();
 
         if (!courses.length) {
@@ -461,6 +503,7 @@
       function openSporadicPickerModal(course) {
         currentPickerCourse = course;
         dom.sporadicPickerTitle.textContent = `Seleccionar esporádicos — ${course}`;
+        // candidatos: alumnos del curso sin turno asignado
         const candidates = appState.students.filter(s => s.course === course && (!s.shift || s.shift.trim()==='') && !(s.id && s.id.startsWith && s.id.startsWith('sporadic_')));
         const container = dom.sporadicPickerContent;
         if (!candidates.length) {
@@ -469,7 +512,7 @@
           let html = `<div style="display:flex;flex-direction:column;gap:8px">`;
           candidates.sort((a,b)=>a.name.localeCompare(b.name)).forEach(s => {
             html += `<label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--card-border);border-radius:8px;background:#fff">
-                       <input type="checkbox" class="sporadic-candidate" data-id="${s.id}">
+                       <input type="checkbox" class="sporadic-candidate" data-id="${s.id}" value="${s.id}">
                        <div style="flex:1"><strong>${s.name}</strong><div class="small-muted">${s.course}</div></div>
                      </label>`;
           });
@@ -479,14 +522,20 @@
         dom.sporadicPickerModal.classList.add('active');
       }
       dom.closeSporadicPicker.addEventListener('click', () => dom.sporadicPickerModal.classList.remove('active'));
+
+      // Confirm: persistimos la asistencia con shift y sporadic=true, y añadimos al set del turno actual
       dom.confirmSporadicAdd.addEventListener('click', async () => {
         const checked = Array.from(dom.sporadicPickerContent.querySelectorAll('.sporadic-candidate:checked')).map(cb => cb.dataset.id);
         if (!checked.length) { alert('Selecciona al menos un alumno.'); return; }
         const today = new Date().toISOString().slice(0,10);
+        const shift = appState.currentShift;
+        if (!shift) { alert('Selecciona primero un turno.'); dom.sporadicPickerModal.classList.remove('active'); return; }
+        if (!appState.tempSporadic[shift]) appState.tempSporadic[shift] = new Set();
         for (const id of checked) {
           try {
-            await logAttendance(id, today, 'present');
-            appState.tempSporadic.add(id);
+            // Persistimos con shift y sporadic:true
+            await logAttendance(id, today, 'present', shift, true);
+            appState.tempSporadic[shift].add(id);
             appState.attendance[id] = 'present';
           } catch (e) { console.error('error al añadir esporádico', e); }
         }
@@ -533,8 +582,9 @@
       /* ----- Export CSV ----- */
       async function exportFullDayCsv(dateStr) {
         const all = await fetchStudents();
-        const attendance = await fetchAttendanceByDate(dateStr);
-        const rows = all.map(s => ({ Fecha: dateStr, Turno: s.shift || '(Esporádico)', Nombre: s.name, Curso: s.course, Estado: attendance[s.id] || 'pending' }));
+        const attendanceData = await fetchAttendanceByDate(dateStr);
+        const attendanceStates = attendanceData.states || {};
+        const rows = all.map(s => ({ Fecha: dateStr, Turno: s.shift || '(Esporádico)', Nombre: s.name, Curso: s.course, Estado: attendanceStates[s.id] || 'pending' }));
         rows.sort((a,b) => (a.Turno||'').localeCompare(b.Turno||'') || a.Curso.localeCompare(b.Curso) || a.Nombre.localeCompare(b.Nombre));
         const csv = Papa.unparse(rows);
         const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
@@ -551,7 +601,8 @@
           if (appState.attendance[id] === 'pending') {
             appState.attendance[id] = 'absent';
             toMark.push(id);
-            const el = document.getElementById(id); if (el) { el.classList.remove('pending','present','absent'); el.classList.add('absent'); }
+            const el = document.querySelector(`.student-item[data-student-id="${id}"]`);
+            if (el) { el.classList.remove('pending','present','absent'); el.classList.add('absent'); }
           }
         }
         await logBatchAttendance(toMark, today, 'absent');
@@ -773,11 +824,9 @@
           if (!auth.currentUser) {
             dom.adminLoginView.classList.add('hidden');
           }
-          // leave default UI as setUIForRole
         }
       }
       window.addEventListener('hashchange', handleHash);
-      // Llamada inicial
       handleHash();
 
       // service worker (no-fatal)
@@ -787,4 +836,3 @@
   </script>
 </body>
 </html>
-
