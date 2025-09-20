@@ -1,171 +1,104 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Gestor de Comedor Escolar</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Gestor de Comedor Escolar</title>
 
-  <!-- Tailwind CDN para prototipo -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <meta name="theme-color" content="#ffffff">
+<style>
+  :root{
+    --bg:#f6f7f9;
+    --paper:#fff;
+    --text:#0f172a;
+    --muted:#6b7280;
+    --brand:#8b0630;
+    --brand-dark:#700424;
+    --success:#004623;
+    --danger:#c92a2a;
+    --card-border: rgba(15,23,42,0.06);
+  }
 
-  <style>
-    :root{
-      --bg:#f6f7f9;
-      --paper:#fff;
-      --text:#0f172a;
-      --muted:#6b7280;
-      --brand:#8b0630;
-      --brand-dark:#700424;
-      --accent:#19b4d6;
-      --success:#004623; /* verde sólido y oscuro para alto contraste */
-      --danger:#c92a2a;
-      --card-border: rgba(15,23,42,0.06);
-    }
+  /* Reset / layout safety */
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{width:100%;height:100%;margin:0;padding:0;overflow-x:hidden;-webkit-overflow-scrolling:touch;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;color:var(--text);background:var(--bg)}
+  .container{max-width:1100px;margin:0 auto;padding:20px;width:100%}
 
-    /* Box sizing + prevent horizontal scroll */
-    *, *::before, *::after { box-sizing: border-box; }
-    html, body { width:100%; overflow-x:hidden; -webkit-overflow-scrolling:touch; margin:0; padding:0; }
-    body {
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      background:var(--bg);
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
-    }
+  /* Header */
+  .header-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .logo{width:54px;height:54px;border-radius:10px;background:#fff;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(15,23,42,0.04);border:1px solid var(--card-border);flex:0 0 auto}
+  .title-wrap{text-align:center;flex:1;min-width:0}
+  h1{margin:8px 0 0;color:var(--brand);font-weight:800;font-size:28px}
+  .subtle{color:var(--muted)}
 
-    /* Layout */
-    .container { max-width:1100px; width:100%; margin:0 auto; padding:20px; box-sizing:border-box; }
-    .header-row { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-    .logo { width:54px;height:54px;border-radius:10px;background:#fff;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(15,23,42,0.04);border:1px solid var(--card-border); flex:0 0 auto; }
-    .title-wrap { text-align:center; flex:1; min-width:0; }
-    h1 { margin:8px 0 0; color:var(--brand); font-weight:800; font-size:28px; }
-    .subtle { color:var(--muted); }
+  /* header-actions: only logout appears here (admin-only) */
+  .header-actions{display:flex;gap:8px;align-items:center;justify-content:flex-end;min-width:0;flex-wrap:wrap}
+  .btn{background:#fff;border:1px solid rgba(15,23,42,0.06);padding:8px 12px;border-radius:10px;cursor:pointer}
+  .btn.primary{background:linear-gradient(180deg,var(--brand),var(--brand-dark));color:#fff;border:0;padding:10px 14px;border-radius:999px;font-weight:700}
+  .btn.small{padding:6px 8px;font-size:.9rem;border-radius:8px}
 
-    .header-actions { display:flex; gap:8px; align-items:center; justify-content:flex-end; min-width:0; flex-wrap:wrap; }
+  /* Admin panel (contains admin actions) */
+  .admin-panel{background:var(--paper);border-radius:12px;padding:18px;border:1px solid var(--card-border);box-shadow:0 14px 36px rgba(15,23,42,0.04);margin-top:18px;overflow:hidden}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 
-    /* Paneles */
-    .admin-panel { background:var(--paper); border-radius:12px; padding:18px; border:1px solid var(--card-border); box-shadow:0 14px 36px rgba(15,23,42,0.04); margin-top:18px; overflow:hidden; }
-    .btn-row { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
-    button.primary { background:linear-gradient(180deg,var(--brand),var(--brand-dark)); color:#fff; padding:10px 16px; border-radius:999px; font-weight:700; border:0; cursor:pointer; white-space:nowrap; min-width:0; }
-    button.ghost { background:#fff; border:1px solid rgba(15,23,42,0.06); padding:10px 14px; border-radius:10px; cursor:pointer; }
-    button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
+  /* Summary row (smaller & centered) */
+  .summary-row{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .summary-card{background:var(--paper);padding:10px 12px;border-radius:10px;border:1px solid var(--card-border);box-shadow:0 8px 20px rgba(15,23,42,0.03);text-align:center;width:140px}
+  .summary-card .label{font-size:.78rem;color:var(--muted);display:block;margin-bottom:6px}
+  .summary-card .value{font-size:18px;font-weight:800;color:var(--text)}
 
-    /* Summary + grid: reduced size & centered */
-    .summary-row { display:flex; gap:12px; justify-content:center; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
-    .summary-card { background:var(--paper); padding:10px 12px; border-radius:10px; border:1px solid var(--card-border); box-shadow:0 8px 20px rgba(15,23,42,0.03); text-align:center; width:140px; }
-    .summary-card .label { font-size:0.78rem; color:var(--muted); margin-bottom:6px; display:block; }
-    .summary-card .value { font-size:18px; font-weight:800; color:var(--text); }
+  /* Grid / courses */
+  #courses-container{margin-top:8px;display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+  .course-card{background:var(--paper);border-radius:10px;padding:12px;border:1px solid var(--card-border);box-shadow:0 8px 24px rgba(15,23,42,0.03);display:flex;flex-direction:column;gap:8px;overflow:hidden;min-width:0}
+  .course-card h3{color:var(--brand);margin:0;font-weight:700;word-break:break-word}
 
-    #courses-container { margin-top:8px; display:grid; gap:14px; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); }
+  /* Student item */
+  .student-item{background:#fff;border-radius:10px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-left:6px solid transparent;border:1px solid rgba(15,23,42,0.04);min-width:0}
+  .student-item .name{font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .student-item.pending{border-left-color:#cbd5e1;background:#fff;color:var(--text)}
+  .student-item.present{border-left-color:var(--success);background:var(--success);color:#fff;box-shadow:0 8px 20px rgba(0,70,35,0.12)}
+  .student-item.present *{color:#fff!important}
+  .student-item.absent{border-left-color:var(--danger);background:linear-gradient(90deg, rgba(201,42,42,0.04), #fff);text-decoration:line-through;opacity:.96}
 
-    /* Course card */
-    .course-card { background:var(--paper); border-radius:10px; padding:12px; border:1px solid var(--card-border); box-shadow:0 8px 24px rgba(15,23,42,0.03); display:flex; flex-direction:column; gap:8px; overflow:hidden; min-width:0; }
-    .course-card h3 { color:var(--brand); margin:0; font-weight:700; white-space:normal; word-break:break-word; }
+  /* Allergic badge (recuadro alrededor del nombre) */
+  .student-item.allergic .name{border:2px solid #c92a2a;padding:6px 10px;border-radius:8px;display:inline-block;background:rgba(201,42,42,0.03);font-weight:700;color:inherit}
+  .student-item.present.allergic .name{border-color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.06);color:#fff}
 
-    /* Student item */
-    .student-item { background:#ffffff; border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:space-between; gap:12px; border-left:6px solid transparent; border:1px solid rgba(15,23,42,0.04); transition: background .12s ease, box-shadow .12s ease, transform .06s ease; word-break:break-word; min-width:0; }
-    .student-left { display:flex; gap:12px; align-items:center; min-width:0; }
-    .student-name { font-weight:700; font-size:1.02rem; }
-    .student-meta { color:var(--muted); font-size:0.92rem; }
+  .mark-absent-btn{width:40px;height:40px;border-radius:8px;border:1px solid rgba(0,0,0,0.04);background:#fff;font-weight:700;cursor:pointer}
 
-    /* prevent overflow from long names or badges */
-    .student-item .name, .student-item .student-name {
-      max-width:100%;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      word-break:break-word;
-      overflow-wrap:anywhere;
-      min-width:0;
-    }
+  /* Report styling */
+  .report-wrapper{background:var(--paper);border-radius:12px;padding:10px;border:1px solid var(--card-border);box-shadow:0 10px 30px rgba(15,23,42,0.03);overflow:auto;-webkit-overflow-scrolling:touch}
+  .report-table{width:100%;border-collapse:collapse;font-size:13px;min-width:700px}
+  .report-table th,.report-table td{border:1px solid rgba(15,23,42,0.06);padding:6px;text-align:center}
+  .attendance-mark{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--success);color:#fff;font-weight:700}
 
-    /* States */
-    .student-item.pending { border-left-color:#cbd5e1; background:#fff; color:var(--text); }
-    .student-item.present { border-left-color:var(--success); background: var(--success); color:#ffffff; box-shadow: 0 8px 20px rgba(0,70,35,0.12); }
-    .student-item.present * { color: #ffffff !important; } /* asegurar contraste del texto dentro */
-    .student-item.absent { border-left-color:var(--danger); background:linear-gradient(90deg, rgba(201,42,42,0.04), #fff); text-decoration:line-through; opacity:0.96; }
+  /* Modal */
+  .fixed-modal{position:fixed;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.28);z-index:90;padding:12px;box-sizing:border-box}
+  .fixed-modal.active{display:flex}
+  .modal-content{background:#fff;border-radius:12px;padding:16px;width:92%;max-width:840px;max-height:90vh;overflow:auto;box-shadow:0 18px 40px rgba(0,0,0,0.12);min-width:0}
 
-    /* Alergia: recuadro alrededor del nombre (sin badge de texto) */
-    .student-item.allergic .name {
-      border: 2px solid #c92a2a;
-      padding: 6px 10px;
-      border-radius: 8px;
-      display: inline-block;
-      background: rgba(201,42,42,0.03);
-      font-weight: 700;
-      color: inherit;
-    }
-    .student-item.present.allergic .name {
-      border-color: rgba(255,255,255,0.85);
-      background: rgba(255,255,255,0.06);
-      color: #fff;
-    }
+  /* Responsive tweaks */
+  @media (max-width:900px){.summary-card{width:120px;padding:8px 10px}.summary-card .value{font-size:16px}}
+  @media (max-width:800px){#courses-container{grid-template-columns:1fr}}
+  @media (max-width:600px){
+    .container{padding:12px}
+    .header-row{flex-direction:column;align-items:flex-start;gap:8px}
+    .title-wrap{text-align:left;width:100%}
+    h1{font-size:20px;margin:4px 0 0}
+    .header-actions{width:100%;justify-content:flex-start}
+    .course-card{padding:10px}
+    .student-item{padding:10px}
+    .student-item .name{max-width:65%}
+    #shift-buttons button{padding:8px 12px;font-size:.95rem}
+  }
 
-    /* X button */
-    .mark-absent-btn { width:40px; height:40px; border-radius:8px; border:1px solid rgba(0,0,0,0.04); background:#fff; font-weight:700; cursor:pointer; flex:0 0 auto; }
-
-    /* Report styling (tables grandes --> scroll dentro del wrapper para no romper el layout) */
-    .report-wrapper { background:var(--paper); border-radius:12px; padding:10px; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.03); overflow:auto; -webkit-overflow-scrolling:touch; }
-    .report-table { width:100%; border-collapse:collapse; font-size:13px; min-width:700px; }
-    .report-table th, .report-table td { border:1px solid rgba(15,23,42,0.06); padding:6px 6px; text-align:center; min-width:28px; }
-    .report-table thead th { background:#fff; position:sticky; top:0; z-index:2; }
-    .report-table td.total { font-weight:700; color:var(--brand); }
-    .attendance-mark { display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px;border-radius:50%; background:var(--success); color:#fff; font-weight:700; }
-
-    /* Modal */
-    .fixed-modal { position:fixed; left:0; top:0; width:100%; height:100%; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.28); z-index:90; padding:12px; box-sizing:border-box; }
-    .fixed-modal.active { display:flex; }
-    .modal-content { background:#fff; border-radius:12px; padding:16px; width:92%; max-width:840px; max-height:90vh; overflow:auto; box-shadow:0 18px 40px rgba(0,0,0,0.12); min-width:0; }
-
-    .small-muted { color:var(--muted); font-size:0.85rem; }
-
-    /* images/svg responsive */
-    img, svg { max-width:100%; height:auto; display:block; }
-
-    @media (max-width:900px) {
-      .summary-card { width:120px; padding:8px 10px; }
-      .summary-card .value { font-size:16px; }
-    }
-
-    @media (max-width:800px){
-      #courses-container { grid-template-columns:1fr; }
-    }
-
-    /* mobile adjustments */
-    @media (max-width:600px){
-      .container { padding:12px; }
-      .header-row { flex-direction:column; align-items:flex-start; gap:8px; }
-      .title-wrap { text-align:left; width:100%; }
-      h1 { font-size:20px; margin:4px 0 0; }
-      .header-actions { width:100%; justify-content:flex-start; }
-      .admin-panel { padding:12px; }
-      .btn-row { justify-content:flex-start; }
-      .course-card { padding:10px; }
-      .course-card h3 { font-size:1rem; }
-      .student-item { flex-direction:row; align-items:center; gap:10px; padding:10px; }
-      .student-item .name { font-size:0.98rem; max-width:65%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-      .student-item .flex, .student-item > .flex { flex:0 0 auto; display:inline-flex; }
-      .mark-absent-btn { width:36px; height:36px; }
-      .report-table th, .report-table td { font-size:11px; padding:4px; }
-      .modal-content { width:96%; padding:12px; max-width:720px; }
-      #shift-buttons button { padding:8px 12px; font-size:0.95rem; white-space:normal; }
-      .summary-row { justify-content:center; }
-    }
-
-    @media print{
-      body * { visibility:hidden; }
-      .printable-area, .printable-area * { visibility:visible; }
-      .printable-area { position:absolute; left:0; top:0; width:100%; background:#fff; padding:8px; }
-      @page { size: landscape; margin:0.4cm; }
-    }
-
-    .hidden { display:none !important; }
-  </style>
+  /* helper */
+  .hidden{display:none!important}
+  .admin-only{display:none}
+</style>
 </head>
 <body>
-
   <div class="container">
     <header class="header-row" role="banner">
       <div class="logo" aria-hidden="true">
@@ -181,94 +114,93 @@
       </div>
 
       <div class="header-actions">
-        <!-- ahora junto con los otros botones -->
-        <button id="import-csv-btn-initial" class="ghost small" title="Importar CSV">Importar CSV</button>
-        <button id="manage-students-btn" class="ghost small" title="Gestionar alumnos">Gestionar</button>
-        <button id="show-monthly-report-btn" class="ghost small" title="Informe mensual">Informe mensual</button>
-        <button id="logout-btn" class="ghost small" title="Cerrar sesión" style="display:none">Cerrar sesión</button>
+        <!-- En header SOLO aparece "Cerrar sesión" cuando eres admin -->
+        <button id="logout-btn" class="btn small hidden" title="Cerrar sesión">Cerrar sesión</button>
       </div>
     </header>
 
-    <!-- Login admin -->
-    <div id="admin-login-view" class="admin-panel hidden" style="max-width:640px;margin:14px auto 0">
-      <h2 style="text-align:center">Acceso de Administrador</h2>
-      <div style="text-align:center;margin-top:10px">
-        <button id="login-admin-btn" class="primary">Iniciar sesión con Google</button>
+    <!-- Shift selection (PROFESOR view: este es el único bloque visible al profesor) -->
+    <section id="shift-selection" style="text-align:center;margin-top:14px">
+      <h2 style="margin-bottom:12px">Elige un turno de comedor</h2>
+      <div id="shift-buttons" style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap">
+        <button class="btn primary" data-shift="Primer Turno (Infantil)">Primer Turno (Infantil)</button>
+        <button class="btn primary" data-shift="Segundo Turno (Primaria)">Segundo Turno (Primaria)</button>
+      </div>
+    </section>
+
+    <!-- Admin login / panel: admin-only -->
+    <div id="admin-login-view" class="admin-panel admin-only hidden" style="max-width:880px;margin:18px auto 0">
+      <h2 style="text-align:center;margin:0 0 8px">Acceso de Administrador</h2>
+      <div style="text-align:center;margin-top:8px">
+        <button id="login-admin-btn" class="btn primary">Iniciar sesión con Google</button>
+      </div>
+
+      <!-- Una vez logueado, aquí se colocarán las acciones de admin (import, gestionar, historial, export) -->
+      <div id="admin-actions" class="hidden" style="margin-top:18px">
+        <h3 style="text-align:center;margin-bottom:10px">Panel de Gestión</h3>
+        <div class="btn-row" role="group" aria-label="gestion-datos" style="justify-content:center">
+          <button id="import-csv-btn" class="btn primary">📤 Importar Alumnos (CSV)</button>
+          <button id="manage-students-btn" class="btn">👥 Gestionar Alumnos</button>
+          <button id="show-history-btn" class="btn">📜 Historial</button>
+          <button id="show-monthly-report-btn" class="btn">📅 Informe mensual</button>
+          <button id="wipe-db" class="btn">🗑️ Borrar todos los alumnos</button>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap">
+          <input id="export-date-input" type="date" style="padding:8px;border-radius:8px;border:1px solid var(--card-border);background:#fff">
+          <button id="export-csv-btn" class="btn primary">💾 Exportar CSV del Día</button>
+        </div>
+        <p id="import-status-initial" style="text-align:center;margin-top:10px;min-height:18px;color:#059669"></p>
       </div>
     </div>
 
-    <!-- Main -->
-    <div id="main-content" style="margin-top:18px">
-
-      <section id="shift-selection" style="text-align:center">
-        <h2 style="margin-bottom:12px">Elige un turno de comedor</h2>
-        <div class="btn-row" id="shift-buttons" style="justify-content:center">
-          <button class="primary large" data-shift="Primer Turno (Infantil)">Primer Turno (Infantil)</button>
-          <button class="primary large" data-shift="Segundo Turno (Primaria)">Segundo Turno (Primaria)</button>
+    <!-- Dashboard (listado, resumen, etc) -->
+    <main id="dashboard" class="hidden" style="margin-top:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <button id="back-to-shifts" class="btn">← Volver a Turnos</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button id="finalize-shift-btn" class="btn primary">🏁 Finalizar Turno</button>
         </div>
+      </div>
 
-        <div class="admin-panel admin-only" style="margin-top:18px">
-          <h3 style="text-align:center;margin-bottom:10px">Panel de Gestión</h3>
-          <div class="btn-row" role="group" aria-label="gestion-datos">
-            <!-- botones duplicados arriba, se mantienen para conveniencia en admin panel -->
-            <button id="import-csv-btn" class="primary">📤 Importar Alumnos (CSV)</button>
-            <button id="wipe-db" class="ghost">🗑️ Borrar todos los alumnos</button>
-          </div>
-          <div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap">
-            <input id="export-date-input" type="date" style="padding:8px;border-radius:8px;border:1px solid var(--card-border);background:#fff">
-            <button id="export-csv-btn" class="primary">💾 Exportar CSV del Día</button>
-          </div>
-          <p id="import-status-initial" style="text-align:center;margin-top:10px;min-height:18px;color:#059669"></p>
-        </div>
+      <div class="summary-row" role="status" aria-live="polite">
+        <div class="summary-card"><span class="label">Comensales</span><span id="summary-diners" class="value">0</span></div>
+        <div class="summary-card"><span class="label">Ausentes</span><span id="summary-absent" class="value">0</span></div>
+        <div class="summary-card"><span class="label">Pendientes</span><span id="summary-pending" class="value">0</span></div>
+        <div class="summary-card"><span class="label">Presentes</span><span id="summary-present" class="value">0</span></div>
+      </div>
+
+      <section id="student-lists">
+        <div id="courses-container"></div>
       </section>
+    </main>
 
-      <main id="dashboard" class="hidden" style="margin-top:18px">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
-          <button id="back-to-shifts" class="ghost">&larr; Volver a Turnos</button>
-          <div>
-            <button id="finalize-shift-btn" class="primary">🏁 Finalizar Turno</button>
-          </div>
-        </div>
-
-        <!-- summary row centrado y más pequeño -->
-        <div class="summary-row" role="status" aria-live="polite">
-          <div class="summary-card"><span class="label">Comensales</span><span id="summary-diners" class="value">0</span></div>
-          <div class="summary-card"><span class="label">Ausentes</span><span id="summary-absent" class="value">0</span></div>
-          <div class="summary-card"><span class="label">Pendientes</span><span id="summary-pending" class="value">0</span></div>
-          <div class="summary-card"><span class="label">Presentes</span><span id="summary-present" class="value">0</span></div>
-        </div>
-
-        <section id="student-lists">
-          <div id="courses-container"></div>
-        </section>
-      </main>
-
-    </div>
   </div>
 
+  <!-- Hidden file input for CSV import -->
   <input id="csv-file-input" type="file" accept=".csv" style="display:none">
 
-  <!-- Manage Students Modal (admin) -->
+  <!-- Manage Students Modal -->
   <div id="manage-students-modal" class="fixed-modal" aria-hidden="true">
     <div class="modal-content">
       <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <h2 style="color:var(--brand)">Gestionar Alumnos</h2>
-        <button id="close-manage-modal" class="small">✕</button>
+        <button id="close-manage-modal" class="btn small">✕</button>
       </header>
       <div id="manage-students-content" style="max-height:68vh;overflow:auto"></div>
     </div>
   </div>
 
-  <!-- Sporadic Picker Modal (profesor) -->
+  <!-- Sporadic Picker Modal -->
   <div id="sporadic-picker-modal" class="fixed-modal" aria-hidden="true">
     <div class="modal-content">
       <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <h3 id="sporadic-picker-title">Seleccionar esporádicos</h3>
-        <button id="close-sporadic-picker" class="small">✕</button>
+        <button id="close-sporadic-picker" class="btn small">✕</button>
       </header>
       <div id="sporadic-picker-content" style="max-height:62vh;overflow:auto"></div>
       <footer style="margin-top:8px;text-align:right">
-        <button id="confirm-sporadic-add" class="primary">Añadir seleccionados</button>
+        <button id="confirm-sporadic-add" class="btn primary">Añadir seleccionados</button>
       </footer>
     </div>
   </div>
@@ -280,8 +212,8 @@
         <h3 style="color:var(--brand)">Informe de Asistencia Mensual</h3>
         <div style="display:flex;gap:8px;align-items:center">
           <input id="report-month-input" type="month" style="padding:8px;border-radius:8px;border:1px solid var(--card-border)">
-          <button id="print-report-btn" class="primary">🖨️ Imprimir</button>
-          <button id="close-report-btn" class="small">✕</button>
+          <button id="print-report-btn" class="btn primary">🖨️ Imprimir</button>
+          <button id="close-report-btn" class="btn small">✕</button>
         </div>
       </header>
       <div id="monthly-report-content" style="max-height:66vh;overflow:auto"></div>
@@ -293,14 +225,14 @@
     <div class="modal-content">
       <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <h3 style="color:var(--brand)">Historial de Asistencia</h3>
-        <button id="close-history-btn" class="small">✕</button>
+        <button id="close-history-btn" class="btn small">✕</button>
       </header>
-      <div style="display:flex;gap:14px">
-        <div style="width:35%">
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+        <div style="min-width:260px;max-width:340px">
           <input id="history-search" placeholder="Buscar alumno..." style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--card-border)">
           <div id="history-student-list" style="margin-top:8px;max-height:52vh;overflow:auto"></div>
         </div>
-        <div style="flex:1;background:#fff;border-radius:8px;padding:10px">
+        <div style="flex:1;background:#fff;border-radius:8px;padding:10px;min-width:200px">
           <h4 id="history-student-name">Selecciona un alumno</h4>
           <div id="history-dates-list" style="margin-top:8px;max-height:52vh;overflow:auto"></div>
         </div>
@@ -308,489 +240,448 @@
     </div>
   </div>
 
-  <!-- Firebase + PapaParse -->
+  <!-- Firebase + PapaParse (cargas CDN) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', () => {
+    // Firebase config (mantengo el tuyo)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAeI9G1_2-E8Kghc-88bkrXa_VDJXeDyHo",
+      authDomain: "comedorvp.firebaseapp.com",
+      projectId: "comedorvp",
+      storageBucket: "comedorvp.firebasestorage.app",
+      messagingSenderId: "821870274048",
+      appId: "1:821870274048:web:62b85d28ceace395245ae5"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyAeI9G1_2-E8Kghc-88bkrXa_VDJXeDyHo",
-        authDomain: "comedorvp.firebaseapp.com",
-        projectId: "comedorvp",
-        storageBucket: "comedorvp.firebasestorage.app",
-        messagingSenderId: "821870274048",
-        appId: "1:821870274048:web:62b85d28ceace395245ae5"
-      };
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.firestore();
-      const auth = firebase.auth();
-      const googleProvider = new firebase.auth.GoogleAuthProvider();
+    // State
+    const appState = { currentShift: null, students: [], attendance: {}, tempSporadicByShift: {} };
 
-      // tempSporadicByShift: objeto donde la clave es el nombre del turno y el valor un Set de IDs esporádicos añadidos para *ese* turno hoy.
-      const appState = { currentShift: null, students: [], attendance: {}, tempSporadicByShift: {} };
+    // DOM refs
+    const dom = {
+      roleDisplay: document.getElementById('role-display'),
+      adminLoginView: document.getElementById('admin-login-view'),
+      adminActions: document.getElementById('admin-actions'),
+      coursesContainer: document.getElementById('courses-container'),
+      csvFileInput: document.getElementById('csv-file-input'),
+      manageModal: document.getElementById('manage-students-modal'),
+      manageContent: document.getElementById('manage-students-content'),
+      closeManageModal: document.getElementById('close-manage-modal'),
+      sporadicPickerModal: document.getElementById('sporadic-picker-modal'),
+      sporadicPickerContent: document.getElementById('sporadic-picker-content'),
+      sporadicPickerTitle: document.getElementById('sporadic-picker-title'),
+      closeSporadicPicker: document.getElementById('close-sporadic-picker'),
+      confirmSporadicAdd: document.getElementById('confirm-sporadic-add'),
+      monthlyReportModal: document.getElementById('monthly-report-modal'),
+      monthlyReportContent: document.getElementById('monthly-report-content'),
+      reportMonthInput: document.getElementById('report-month-input'),
+      printReportBtn: document.getElementById('print-report-btn'),
+      historyModal: document.getElementById('history-modal'),
+      historyStudentList: document.getElementById('history-student-list'),
+      historyStudentName: document.getElementById('history-student-name'),
+      historyDatesList: document.getElementById('history-dates-list'),
+      historySearch: document.getElementById('history-search'),
+      loginAdminBtn: document.getElementById('login-admin-btn'),
+      importCsvBtn: document.getElementById('import-csv-btn'),
+      importCsvBtnInitial: document.getElementById('import-csv-btn'), // alias
+      manageStudentsBtn: document.getElementById('manage-students-btn'),
+      wipeDbBtn: document.getElementById('wipe-db'),
+      exportCsvBtn: document.getElementById('export-csv-btn'),
+      exportDateInput: document.getElementById('export-date-input'),
+      finalizeShiftBtn: document.getElementById('finalize-shift-btn'),
+      backToShiftsBtn: document.getElementById('back-to-shifts'),
+      summary: { diners: document.getElementById('summary-diners'), absent: document.getElementById('summary-absent'), pending: document.getElementById('summary-pending'), present: document.getElementById('summary-present') },
+      logoutBtn: document.getElementById('logout-btn'),
+      adminActionsContainer: document.getElementById('admin-actions'),
+      showMonthlyBtn: document.getElementById('show-monthly-report-btn'),
+      showHistoryBtn: document.getElementById('show-history-btn')
+    };
 
-      const dom = {
-        roleDisplay: document.getElementById('role-display'),
-        adminLoginView: document.getElementById('admin-login-view'),
-        mainContent: document.getElementById('main-content'),
-        coursesContainer: document.getElementById('courses-container'),
-        importStatusInitial: document.getElementById('import-status-initial'),
-        csvFileInput: document.getElementById('csv-file-input'),
-        manageStudentsModal: document.getElementById('manage-students-modal'),
-        manageStudentsContent: document.getElementById('manage-students-content'),
-        closeManageModal: document.getElementById('close-manage-modal'),
-        sporadicPickerModal: document.getElementById('sporadic-picker-modal'),
-        sporadicPickerContent: document.getElementById('sporadic-picker-content'),
-        sporadicPickerTitle: document.getElementById('sporadic-picker-title'),
-        closeSporadicPicker: document.getElementById('close-sporadic-picker'),
-        confirmSporadicAdd: document.getElementById('confirm-sporadic-add'),
-        monthlyReportModal: document.getElementById('monthly-report-modal'),
-        monthlyReportContent: document.getElementById('monthly-report-content'),
-        reportMonthInput: document.getElementById('report-month-input'),
-        printReportBtn: document.getElementById('print-report-btn'),
-        closeReportBtn: document.getElementById('close-report-btn'),
-        historyModal: document.getElementById('history-modal'),
-        historyStudentList: document.getElementById('history-student-list'),
-        historyStudentName: document.getElementById('history-student-name'),
-        historyDatesList: document.getElementById('history-dates-list'),
-        historySearch: document.getElementById('history-search'),
-        loginAdminBtn: document.getElementById('login-admin-btn'),
-        importCsvBtnInitial: document.getElementById('import-csv-btn-initial'),
-        importCsvBtn: document.getElementById('import-csv-btn'),
-        manageStudentsBtn: document.getElementById('manage-students-btn'),
-        wipeDbBtn: document.getElementById('wipe-db'),
-        exportCsvBtn: document.getElementById('export-csv-btn'),
-        exportDateInput: document.getElementById('export-date-input'),
-        finalizeShiftBtn: document.getElementById('finalize-shift-btn'),
-        backToShiftsBtn: document.getElementById('back-to-shifts'),
-        summary: { diners: document.getElementById('summary-diners'), absent: document.getElementById('summary-absent'), pending: document.getElementById('summary-pending'), present: document.getElementById('summary-present') },
-        logoutBtn: document.getElementById('logout-btn'),
-        showMonthlyBtn: document.getElementById('show-monthly-report-btn')
-      };
+    /* -------- Firestore helpers (sin cambios funcionales) -------- */
+    async function fetchStudents() { const snap = await db.collection('students').get(); return snap.docs.map(d=>({id:d.id,...d.data()})) }
+    async function addStudentBatch(students){ const batch=db.batch(); const col=db.collection('students'); let added=0; students.forEach(s=>{ if(s.name&&s.course){ const ref=col.doc(); batch.set(ref,{name:s.name.trim(),course:s.course.trim(),shift:s.shift? s.shift.trim():'',status:s.status|| (s.shift? 'fixed':'sporadic'),allergic:!!s.allergic}); added++; } }); if(added) await batch.commit(); return added }
+    async function updateStudentDoc(id, updates){ try{ await db.collection('students').doc(id).update(updates); return true } catch(e){ console.error(e); return false } }
+    async function deleteAllStudents(){ const snap=await db.collection('students').get(); const batch=db.batch(); snap.docs.forEach(d=>batch.delete(d.ref)); await batch.commit() }
+    async function logAttendance(studentId,dateStr,state){ if(studentId && studentId.startsWith && studentId.startsWith('sporadic_')) return; const docRef = db.collection('attendance').doc(`${studentId}_${dateStr}`); await docRef.set({studentId,date:dateStr,state}) }
+    async function logBatchAttendance(ids,dateStr,state){ const valid = ids.filter(id => !(id && id.startsWith && id.startsWith('sporadic_'))); if(!valid.length) return; const batch=db.batch(), col=db.collection('attendance'); valid.forEach(id=>batch.set(col.doc(`${id}_${dateStr}`),{studentId:id,date:dateStr,state})); await batch.commit() }
+    async function fetchAttendanceByDate(dateStr){ const snap=await db.collection('attendance').where('date','==',dateStr).get(); const out={}; snap.docs.forEach(d=>out[d.data().studentId]=d.data().state); return out }
+    async function fetchAttendanceByMonth(ym){ const start=ym+'-01', end=ym+'-31'; const snap=await db.collection('attendance').where('date','>=',start).where('date','<=',end).get(); const map=new Map(); snap.docs.forEach(d=>{ const r=d.data(); if(!map.has(r.studentId)) map.set(r.studentId,new Set()); const day = parseInt(r.date.slice(-2).replace(/^0+/,''),10); if(!isNaN(day)) map.get(r.studentId).add(day); }); return map }
 
-      /* ----- Firestore helpers ----- */
-      async function fetchStudents() {
-        const snap = await db.collection('students').get();
-        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    /* ------- UI helpers ------- */
+    function updateSummary(){
+      const vals = Object.values(appState.attendance || {});
+      dom.summary.diners.textContent = vals.length;
+      dom.summary.absent.textContent = vals.filter(v=>'absent'===v).length;
+      dom.summary.present.textContent = vals.filter(v=>'present'===v).length;
+      dom.summary.pending.textContent = vals.filter(v=>'pending'===v).length;
+    }
+
+    function createStudentElement(s){
+      const div = document.createElement('div');
+      const stateClass = appState.attendance && appState.attendance[s.id] ? appState.attendance[s.id] : 'pending';
+      div.className = `student-item ${stateClass}${s.allergic ? ' allergic' : ''}`;
+      div.dataset.studentId = s.id;
+      div.dataset.studentName = s.name;
+      div.innerHTML = `<span class="name ${s.allergic ? 'allergic' : ''}">${s.name}</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="mark-absent-btn" title="Marcar ausente">&times;</button>
+        </div>`;
+      return div.outerHTML;
+    }
+
+    /* ------- Render courses ------- */
+    async function renderCourses(shift){
+      appState.currentShift = shift;
+      document.getElementById('shift-selection').style.display='none';
+      dom.logoutBtn.classList.toggle('hidden', !auth.currentUser);
+      document.getElementById('dashboard').classList.remove('hidden');
+      dom.coursesContainer.innerHTML = '<p style="padding:8px;color:var(--muted)">Cargando alumnos...</p>';
+
+      appState.students = await fetchStudents();
+      const today = new Date().toISOString().slice(0,10);
+      const attendance = await fetchAttendanceByDate(today);
+      appState.attendance = {};
+      appState.students.forEach(s=> appState.attendance[s.id] = attendance[s.id] || 'pending');
+
+      dom.coursesContainer.innerHTML = '';
+
+      const tempSet = appState.tempSporadicByShift[shift] || new Set();
+      // assigned students: those with that shift OR those added as esporádicos for this shift
+      const assigned = appState.students.filter(s => (s.shift && s.shift === shift) || tempSet.has(s.id));
+      const courses = [...new Set(assigned.map(s => s.course))].sort();
+      if(!courses.length){ dom.coursesContainer.innerHTML = '<p style="padding:8px;color:var(--muted)">No hay alumnos en este turno.</p>'; updateSummary(); return }
+      courses.forEach(course=>{
+        const card = document.createElement('div'); card.className = 'course-card';
+        const studentsInCourse = assigned.filter(s=>s.course===course).sort((a,b)=>a.name.localeCompare(b.name));
+        const listHtml = studentsInCourse.map(createStudentElement).join('');
+        const pickerBtn = `<div style="margin-top:8px"><button class="btn primary open-sporadic-picker" data-course="${course}">+ Añadir esporádico</button></div>`;
+        card.innerHTML = `<div><h3>${course}</h3><div style="display:flex;flex-direction:column;gap:8px" data-course-list="${course}">${listHtml}</div></div>${pickerBtn}`;
+        dom.coursesContainer.appendChild(card);
+      });
+      updateSummary();
+    }
+
+    /* ------- Sporadic picker: candidates are alumnos sin turno (appear in both shift pickers) ------- */
+    let currentPickerCourse = null;
+    function openSporadicPickerModal(course){
+      currentPickerCourse = course;
+      dom.sporadicPickerTitle.textContent = `Seleccionar esporádicos — ${course}`;
+      // candidates: alumnos del curso que NO tienen turno asignado
+      const candidates = appState.students.filter(s => s.course === course && (!s.shift || s.shift.trim()==='') && !(s.id && s.id.startsWith && s.id.startsWith('sporadic_')));
+      const container = dom.sporadicPickerContent;
+      if(!candidates.length){ container.innerHTML = `<p style="color:var(--muted)">No hay alumnos sin turno asignado en ${course}.</p>`; dom.sporadicPickerModal.classList.add('active'); return }
+      let html = `<div style="display:flex;flex-direction:column;gap:8px">`;
+      candidates.sort((a,b)=>a.name.localeCompare(b.name)).forEach(s=>{
+        html += `<label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--card-border);border-radius:8px;background:#fff;min-width:0">
+                  <input type="checkbox" class="sporadic-candidate" data-id="${s.id}">
+                  <div style="flex:1;min-width:0"><strong>${s.name}</strong><div style="color:var(--muted);font-size:.9rem">${s.course}</div></div>
+                </label>`;
+      });
+      html += `</div>`;
+      container.innerHTML = html;
+      dom.sporadicPickerModal.classList.add('active');
+    }
+
+    dom.closeSporadicPicker.addEventListener('click', ()=> dom.sporadicPickerModal.classList.remove('active'));
+    dom.confirmSporadicAdd.addEventListener('click', async ()=>{
+      const checked = Array.from(dom.sporadicPickerContent.querySelectorAll('.sporadic-candidate:checked')).map(cb => cb.dataset.id);
+      if(!checked.length){ alert('Selecciona al menos un alumno.'); return }
+      const today = new Date().toISOString().slice(0,10);
+      const shift = appState.currentShift || 'unspecified';
+      if(!appState.tempSporadicByShift[shift]) appState.tempSporadicByShift[shift] = new Set();
+      for(const id of checked){
+        try{
+          await logAttendance(id, today, 'present');
+          appState.tempSporadicByShift[shift].add(id);
+          appState.attendance[id] = 'present';
+        }catch(e){ console.error('error al añadir esporádico',e) }
       }
-      async function addStudentBatch(students) {
-        const batch = db.batch(); const col = db.collection('students'); let added = 0;
-        students.forEach(s => {
-          if (s.name && s.course) {
-            const docRef = col.doc();
-            batch.set(docRef, { name: s.name.trim(), course: s.course.trim(), shift: s.shift ? s.shift.trim() : '', status: s.status || (s.shift ? 'fixed' : 'sporadic'), allergic: !!s.allergic });
-            added++;
+      if(appState.currentShift) await renderCourses(appState.currentShift);
+      dom.sporadicPickerModal.classList.remove('active');
+    });
+
+    /* ------- CSV import ------- */
+    function handleCsvImport(file){
+      if(!file) return;
+      document.getElementById('import-status-initial').textContent = 'Procesando archivo...';
+      Papa.parse(file,{header:true,skipEmptyLines:true,complete: async (results)=>{
+        try{
+          const fields = (results.meta.fields||[]).map(f=> (f||'').toLowerCase().trim());
+          if(!fields.includes('nombre') || !fields.includes('curso')){
+            document.getElementById('import-status-initial').textContent = 'Error: CSV debe tener columnas "nombre" y "curso".';
+            return;
           }
+          await deleteAllStudents();
+          const mapped = results.data.map(r=>{
+            const rawShift = (r.turno||r.shift||'').toString().trim();
+            let shift='';
+            if(rawShift){
+              if(/primer/i.test(rawShift)) shift='Primer Turno (Infantil)';
+              else if(/segund/i.test(rawShift)) shift='Segundo Turno (Primaria)';
+              else shift=rawShift;
+            }
+            return { name:(r.nombre||'').toString().trim(), course:(r.curso||'').toString().trim(), shift, status: shift ? 'fixed' : 'sporadic', allergic:false };
+          });
+          const added = await addStudentBatch(mapped);
+          document.getElementById('import-status-initial').textContent = `Importación completa ✅ (${added})`;
+          appState.students = await fetchStudents();
+          if(appState.currentShift) await renderCourses(appState.currentShift);
+        }catch(err){ console.error(err); document.getElementById('import-status-initial').textContent='Error al procesar CSV.' }
+        setTimeout(()=>document.getElementById('import-status-initial').textContent='',4000);
+      }, error: err => { console.error(err); document.getElementById('import-status-initial').textContent='Error leyendo CSV'; setTimeout(()=>document.getElementById('import-status-initial').textContent='',3000) }});
+    }
+
+    /* ------- Export CSV ------- */
+    async function exportFullDayCsv(dateStr){
+      const all = await fetchStudents();
+      const attendance = await fetchAttendanceByDate(dateStr);
+      const rows = all.map(s=>({Fecha:dateStr,Turno:s.shift || '(Esporádico)',Nombre:s.name,Curso:s.course,Estado:attendance[s.id]||'pending'}));
+      rows.sort((a,b)=> (a.Turno||'').localeCompare(b.Turno||'') || a.Curso.localeCompare(b.Curso) || a.Nombre.localeCompare(b.Nombre));
+      const csv = Papa.unparse(rows);
+      const blob = new Blob([`\uFEFF${csv}`],{type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download=`asistencia_${dateStr}.csv`; a.click(); URL.revokeObjectURL(url);
+    }
+
+    /* ------- Finalizar turno ------- */
+    async function finalizeShift(){
+      if(!confirm('¿Seguro que quieres finalizar el turno? Los pendientes pasarán a ausentes.')) return;
+      const today = new Date().toISOString().slice(0,10);
+      const toMark = [];
+      for(const id in appState.attendance){
+        if(appState.attendance[id] === 'pending'){
+          appState.attendance[id] = 'absent';
+          toMark.push(id);
+          document.querySelectorAll('.student-item').forEach(el => { if(el.dataset && el.dataset.studentId === id){ el.classList.remove('pending','present','absent'); el.classList.add('absent'); }});
+        }
+      }
+      await logBatchAttendance(toMark,today,'absent');
+      updateSummary();
+    }
+
+    /* ------- History ------- */
+    async function showHistoryModal(){
+      dom.historyModal.classList.add('active');
+      dom.historyStudentList.innerHTML = '<p style="color:var(--muted)">Cargando...</p>';
+      const all = await fetchStudents(); all.sort((a,b)=>a.name.localeCompare(b.name));
+      if(!all.length) dom.historyStudentList.innerHTML = '<p style="color:var(--muted)">No hay alumnos registrados.</p>';
+      else dom.historyStudentList.innerHTML = all.map(s=>`<div class="history-student" data-id="${s.id}" data-name="${s.name}" style="padding:8px;border-bottom:1px solid var(--card-border);cursor:pointer;min-width:0"><strong>${s.name}</strong><div style="color:var(--muted)">${s.shift || '(Esporádico)'} • ${s.course}</div></div>`).join('');
+    }
+    async function showStudentHistory(id,name){
+      dom.historyStudentName.textContent = `Historial de: ${name}`;
+      dom.historyDatesList.innerHTML = '<p style="color:var(--muted)">Buscando...</p>';
+      const snap = await db.collection('attendance').where('studentId','==',id).get();
+      const dates = snap.docs.map(d=>d.data().date).sort().reverse();
+      dom.historyDatesList.innerHTML = dates.length ? dates.map(d=>`<div style="padding:6px;border-bottom:1px solid var(--card-border)">${new Date(d+'T00:00:00').toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>`).join('') : '<p style="color:var(--muted)">Sin registros.</p>';
+    }
+
+    /* ------- Monthly report (same as before) ------- */
+    async function generateMonthlyReport(ym){
+      dom.monthlyReportContent.innerHTML = '<p style="color:var(--muted)">Generando informe...</p>';
+      if(!ym){ dom.monthlyReportContent.innerHTML = '<p style="color:#b45309">Selecciona un mes.</p>'; return }
+      const [y,m] = ym.split('-').map(v=>parseInt(v,10)); const days = new Date(y,m,0).getDate();
+      const all = await fetchStudents(); const attendanceData = await fetchAttendanceByMonth(ym);
+      const byCourse = all.reduce((acc,s)=>{ (acc[s.course]=acc[s.course]||[]).push(s); return acc },{});
+      let html = `<div class="printable-area"><h2 style="text-align:center">${new Date(y,m-1,1).toLocaleString('es-ES',{month:'long',year:'numeric'})}</h2>`;
+      Object.keys(byCourse).sort().forEach(course=>{
+        const students = byCourse[course].sort((a,b)=>a.name.localeCompare(b.name));
+        html += `<div class="report-wrapper" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center"><strong>${course}</strong><small>Días: ${days} — ${students.length} alumnos</small></div><div style="overflow:auto;margin-top:8px"><table class="report-table"><thead><tr><th>Alumno</th>`;
+        for(let d=1; d<=days; d++) html += `<th>${d}</th>`; html += `<th>Total</th></tr></thead><tbody>`;
+        students.forEach(st=>{
+          const attended = attendanceData.get(st.id) || new Set();
+          html += `<tr><td style="text-align:left;padding-left:6px">${st.name}</td>`;
+          for(let d=1; d<=days; d++) html += attended.has(d) ? `<td><span class="attendance-mark">✓</span></td>` : `<td></td>`;
+          html += `<td class="total">${attended.size}</td></tr>`;
         });
-        if (added) await batch.commit();
-        return added;
-      }
-      async function updateStudentDoc(id, updates) {
-        try { await db.collection('students').doc(id).update(updates); return true; }
-        catch(e){ console.error(e); return false; }
-      }
-      async function deleteAllStudents() { const snap = await db.collection('students').get(); const batch = db.batch(); snap.docs.forEach(d => batch.delete(d.ref)); await batch.commit(); }
+        html += `</tbody></table></div></div>`;
+      });
+      html += `</div>`;
+      dom.monthlyReportContent.innerHTML = html;
+    }
 
-      async function logAttendance(studentId, dateStr, state) {
-        if (studentId && studentId.startsWith && studentId.startsWith('sporadic_')) return;
-        const docRef = db.collection('attendance').doc(`${studentId}_${dateStr}`);
-        await docRef.set({ studentId, date: dateStr, state });
-      }
-      async function logBatchAttendance(ids, dateStr, state) {
-        const valid = ids.filter(id => !(id && id.startsWith && id.startsWith('sporadic_')));
-        if (!valid.length) return;
-        const batch = db.batch(); const col = db.collection('attendance');
-        valid.forEach(id => batch.set(col.doc(`${id}_${dateStr}`), { studentId: id, date: dateStr, state }));
-        await batch.commit();
-      }
-      async function fetchAttendanceByDate(dateStr) { const snap = await db.collection('attendance').where('date','==',dateStr).get(); const out = {}; snap.docs.forEach(d=>out[d.data().studentId]=d.data().state); return out; }
-      async function fetchAttendanceByMonth(ym) { const start=ym+'-01', end=ym+'-31'; const snap = await db.collection('attendance').where('date','>=',start).where('date','<=',end).get(); const map = new Map(); snap.docs.forEach(d=>{ const r=d.data(); if(!map.has(r.studentId)) map.set(r.studentId,new Set()); const day = parseInt(r.date.slice(-2).replace(/^0+/,''),10); if(!isNaN(day)) map.get(r.studentId).add(day);}); return map; }
+    /* ------- Event wiring ------- */
+    // login/logout
+    dom.loginAdminBtn.addEventListener('click', ()=> auth.signInWithPopup(googleProvider).catch(e=>{ console.error(e); alert('Error login') }));
+    dom.logoutBtn.addEventListener('click', ()=> auth.signOut().then(()=> setUIForRole(false)));
 
-      /* ----- UI helpers ----- */
-      function updateSummary() {
-        const vals = Object.values(appState.attendance || {});
-        dom.summary.diners.textContent = vals.length;
-        dom.summary.absent.textContent = vals.filter(v=>'absent'===v).length;
-        dom.summary.present.textContent = vals.filter(v=>'present'===v).length;
-        dom.summary.pending.textContent = vals.filter(v=>'pending'===v).length;
-      }
+    // CSV import
+    dom.importCsvBtn && dom.importCsvBtn.addEventListener('click', ()=> dom.csvFileInput.click());
+    dom.csvFileInput.addEventListener('change', e => handleCsvImport(e.target.files[0]));
+    dom.exportCsvBtn.addEventListener('click', ()=> { const d = dom.exportDateInput.value || new Date().toISOString().slice(0,10); exportFullDayCsv(d) });
 
-      function createStudentElement(s) {
-        const div = document.createElement('div');
-        const stateClass = appState.attendance && appState.attendance[s.id]
-          ? appState.attendance[s.id]
-          : 'pending';
+    // manage modal
+    dom.manageStudentsBtn && dom.manageStudentsBtn.addEventListener('click', openManageStudentsModal);
+    dom.closeManageModal.addEventListener('click', ()=> dom.manageModal.classList.remove('active'));
 
-        div.className = `student-item ${stateClass}${s.allergic ? ' allergic' : ''}`;
-        div.dataset.studentId = s.id;
-        div.dataset.studentName = s.name;
+    // shift buttons (professor)
+    document.querySelectorAll('#shift-buttons button').forEach(btn => btn.addEventListener('click', ()=> renderCourses(btn.dataset.shift)));
 
-        div.innerHTML = `
-          <span class="name ${s.allergic ? 'allergic' : ''}">${s.name}</span>
-          <div class="flex items-center gap-2">
-            <button class="mark-absent-btn" title="Marcar ausente">&times;</button>
-          </div>
-        `;
-        return div.outerHTML;
-      }
+    dom.finalizeShiftBtn.addEventListener('click', finalizeShift);
+    dom.backToShiftsBtn.addEventListener('click', ()=> { document.getElementById('shift-selection').style.display='block'; document.getElementById('dashboard').classList.add('hidden'); });
 
-      /* ----- Render courses ----- */
-      async function renderCourses(shift) {
-        appState.currentShift = shift;
-        document.getElementById('shift-selection').style.display = 'none';
-        document.getElementById('dashboard').classList.remove('hidden');
-        dom.coursesContainer.innerHTML = '<p class="small-muted">Cargando alumnos...</p>';
+    // admin actions in-panel
+    dom.showMonthlyBtn && dom.showMonthlyBtn.addEventListener('click', async ()=> { const now=new Date(); const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; dom.reportMonthInput.value = ym; dom.monthlyReportModal.classList.add('active'); await generateMonthlyReport(ym) });
+    dom.printReportBtn.addEventListener('click', async ()=>{
+      let ym = dom.reportMonthInput.value; if(!ym){ const now=new Date(); ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; dom.reportMonthInput.value = ym }
+      await generateMonthlyReport(ym);
+      const content = dom.monthlyReportContent.innerHTML;
+      const iframe = document.createElement('iframe'); iframe.style.position='fixed'; iframe.style.right='0'; iframe.style.bottom='0'; iframe.style.width='0'; iframe.style.height='0'; iframe.style.border='0';
+      document.body.appendChild(iframe);
+      const doc = iframe.contentWindow.document;
+      const successColor = getComputedStyle(document.documentElement).getPropertyValue('--success') || '#004623';
+      const styles = `<style>body{font-family:Inter,Arial;padding:18px;color:#111} .attendance-mark{display:inline-block;width:20px;height:20px;background:${successColor};color:#fff;border-radius:50%;text-align:center;line-height:20px;font-weight:700}</style>`;
+      doc.open(); doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Imprimir informe ${ym}</title>${styles}</head><body>${content}</body></html>`); doc.close();
+      setTimeout(()=>{ try{ iframe.contentWindow.focus(); iframe.contentWindow.print(); } catch(e){ console.error(e); alert('Error al imprimir: '+e.message)} setTimeout(()=>{ try{ document.body.removeChild(iframe) } catch(e){} },800) },300);
+    });
 
-        appState.students = await fetchStudents();
-        const today = new Date().toISOString().slice(0,10);
-        const attendance = await fetchAttendanceByDate(today);
-        appState.attendance = {};
-        appState.students.forEach(s => appState.attendance[s.id] = attendance[s.id] || 'pending');
+    // History
+    dom.showHistoryBtn && dom.showHistoryBtn.addEventListener('click', showHistoryModal);
+    dom.closeHistoryBtn = document.getElementById('close-history-btn');
+    dom.closeHistoryBtn && dom.closeHistoryBtn.addEventListener('click', ()=> dom.historyModal.classList.remove('active'));
+    dom.historyStudentList.addEventListener('click', ev => { const row = ev.target.closest('.history-student'); if(!row) return; showStudentHistory(row.dataset.id,row.dataset.name) });
+    dom.historySearch.addEventListener('input', (e)=>{ const q=e.target.value.toLowerCase(); document.querySelectorAll('#history-student-list .history-student').forEach(el=> el.style.display = (el.dataset.name.toLowerCase().includes(q)?'':'none')) });
 
-        dom.coursesContainer.innerHTML = '';
+    // Delegation inside courses (picker / attendance)
+    document.getElementById('courses-container').addEventListener('click', async (e)=>{
+      const openPickerBtn = e.target.closest('.open-sporadic-picker');
+      if(openPickerBtn){ openSporadicPickerModal(openPickerBtn.dataset.course); return }
+      const studentDiv = e.target.closest('.student-item');
+      if(!studentDiv) return;
+      const studentId = studentDiv.dataset.studentId || studentDiv.id;
+      const isX = e.target.closest('.mark-absent-btn');
+      const current = appState.attendance[studentId] || 'pending';
+      const newState = isX ? (current === 'absent' ? 'pending' : 'absent') : (current === 'present' ? 'pending' : 'present');
+      appState.attendance[studentId] = newState;
+      studentDiv.classList.remove('pending','present','absent'); studentDiv.classList.add(newState);
+      updateSummary();
+      try{ await logAttendance(studentId,new Date().toISOString().slice(0,10),newState) } catch(err){ console.error('logAttendance error', err) }
+    });
 
-        // show only students assigned to this shift OR those tempSporadic added for *this* shift today
-        const tempSet = appState.tempSporadicByShift[shift] || new Set();
-        const assigned = appState.students.filter(s => (s.shift && s.shift === shift) || tempSet.has(s.id));
-        const courses = [...new Set(assigned.map(s => s.course))].sort();
+    // CSV import top-level alias
+    document.getElementById('import-csv-btn')?.addEventListener('click', ()=> dom.csvFileInput.click());
 
-        if (!courses.length) {
-          dom.coursesContainer.innerHTML = '<p class="small-muted">No hay alumnos en este turno.</p>';
-        } else {
-          courses.forEach(course => {
-            const card = document.createElement('div'); card.className = 'course-card';
-            const studentsInCourse = assigned.filter(s => s.course === course).sort((a,b)=>a.name.localeCompare(b.name));
-            const listHtml = studentsInCourse.map(createStudentElement).join('');
-            const pickerBtn = `<div style="margin-top:8px"><button class="open-sporadic-picker primary" data-course="${course}">+ Añadir esporádico (picker)</button></div>`;
-            card.innerHTML = `<div><h3>${course}</h3><div style="display:flex;flex-direction:column;gap:8px" data-course-list="${course}">${listHtml}</div></div>${pickerBtn}`;
-            dom.coursesContainer.appendChild(card);
-          });
-        }
-        updateSummary();
-      }
+    // Manage Students modal content builder (with only 3 controls: 1º turno, 2º turno, alergia)
+    async function openManageStudentsModal(){
+      dom.manageModal.classList.add('active');
+      dom.manageContent.innerHTML = '<p style="color:var(--muted)">Cargando...</p>';
+      const all = await fetchStudents(); const byCourse = all.reduce((acc,s)=>{ (acc[s.course]=acc[s.course]||[]).push(s); return acc },{});
+      let html = '';
+      Object.keys(byCourse).sort().forEach(course=>{
+        html += `<h4 style="margin-top:12px;color:var(--brand)">${course}</h4>`;
+        byCourse[course].sort((a,b)=>a.name.localeCompare(b.name)).forEach(s=>{
+          const checkedPrimer = s.shift === 'Primer Turno (Infantil)' ? 'checked' : '';
+          const checkedSegundo = s.shift === 'Segundo Turno (Primaria)' ? 'checked' : '';
+          const isAllergic = s.allergic ? 'checked' : '';
+          html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px;border-bottom:1px solid var(--card-border);align-items:center;min-width:0">
+                    <div style="min-width:0"><strong>${s.name}</strong></div>
+                    <div style="display:flex;gap:8px;align-items:center">
+                      <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="primer" ${checkedPrimer}> 1º turno</label>
+                      <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="segundo" ${checkedSegundo}> 2º turno</label>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center">
+                      <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-update-control" data-id="${s.id}" data-prop="allergic" ${isAllergic}> Alergia</label>
+                    </div>
+                   </div>`;
+        });
+      });
+      dom.manageContent.innerHTML = html;
 
-      /* ----- Sporadic picker ----- */
-      let currentPickerCourse = null;
-      function openSporadicPickerModal(course) {
-        currentPickerCourse = course;
-        dom.sporadicPickerTitle.textContent = `Seleccionar esporádicos — ${course}`;
-
-        // candidates:
-        // - alumnos que pertenecen a este curso y no tienen turno asignado
-        // That means an unassigned alumno in that course will appear in the picker for both shifts.
-        const candidates = appState.students.filter(s => s.course === course && (!s.shift || s.shift.trim()==='') && !(s.id && s.id.startsWith && s.id.startsWith('sporadic_')));
-        const container = dom.sporadicPickerContent;
-        if (!candidates.length) {
-          container.innerHTML = `<p class="small-muted">No hay alumnos sin turno asignado en ${course}.</p>`;
-        } else {
-          let html = `<div style="display:flex;flex-direction:column;gap:8px">`;
-          candidates.sort((a,b)=>a.name.localeCompare(b.name)).forEach(s => {
-            html += `<label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--card-border);border-radius:8px;background:#fff;min-width:0">
-                       <input type="checkbox" class="sporadic-candidate" data-id="${s.id}">
-                       <div style="flex:1;min-width:0"><strong>${s.name}</strong><div class="small-muted">${s.course}</div></div>
-                     </label>`;
-          });
-          html += `</div>`;
-          container.innerHTML = html;
-        }
-        dom.sporadicPickerModal.classList.add('active');
-      }
-      dom.closeSporadicPicker.addEventListener('click', () => dom.sporadicPickerModal.classList.remove('active'));
-      dom.confirmSporadicAdd.addEventListener('click', async () => {
-        const checked = Array.from(dom.sporadicPickerContent.querySelectorAll('.sporadic-candidate:checked')).map(cb => cb.dataset.id);
-        if (!checked.length) { alert('Selecciona al menos un alumno.'); return; }
-        const today = new Date().toISOString().slice(0,10);
-
-        // ensure set exists for current shift
-        const shift = appState.currentShift || 'unspecified';
-        if (!appState.tempSporadicByShift[shift]) appState.tempSporadicByShift[shift] = new Set();
-
-        for (const id of checked) {
-          try {
-            // register attendance for today as present
-            await logAttendance(id, today, 'present');
-            appState.tempSporadicByShift[shift].add(id); // only for this shift
-            appState.attendance[id] = 'present';
-          } catch (e) { console.error('error al añadir esporádico', e); }
-        }
-        if (appState.currentShift) await renderCourses(appState.currentShift);
-        dom.sporadicPickerModal.classList.remove('active');
+      // attach events
+      dom.manageContent.querySelectorAll('.student-shift-checkbox').forEach(cb => {
+        cb.addEventListener('change', async (ev) => {
+          const id = ev.target.dataset.id;
+          const primer = dom.manageContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="primer"]`).checked;
+          const segundo = dom.manageContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="segundo"]`).checked;
+          let newShift = '';
+          if (primer && !segundo) newShift = 'Primer Turno (Infantil)';
+          else if (!primer && segundo) newShift = 'Segundo Turno (Primaria)';
+          else newShift = '';
+          const ok = await updateStudentDoc(id, { shift: newShift });
+          if (ok) { const s = appState.students.find(x=>x.id===id); if (s) s.shift = newShift; document.getElementById('import-status-initial').textContent = 'Guardado'; setTimeout(()=>document.getElementById('import-status-initial').textContent='',1200); }
+        });
       });
 
-      /* ----- CSV import ----- */
-      function handleCsvImport(file) {
-        if (!file) return;
-        dom.importStatusInitial.textContent = 'Procesando archivo...';
-        Papa.parse(file, { header:true, skipEmptyLines:true,
-          complete: async (results) => {
-            try {
-              const fields = (results.meta.fields || []).map(f => (f||'').toLowerCase().trim());
-              if (!fields.includes('nombre') || !fields.includes('curso')) {
-                dom.importStatusInitial.textContent = 'Error: CSV debe tener columnas "nombre" y "curso" (turno opcional).';
-                return;
-              }
-              await deleteAllStudents();
-              const mapped = results.data.map(r => {
-                const rawShift = (r.turno || r.shift || '').toString().trim();
-                let shift = '';
-                if (rawShift) {
-                  if (/primer/i.test(rawShift)) shift = 'Primer Turno (Infantil)';
-                  else if (/segund/i.test(rawShift)) shift = 'Segundo Turno (Primaria)';
-                  else shift = rawShift;
-                }
-                return { name: (r.nombre||'').toString().trim(), course: (r.curso||'').toString().trim(), shift, status: shift ? 'fixed' : 'sporadic', allergic: false };
-              });
-              const added = await addStudentBatch(mapped);
-              dom.importStatusInitial.textContent = `Importación completa ✅ (${added})`;
-              appState.students = await fetchStudents();
-              if (appState.currentShift) await renderCourses(appState.currentShift);
-            } catch (err) {
-              console.error('CSV import error', err);
-              dom.importStatusInitial.textContent = 'Error al procesar CSV. Mira la consola.';
-            } finally { setTimeout(()=>dom.importStatusInitial.textContent='',5000); }
-          },
-          error: (err) => { console.error(err); dom.importStatusInitial.textContent = 'Error leyendo CSV'; setTimeout(()=>dom.importStatusInitial.textContent='',3000); }
+      dom.manageContent.querySelectorAll('.student-update-control[data-prop="allergic"]').forEach(cb => {
+        cb.addEventListener('change', async (ev) => {
+          const id = ev.target.dataset.id; const val = !!ev.target.checked; const ok = await updateStudentDoc(id,{ allergic: val });
+          if (ok) { const s = appState.students.find(x=>x.id===id); if (s) s.allergic = val; document.getElementById('import-status-initial').textContent = 'Guardado'; setTimeout(()=>document.getElementById('import-status-initial').textContent='',1200); }
         });
-      }
-
-      /* ----- Export CSV ----- */
-      async function exportFullDayCsv(dateStr) {
-        const all = await fetchStudents();
-        const attendance = await fetchAttendanceByDate(dateStr);
-        const rows = all.map(s => ({ Fecha: dateStr, Turno: s.shift || '(Esporádico)', Nombre: s.name, Curso: s.course, Estado: attendance[s.id] || 'pending' }));
-        rows.sort((a,b) => (a.Turno||'').localeCompare(b.Turno||'') || a.Curso.localeCompare(b.Curso) || a.Nombre.localeCompare(b.Nombre));
-        const csv = Papa.unparse(rows);
-        const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `asistencia_${dateStr}.csv`; a.click(); URL.revokeObjectURL(url);
-      }
-
-      /* ----- Finalizar turno ----- */
-      async function finalizeShift() {
-        if (!confirm('¿Seguro que quieres finalizar el turno? Los pendientes pasarán a ausentes.')) return;
-        const today = new Date().toISOString().slice(0,10);
-        const toMark = [];
-        for (const id in appState.attendance) {
-          if (appState.attendance[id] === 'pending') {
-            appState.attendance[id] = 'absent';
-            toMark.push(id);
-            // actualiza nodos mostrados
-            document.querySelectorAll('.student-item').forEach(el => {
-              if (el.dataset && el.dataset.studentId === id) {
-                el.classList.remove('pending','present','absent');
-                el.classList.add('absent');
-              }
-            });
-          }
-        }
-        await logBatchAttendance(toMark, today, 'absent');
-        updateSummary();
-      }
-
-      /* ----- History ----- */
-      async function showHistoryModal() {
-        document.getElementById('history-modal').classList.add('active');
-        dom.historyStudentList.innerHTML = '<p class="small-muted">Cargando...</p>';
-        const all = await fetchStudents(); all.sort((a,b)=>a.name.localeCompare(b.name));
-        if (!all.length) dom.historyStudentList.innerHTML = '<p class="small-muted">No hay alumnos registrados.</p>';
-        else dom.historyStudentList.innerHTML = all.map(s => `<div class="history-student p-2" data-id="${s.id}" data-name="${s.name}" style="border-bottom:1px solid var(--card-border);padding:8px;cursor:pointer;min-width:0"><strong>${s.name}</strong><div class="small-muted">${s.shift || '(Esporádico)'} • ${s.course}</div></div>`).join('');
-      }
-      async function showStudentHistory(id, name) {
-        dom.historyStudentName.textContent = `Historial de: ${name}`;
-        dom.historyDatesList.innerHTML = '<p class="small-muted">Buscando...</p>';
-        const snap = await db.collection('attendance').where('studentId','==',id).get();
-        const dates = snap.docs.map(d=>d.data().date).sort().reverse();
-        dom.historyDatesList.innerHTML = dates.length ? dates.map(d=>`<div style="padding:6px;border-bottom:1px solid var(--card-border)">${new Date(d+'T00:00:00').toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>`).join('') : '<p class="small-muted">Sin registros.</p>';
-      }
-
-      /* ----- Monthly report + print ----- */
-      async function generateMonthlyReport(ym) {
-        dom.monthlyReportContent.innerHTML = '<p class="small-muted">Generando informe...</p>';
-        if (!ym) { dom.monthlyReportContent.innerHTML = '<p style="color:#b45309">Selecciona un mes.</p>'; return; }
-        const [y,m] = ym.split('-').map(v=>parseInt(v,10)); const days = new Date(y,m,0).getDate();
-        const all = await fetchStudents(); const attendanceData = await fetchAttendanceByMonth(ym);
-        const byCourse = all.reduce((acc,s)=>{ (acc[s.course]=acc[s.course]||[]).push(s); return acc; },{});
-        let html = `<div class="printable-area"><h2 style="text-align:center">${new Date(y,m-1,1).toLocaleString('es-ES',{month:'long',year:'numeric'})}</h2>`;
-        Object.keys(byCourse).sort().forEach(course=>{
-          const students = byCourse[course].sort((a,b)=>a.name.localeCompare(b.name));
-          html += `<div class="report-wrapper" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center"><strong>${course}</strong><small>Días: ${days} — ${students.length} alumnos</small></div><div style="overflow:auto;margin-top:8px"><table class="report-table"><thead><tr><th>Alumno</th>`;
-          for(let d=1; d<=days; d++) html += `<th>${d}</th>`; html += `<th>Total</th></tr></thead><tbody>`;
-          students.forEach(st=>{
-            const attended = attendanceData.get(st.id) || new Set();
-            html += `<tr><td style="text-align:left;padding-left:6px">${st.name}</td>`;
-            for (let d=1; d<=days; d++) html += attended.has(d) ? `<td><span class="attendance-mark">✓</span></td>` : `<td></td>`;
-            html += `<td class="total">${attended.size}</td></tr>`;
-          });
-          html += `</tbody></table></div></div>`;
-        });
-        html += `</div>`;
-        dom.monthlyReportContent.innerHTML = html;
-      }
-
-      dom.printReportBtn.addEventListener('click', async () => {
-        let ym = dom.reportMonthInput.value;
-        if (!ym) { const now = new Date(); ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; dom.reportMonthInput.value = ym; }
-        await generateMonthlyReport(ym);
-        const content = dom.monthly-report-content?.innerHTML || dom.monthlyReportContent.innerHTML;
-        const iframe = document.createElement('iframe'); iframe.style.position='fixed'; iframe.style.right='0'; iframe.style.bottom='0'; iframe.style.width='0'; iframe.style.height='0'; iframe.style.border='0';
-        document.body.appendChild(iframe);
-        const doc = iframe.contentWindow.document;
-        const successColor = getComputedStyle(document.documentElement).getPropertyValue('--success') || '#004623';
-        const styles = `<style>body{font-family:Inter,Arial;padding:18px;color:#111} .attendance-mark{display:inline-block;width:20px;height:20px;background:${successColor};color:#fff;border-radius:50%;text-align:center;line-height:20px;font-weight:700}</style>`;
-        doc.open(); doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Imprimir informe ${ym}</title>${styles}</head><body>${content}</body></html>`); doc.close();
-        setTimeout(()=>{ try{ iframe.contentWindow.focus(); iframe.contentWindow.print(); } catch(e){ console.error(e); alert('Error al imprimir: '+e.message);} setTimeout(()=>{ try{ document.body.removeChild(iframe); } catch(e){} },800); },300);
       });
+    }
 
-      /* ----- Manage students modal (admin) ----- */
-      async function openManageStudentsModal() {
-        dom.manageStudentsModal.classList.add('active');
-        dom.manageStudentsContent.innerHTML = '<p class="small-muted">Cargando...</p>';
-        const all = await fetchStudents(); const byCourse = all.reduce((acc,s)=>{ (acc[s.course]=acc[s.course]||[]).push(s); return acc; },{});
-        let html = '';
-        Object.keys(byCourse).sort().forEach(course=>{
-          html += `<h4 style="margin-top:12px;color:var(--brand)">${course}</h4>`;
-          byCourse[course].sort((a,b)=>a.name.localeCompare(b.name)).forEach(s=>{
-            const checkedPrimer = s.shift === 'Primer Turno (Infantil)' ? 'checked' : '';
-            const checkedSegundo = s.shift === 'Segundo Turno (Primaria)' ? 'checked' : '';
-            const isAllergic = s.allergic ? 'checked' : '';
-            // ONLY 3 controls: 1º turno, 2º turno, alergia
-            html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px;border-bottom:1px solid var(--card-border);align-items:center;min-width:0">
-                      <div style="min-width:0"><strong>${s.name}</strong></div>
-                      <div style="display:flex;gap:8px;align-items:center">
-                        <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="primer" ${checkedPrimer}> 1º turno</label>
-                        <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="segundo" ${checkedSegundo}> 2º turno</label>
-                      </div>
-                      <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center">
-                        <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-update-control" data-id="${s.id}" data-prop="allergic" ${isAllergic}> Alergia</label>
-                      </div>
-                     </div>`;
-          });
-        });
-        dom.manageStudentsContent.innerHTML = html;
-
-        // event listeners
-        dom.manageStudentsContent.querySelectorAll('.student-shift-checkbox').forEach(cb => {
-          cb.addEventListener('change', async (ev) => {
-            const id = ev.target.dataset.id;
-            const primer = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="primer"]`).checked;
-            const segundo = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="segundo"]`).checked;
-            let newShift = '';
-            if (primer && !segundo) newShift = 'Primer Turno (Infantil)';
-            else if (!primer && segundo) newShift = 'Segundo Turno (Primaria)';
-            else newShift = '';
-            const ok = await updateStudentDoc(id, { shift: newShift });
-            if (ok) { const s = appState.students.find(x=>x.id===id); if (s) { s.shift = newShift; } dom.importStatusInitial.textContent = 'Guardado'; setTimeout(()=>dom.importStatusInitial.textContent='',1200); }
-          });
-        });
-
-        dom.manageStudentsContent.querySelectorAll('.student-update-control[data-prop="allergic"]').forEach(cb => {
-          cb.addEventListener('change', async (ev) => {
-            const id = ev.target.dataset.id; const val = !!ev.target.checked; const ok = await updateStudentDoc(id,{ allergic: val });
-            if (ok) { const s = appState.students.find(x=>x.id===id); if (s) s.allergic = val; dom.importStatusInitial.textContent = 'Guardado'; setTimeout(()=>dom.importStatusInitial.textContent='',1200); }
-          });
-        });
-
-      }
-
-      dom.closeManageModal.addEventListener('click', ()=> dom.manageStudentsModal.classList.remove('active'));
-
-      /* ----- Delegation inside courses (picker / attendance) ----- */
-      dom.coursesContainer.addEventListener('click', async (e) => {
-        const openPickerBtn = e.target.closest('.open-sporadic-picker');
-        if (openPickerBtn) { openSporadicPickerModal(openPickerBtn.dataset.course); return; }
-
-        const studentDiv = e.target.closest('.student-item');
-        if (!studentDiv) return;
-        const studentId = studentDiv.dataset.studentId || studentDiv.id;
-        const isX = e.target.closest('.mark-absent-btn');
-        const current = appState.attendance[studentId] || 'pending';
-        const newState = isX ? (current === 'absent' ? 'pending' : 'absent') : (current === 'present' ? 'pending' : 'present');
-        appState.attendance[studentId] = newState;
-        studentDiv.classList.remove('pending','present','absent'); studentDiv.classList.add(newState);
-        updateSummary();
-        try { await logAttendance(studentId, new Date().toISOString().slice(0,10), newState); } catch(err){ console.error('logAttendance error', err); }
-      });
-
-      /* ----- Routing & UI visibility (default to profesor) ----- */
-      function setUIForRole(isAdmin) {
-        if (isAdmin) {
-          dom.roleDisplay.textContent = 'Admin: ' + (auth.currentUser ? (auth.currentUser.displayName || 'Admin') : 'Admin');
-          document.querySelectorAll('.admin-only').forEach(el=>el.style.display='block');
-          dom.logoutBtn.style.display = 'inline-flex';
-        } else {
-          dom.roleDisplay.textContent = 'Modo: Profesor / Cuidador';
-          document.querySelectorAll('.admin-only').forEach(el=>el.style.display='none');
-          dom.logoutBtn.style.display = 'none';
-        }
-        // always show shift-selection to start (profesor-side entry)
+    function setUIForRole(isAdmin){
+      // show/hide admin-only blocks
+      document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin ? 'block' : 'none');
+      dom.adminActionsContainer && (dom.adminActionsContainer.classList.toggle('hidden', !isAdmin));
+      dom.loginAdminBtn && (dom.loginAdminBtn.style.display = isAdmin ? 'none' : 'inline-block'); // hide login when admin
+      dom.logoutBtn.classList.toggle('hidden', !isAdmin);
+      // professor: only show shift-selection
+      if(!isAdmin){
         document.getElementById('dashboard').classList.add('hidden');
         document.getElementById('shift-selection').style.display = 'block';
+      } else {
+        // when admin, show admin login view actions (if logged) and hide shift-selection by default
+        document.getElementById('shift-selection').style.display = 'block';
       }
+    }
 
-      auth.onAuthStateChanged(user => {
-        const isAdmin = user && !user.isAnonymous;
-        setUIForRole(isAdmin);
-      });
-
-      /* ----- Controls wiring ----- */
-      dom.loginAdminBtn.addEventListener('click', ()=> auth.signInWithPopup(googleProvider).catch(e=>{ console.error(e); alert('Error login'); }));
-      dom.logoutBtn.addEventListener('click', ()=> auth.signOut().then(()=>{ setUIForRole(false); }));
-      dom.importCsvBtnInitial.addEventListener('click', ()=> dom.csvFileInput.click());
-      if (dom.importCsvBtn) dom.importCsvBtn.addEventListener('click', ()=> dom.csvFileInput.click());
-      dom.csvFileInput.addEventListener('change', e => handleCsvImport(e.target.files[0]));
-      dom.manageStudentsBtn.addEventListener('click', openManageStudentsModal);
-      dom.wipeDbBtn.addEventListener('click', async ()=> { if (!confirm('¿Borrar todos los alumnos?')) return; await deleteAllStudents(); appState.students = []; if (appState.currentShift) renderCourses(appState.currentShift); });
-      dom.exportCsvBtn.addEventListener('click', ()=> { const d = dom.exportDateInput.value || new Date().toISOString().slice(0,10); exportFullDayCsv(d); });
-
-      document.querySelectorAll('#shift-buttons button').forEach(btn => btn.addEventListener('click', ()=> renderCourses(btn.dataset.shift)));
-      dom.finalizeShiftBtn.addEventListener('click', finalizeShift);
-      dom.backToShiftsBtn.addEventListener('click', ()=> { document.getElementById('shift-selection').style.display='block'; document.getElementById('dashboard').classList.add('hidden'); });
-
-      dom.showMonthlyBtn.addEventListener('click', async () => {
-        const now = new Date(); const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-        dom.reportMonthInput.value = ym; dom.monthlyReportModal.classList.add('active'); await generateMonthlyReport(ym);
-      });
-
-      document.getElementById('show-history-btn')?.addEventListener('click', showHistoryModal);
-      document.getElementById('close-history-btn')?.addEventListener('click', ()=> document.getElementById('history-modal').classList.remove('active'));
-      dom.historyStudentList.addEventListener('click', ev => { const row = ev.target.closest('.history-student'); if (!row) return; showStudentHistory(row.dataset.id, row.dataset.name); });
-      dom.historySearch.addEventListener('input', (e)=>{ const q=e.target.value.toLowerCase(); document.querySelectorAll('#history-student-list .history-student').forEach(el=> el.style.display = (el.dataset.name.toLowerCase().includes(q)?'':'none')); });
-
-      document.getElementById('close-report-btn')?.addEventListener('click', ()=> dom.monthlyReportModal.classList.remove('active'));
-
-      // safety logs
-      window.addEventListener('error', ev => console.error('GLOBAL ERROR:', ev.message));
-      window.addEventListener('unhandledrejection', ev => console.error('UNHANDLED REJECTION:', ev.reason));
-
-      // initial UI
-      setUIForRole(false);
-      document.getElementById('export-date-input').value = new Date().toISOString().slice(0,10);
-
-      // Hash handling: permitir /#admin
-      function handleHash() {
-        const h = (location.hash || '').replace('#','');
-        if (h === 'admin') {
-          dom.adminLoginView.classList.remove('hidden');
-          dom.adminLoginView.style.display = 'block';
-          document.getElementById('shift-selection').style.display = 'none';
-          document.getElementById('dashboard').classList.add('hidden');
-          window.scrollTo(0,0);
-          try { dom.loginAdminBtn.focus(); } catch(e){}
-        } else {
-          if (!auth.currentUser) dom.adminLoginView.classList.add('hidden');
-        }
+    auth.onAuthStateChanged(user => {
+      const isAdmin = !!(user && !user.isAnonymous);
+      setUIForRole(isAdmin);
+      // if admin, show admin-actions block (now user is logged in)
+      if(isAdmin){
+        dom.adminActions && dom.adminActions.classList.remove('hidden');
+        dom.adminLoginView.classList.remove('hidden');
+        dom.adminLoginView.querySelector('#login-admin-btn')?.style.display = 'none';
+        // show admin action panel
+        document.getElementById('admin-actions')?.classList.remove('hidden');
+      } else {
+        // clean admin UI
+        document.getElementById('admin-actions')?.classList.add('hidden');
+        dom.adminLoginView.classList.remove('hidden');
+        dom.adminLoginView.querySelector('#login-admin-btn')?.style.display = 'inline-block';
       }
-      window.addEventListener('hashchange', handleHash);
-      handleHash();
+    });
 
-      // service worker (no-fatal)
-      if ('serviceWorker' in navigator) { navigator.serviceWorker.register && navigator.serviceWorker.register('/sw.js').then(()=>console.log('sw registered')).catch(()=>{}); }
+    // Open manage modal
+    dom.manageStudentsBtn && dom.manageStudentsBtn.addEventListener('click', openManageStudentsModal);
 
-    }); // DOMContentLoaded
+    // show history modal wiring
+    dom.showHistoryBtn && dom.showHistoryBtn.addEventListener('click', showHistoryModal);
+
+    // wire import button in admin panel (already wired above)
+    // wire shift buttons are already wired
+
+    // small helpers
+    window.addEventListener('error', ev=>console.error('GLOBAL ERROR:',ev.message));
+    window.addEventListener('unhandledrejection', ev=>console.error('UNHANDLED REJECTION:', ev.reason));
+
+    // initial state
+    setUIForRole(false);
+    document.getElementById('export-date-input').value = new Date().toISOString().slice(0,10);
+
+    // hash / admin shortcut: if #admin show admin-login-view
+    function handleHash(){
+      const h = (location.hash||'').replace('#','');
+      if(h==='admin'){ document.getElementById('admin-login-view').classList.remove('hidden'); document.getElementById('shift-selection').style.display='none'; document.getElementById('dashboard').classList.add('hidden'); window.scrollTo(0,0); }
+    }
+    window.addEventListener('hashchange', handleHash);
+    handleHash();
+
+    // Attach openManageStudentsModal to manage button if exists
+    if(document.getElementById('manage-students-btn')){
+      document.getElementById('manage-students-btn').addEventListener('click', openManageStudentsModal);
+    }
+
+  }); // DOMContentLoaded
   </script>
 </body>
 </html>
