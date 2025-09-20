@@ -473,11 +473,15 @@ async function fetchAttendanceByDate(dateStr) {
   appState.attendance = {};
   appState.students.forEach(s => appState.attendance[s.id] = attendanceStates[s.id] || 'pending');
 
-  // reconstruir tempSporadic por turno a partir de attendanceRecords (persistidos con sporadic:true y shift)
-  appState.tempSporadic['Primer Turno (Infantil)'] = new Set();
-  appState.tempSporadic['Segundo Turno (Primaria)'] = new Set();
+  // reconstruir tempSporadic por turno a partir de attendanceRecords (solo si rec.sporadic === true)
+  if (!appState.tempSporadic) appState.tempSporadic = {};
+  appState.tempSporadic['Primer Turno (Infantil)'] = appState.tempSporadic['Primer Turno (Infantil)'] || new Set();
+  appState.tempSporadic['Segundo Turno (Primaria)'] = appState.tempSporadic['Segundo Turno (Primaria)'] || new Set();
+  // limpiamos y reconstruimos
+  appState.tempSporadic['Primer Turno (Infantil)'].clear();
+  appState.tempSporadic['Segundo Turno (Primaria)'].clear();
   attendanceRecords.forEach(rec => {
-    if (rec.sporadic && rec.shift) {
+    if (rec && rec.sporadic && rec.shift) {
       if (rec.shift === 'Primer Turno (Infantil)') appState.tempSporadic['Primer Turno (Infantil)'].add(rec.studentId);
       if (rec.shift === 'Segundo Turno (Primaria)') appState.tempSporadic['Segundo Turno (Primaria)'].add(rec.studentId);
     }
@@ -485,11 +489,12 @@ async function fetchAttendanceByDate(dateStr) {
 
   dom.coursesContainer.innerHTML = '';
 
-  // Mostrar: (1) alumnos con turno fijo == shift, (2) alumnos SIN turno (aparecen en ambos turnos), (3) esporádicos añadidos para este turno
+  // MOSTRAR SOLO:
+  //  - alumnos con turno fijo == shift
+  //  - alumnos añadidos como esporádicos en ESTE turno (persistidos o en memoria)
   const assigned = appState.students.filter(s =>
-    (s.shift && s.shift === shift) ||      // turno fijo
-    (!s.shift || s.shift.trim() === '') || // sin turno -> aparece en ambos
-    (appState.tempSporadic[shift] && appState.tempSporadic[shift].has(s.id)) // esporádico persistido en este turno
+    (s.shift && s.shift === shift) ||
+    (appState.tempSporadic[shift] && appState.tempSporadic[shift].has(s.id))
   );
 
   const courses = [...new Set(assigned.map(s => s.course))].sort();
@@ -510,30 +515,38 @@ async function fetchAttendanceByDate(dateStr) {
 }
 
 
+
       /* ----- Sporadic picker ----- */
       let currentPickerCourse = null;
-      function openSporadicPickerModal(course) {
-        currentPickerCourse = course;
-        dom.sporadicPickerTitle.textContent = `Seleccionar esporádicos — ${course}`;
-        // candidatos: alumnos del curso sin turno asignado
-        const candidates = appState.students.filter(s => s.course === course && (!s.shift || s.shift.trim()==='') && !(s.id && s.id.startsWith && s.id.startsWith('sporadic_')));
-        const container = dom.sporadicPickerContent;
-        if (!candidates.length) {
-          container.innerHTML = `<p class="small-muted">No hay alumnos sin turno asignado en ${course}.</p>`;
-        } else {
-          let html = `<div style="display:flex;flex-direction:column;gap:8px">`;
-          candidates.sort((a,b)=>a.name.localeCompare(b.name)).forEach(s => {
-            html += `<label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--card-border);border-radius:8px;background:#fff">
-                       <input type="checkbox" class="sporadic-candidate" data-id="${s.id}" value="${s.id}">
-                       <div style="flex:1"><strong>${s.name}</strong><div class="small-muted">${s.course}</div></div>
-                     </label>`;
-          });
-          html += `</div>`;
-          container.innerHTML = html;
-        }
-        dom.sporadicPickerModal.classList.add('active');
-      }
-      dom.closeSporadicPicker.addEventListener('click', () => dom.sporadicPickerModal.classList.remove('active'));
+function openSporadicPickerModal(course) {
+  currentPickerCourse = course;
+  const shift = appState.currentShift;
+  dom.sporadicPickerTitle.textContent = `Seleccionar esporádicos — ${course}`;
+
+  // candidatos: alumnos del curso SIN turno asignado, y que NO estén ya añadidos como esporádicos para ESTE turno
+  const candidates = appState.students.filter(s =>
+    s.course === course &&
+    (!s.shift || s.shift.trim() === '') &&
+    !(appState.tempSporadic[shift] && appState.tempSporadic[shift].has(s.id))
+  );
+
+  const container = dom.sporadicPickerContent;
+  if (!candidates.length) {
+    container.innerHTML = `<p class="small-muted">No hay alumnos sin turno asignado en ${course} o ya han sido añadidos como esporádicos para este turno.</p>`;
+  } else {
+    let html = `<div style="display:flex;flex-direction:column;gap:8px">`;
+    candidates.sort((a,b)=>a.name.localeCompare(b.name)).forEach(s => {
+      html += `<label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--card-border);border-radius:8px;background:#fff">
+                 <input type="checkbox" class="sporadic-candidate" data-id="${s.id}" value="${s.id}">
+                 <div style="flex:1"><strong>${s.name}</strong><div class="small-muted">${s.course}</div></div>
+               </label>`;
+    });
+    html += `</div>`;
+    container.innerHTML = html;
+  }
+  dom.sporadicPickerModal.classList.add('active');
+}
+
 
       // Confirm: persistimos la asistencia con shift y sporadic=true, y añadimos al set del turno actual
       dom.confirmSporadicAdd.addEventListener('click', async () => {
@@ -545,7 +558,7 @@ async function fetchAttendanceByDate(dateStr) {
   if (!appState.tempSporadic[shift]) appState.tempSporadic[shift] = new Set();
   for (const id of checked) {
     try {
-      // guardamos con shift y esporádico=true
+      // Guardar asistencia con shift y esporadic=true para que persista en histórico
       await logAttendance(id, today, 'present', shift, true);
       appState.tempSporadic[shift].add(id);
       appState.attendance[id] = 'present';
@@ -554,6 +567,7 @@ async function fetchAttendanceByDate(dateStr) {
   if (appState.currentShift) await renderCourses(appState.currentShift);
   dom.sporadicPickerModal.classList.remove('active');
 });
+
 
 
       /* ----- CSV import ----- */
