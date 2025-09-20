@@ -331,7 +331,7 @@
         projectId: "comedorvp",
         storageBucket: "comedorvp.firebasestorage.app",
         messagingSenderId: "821870274048",
-        appId: "1:821870274048:web:62b85d28ceace395245ae5"
+        appId: "极速1:821870274048:web:62b85d28ceace395245ae5"
       };
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
@@ -352,7 +352,7 @@
         closeManageModal: document.getElementById('close-manage-modal'),
         sporadicPickerModal: document.getElementById('sporadic-picker-modal'),
         sporadicPickerContent: document.getElementById('sporadic-picker-content'),
-        sporadicPickerTitle: document.getElementById('sporadic-picker-title'),
+        sporadicPickerTitle: document.getElementById('sp极速oradic-picker-title'),
         closeSporadicPicker: document.getElementById('close-sporadic-picker'),
         confirmSporadicAdd: document.getElementById('confirm-sporadic-add'),
         monthlyReportModal: document.getElementById('monthly-report-modal'),
@@ -384,65 +384,110 @@
         const snap = await db.collection('students').get();
         return snap.docs.map(d => ({ id: d.id, ...d.data() }));
       }
+      
       async function addStudentBatch(students) {
-        const batch = db.batch(); const col = db.collection('students'); let added = 0;
+        const batch = db.batch(); 
+        const col = db.collection('students'); 
+        let added = 0;
+        
         students.forEach(s => {
           if (s.name && s.course) {
             const docRef = col.doc();
-            batch.set(docRef, { name: s.name.trim(), course: s.course.trim(), shift: s.shift ? s.shift.trim() : '', status: s.status || (s.shift ? 'fixed' : 'sporadic'), allergic: !!s.allergic });
+            batch.set(docRef, { 
+              name: s.name.trim(), 
+              course: s.course.trim(), 
+              shift: s.shift ? s.shift.trim() : '', 
+              status: s.status || (s.shift ? 'fixed' : 'sporadic'), 
+              allergic: !!s.allergic 
+            });
             added++;
           }
         });
+        
         if (added) await batch.commit();
         return added;
       }
+      
       async function updateStudentDoc(id, updates) {
-        try { await db.collection('students').doc(id).update(updates); return true; }
-        catch(e){ console.error(e); return false; }
+        try { 
+          await db.collection('students').doc(id).update(updates); 
+          return true; 
+        } catch(e){ 
+          console.error('Error updating student:', e); 
+          return false; 
+        }
       }
-      async function deleteAllStudents() { const snap = await db.collection('students').get(); const batch = db.batch(); snap.docs.forEach(d => batch.delete(d.ref)); await batch.commit(); }
+      
+      async function deleteAllStudents() { 
+        const snap = await db.collection('students').get(); 
+        const batch = db.batch(); 
+        snap.docs.forEach(d => batch.delete(d.ref)); 
+        await batch.commit(); 
+      }
 
       async function logAttendance(studentId, dateStr, state) {
         if (studentId.startsWith && studentId.startsWith('sporadic_')) return;
         const docRef = db.collection('attendance').doc(`${studentId}_${dateStr}`);
         await docRef.set({ studentId, date: dateStr, state });
       }
+      
       async function logBatchAttendance(ids, dateStr, state) {
         const valid = ids.filter(id => !(id.startsWith && id.startsWith('sporadic_')));
         if (!valid.length) return;
-        const batch = db.batch(); const col = db.collection('attendance');
+        const batch = db.batch(); 
+        const col = db.collection('attendance');
         valid.forEach(id => batch.set(col.doc(`${id}_${dateStr}`), { studentId: id, date: dateStr, state }));
         await batch.commit();
       }
-      async function fetchAttendanceByDate(dateStr) { const snap = await db.collection('attendance').where('date','==',dateStr).get(); const out = {}; snap.docs.forEach(d=>out[d.data().studentId]=d.data().state); return out; }
-      async function fetchAttendanceByMonth(ym) { const start=ym+'-01', end=ym+'-31'; const snap = await db.collection('attendance').where('date','>=',start).where('date','<=',end).get(); const map = new Map(); snap.docs.forEach(d=>{ const r=d.data(); if(!map.has(r.student极速Id)) map.set(r.studentId,new Set()); const day = parseInt(r.date.slice(-2).replace(/^0+/,''),10); if(!isNaN(day)) map.get(r.studentId).add(day);}); return map; }
+      
+      async function fetchAttendanceByDate(dateStr) { 
+        const snap = await db.collection('attendance').where('date','==',dateStr).get(); 
+        const out = {}; 
+        snap.docs.forEach(d => out[d.data().studentId] = d.data().state); 
+        return out; 
+      }
+      
+      async function fetchAttendanceByMonth(ym) { 
+        const start = ym + '-01';
+        const end = ym + '-31';
+        const snap = await db.collection('attendance')
+          .where('date','>=',start)
+          .where('date','<=',end)
+          .get();
+        
+        const map = new Map();
+        snap.docs.forEach(d => {
+          const r = d.data();
+          if (!map.has(r.studentId)) map.set(r.studentId, new Set());
+          const day = parseInt(r.date.slice(-2).replace(/^0+/, ''), 10);
+          if (!isNaN(day)) map.get(r.studentId).add(day);
+        });
+        
+        return map;
+      }
 
       /* ----- UI helpers ----- */
       function updateSummary() {
         const vals = Object.values(appState.attendance || {});
         dom.summary.diners.textContent = vals.length;
-        dom.summary.absent.textContent = vals.filter(v=>'absent'===v).length;
-        dom.sum极速mary.present.textContent = vals.filter(v=>'present'===极速v).length;
-        dom.summary.pending.textContent = vals.filter(v=>'pending'===v).length;
+        dom.summary.absent.textContent = vals.filter(v => 'absent' === v).length;
+        dom.summary.present.textContent = vals.filter(v => 'present' === v).length;
+        dom.summary.pending.textContent = vals.filter(v => 'pending' === v).length;
       }
 
       function createStudentElement(s) {
-        const div = document.createElement('div');
         const stateClass = appState.attendance && appState.attendance[s.id]
           ? appState.attendance[s.id]
           : 'pending';
 
-        div.className = `student-item ${stateClass}${s.allergic ? ' allergic' : ''}`;
-        div.dataset.studentId = s.id;
-        div.dataset.studentName = s.name;
-
-        div.innerHTML = `
-          <span class="name ${s.allergic ? 'allergic' : ''}">${s.name}</span>
-          <div class="flex items-center gap-2">
-            <button class="mark-absent-btn" title="Marcar ausente">&times;</button>
+        return `
+          <div class="student-item ${stateClass}${s.allergic ? ' allergic' : ''}" data-student-id="${s.id}">
+            <span class="name ${s.allergic ? 'allergic' : ''}">${s.name}</span>
+            <div class="flex items-center gap-2">
+              <button class="mark-absent-btn" title="Marcar ausente">&times;</button>
+            </div>
           </div>
         `;
-        return div.outerHTML;
       }
 
       /* ----- Render courses ----- */
@@ -456,7 +501,10 @@
         const today = new Date().toISOString().slice(0,10);
         const attendance = await fetchAttendanceByDate(today);
         appState.attendance = {};
-        appState.students.forEach(s => appState.attendance[s.id] = attendance[s.id] || 'pending');
+        
+        appState.students.forEach(s => {
+          appState.attendance[s.id] = attendance[s.id] || 'pending';
+        });
 
         dom.coursesContainer.innerHTML = '';
 
@@ -464,91 +512,163 @@
         const courses = [...new Set(assigned.map(s => s.course))].sort();
 
         if (!courses.length) {
-          dom.coursesContainer.innerHTML = '<p class="small极速-muted">No hay alumnos en este turno.</p>';
+          dom.coursesContainer.innerHTML = '<p class="small-muted">No hay alumnos en este turno.</p>';
         } else {
           courses.forEach(course => {
-            const card = document.createElement('div'); card.className = 'course-card';
-            const studentsInCourse = assigned.filter(s => s.course === course).sort((a,b)=>a.name.localeCompare(b.name));
+            const card = document.createElement('div'); 
+            card.className = 'course-card';
+            
+            const studentsInCourse = assigned.filter(s => s.course === course).sort((a,b) => a.name.localeCompare(b.name));
             const listHtml = studentsInCourse.map(createStudentElement).join('');
-            const pickerBtn = `<div style="margin-top:8px"><button class="open-sporadic-picker primary" data-course="${course}">+ Añadir esporádico (picker)</button></div>`;
-            card.innerHTML = `<div><h3>${course}</h3><div style="display:flex;flex-direction:column;gap:8px" data-course-list="${course}">${listHtml}</div></div>${pickerBtn}`;
+            
+            const pickerBtn = `
+              <div style="margin-top:8px">
+                <button class="open-sporadic-picker primary" data-course="${course}">
+                  + Añadir esporádico (picker)
+                </button>
+              </div>`;
+            
+            card.innerHTML = `
+              <div>
+                <h3>${course}</h3>
+                <div style="display:flex;flex-direction:column;gap:8px" data-course-list="${course}">
+                  ${listHtml}
+                </div>
+              </div>
+              ${pickerBtn}
+            `;
+            
             dom.coursesContainer.appendChild(card);
           });
         }
+        
         updateSummary();
       }
 
       /* ----- Sporadic picker ----- */
       let currentPickerCourse = null;
+      
       function openSporadicPickerModal(course) {
         currentPickerCourse = course;
         dom.sporadicPickerTitle.textContent = `Seleccionar esporádicos — ${course}`;
-        const candidates = appState.students.filter(s => s.course === course && (!s.shift || s.shift.trim()==='') && !(s.id && s.id.startsWith && s.id.startsWith('sporadic_')));
+        const candidates = appState.students.filter(s => 
+          s.course === course && 
+          (!s.shift || s.shift.trim() === '') && 
+          !(s.id && s.id.startsWith && s.id.startsWith('sporadic_'))
+        );
+        
         const container = dom.sporadicPickerContent;
+        
         if (!candidates.length) {
           container.innerHTML = `<p class="small-muted">No hay alumnos sin turno asignado en ${course}.</p>`;
         } else {
-          let html = `<极速div style="display:flex;flex-direction:column;gap:8px">`;
-          candidates.sort((a,b)=>a.name.localeCompare(b.name)).forEach(s => {
-            html += `<label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--card-border);border-radius:8px;background:#fff">
-                       <input type="checkbox" class="sporadic-candidate" data-id="${s.id}">
-                       <div style="flex:1"><strong>${s.name}</strong><div class="small-muted">${s.course}</div></div>
-                     </label>`;
+          let html = `<div style="display:flex;flex-direction:column;gap:8px">`;
+          
+          candidates.sort((a,b) => a.name.localeCompare(b.name)).forEach(s => {
+            html += `
+              <label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--card-border);border-radius:8px;background:#fff">
+                <input type="checkbox" class="sporadic-candidate" data-id="${s.id}">
+                <div style="flex:1">
+                  <strong>${s.name}</strong>
+                  <div class="small-muted">${s.course}</div>
+                </div>
+              </label>
+            `;
           });
+          
           html += `</div>`;
           container.innerHTML = html;
         }
+        
         dom.sporadicPickerModal.classList.add('active');
       }
-      dom.closeSporadicPicker.addEventListener('click', () => dom.sporadicPickerModal.classList.remove('active'));
+      
+      dom.closeSporadicPicker.addEventListener('click', () => {
+        dom.sporadicPickerModal.classList.remove('active');
+      });
+      
       dom.confirmSporadicAdd.addEventListener('click', async () => {
-        const checked = Array.from(dom.sporadicPickerContent.querySelectorAll('.sporadic-candidate:checked')).map(cb => cb.dataset.id);
-        if (!checked.length) { alert('Selecciona al menos un alumno.'); return; }
+        const checked = Array.from(
+          dom.sporadicPickerContent.querySelectorAll('.sporadic-candidate:checked')
+        ).map(cb => cb.dataset.id);
+        
+        if (!checked.length) { 
+          alert('Selecciona al menos un alumno.'); 
+          return; 
+        }
+        
         const today = new Date().toISOString().slice(0,10);
+        
         for (const id of checked) {
           try {
             await logAttendance(id, today, 'present');
             appState.tempSporadic.add(id);
             appState.attendance[id] = 'present';
-          } catch (e) { console.error('error al añadir esporádico', e); }
+          } catch (e) { 
+            console.error('Error al añadir esporádico', e); 
+          }
         }
+        
         if (appState.currentShift) await renderCourses(appState.currentShift);
         dom.sporadicPickerModal.classList.remove('active');
       });
 
       /* ----- CSV import ----- */
       function handleCsvImport(file) {
-        if (!极速file) return;
+        if (!file) return;
+        
         dom.importStatusInitial.textContent = 'Procesando archivo...';
-        Papa.parse(file, { header:true, skipEmptyLines:true,
+        
+        Papa.parse(file, { 
+          header: true, 
+          skipEmptyLines: true,
           complete: async (results) => {
             try {
-              const fields = (results.meta.fields || []).map(f => (f||'').toLowerCase().trim());
+              const fields = (results.meta.fields || []).map(f => (f || '').toLowerCase().trim());
+              
               if (!fields.includes('nombre') || !fields.includes('curso')) {
                 dom.importStatusInitial.textContent = 'Error: CSV debe tener columnas "nombre" y "curso" (turno opcional).';
                 return;
               }
+              
               await deleteAllStudents();
+              
               const mapped = results.data.map(r => {
                 const rawShift = (r.turno || r.shift || '').toString().trim();
                 let shift = '';
+                
                 if (rawShift) {
-                  if (/primer/i.test(rawShift)) shift = 'Primer Turno (Infant极速il)';
+                  if (/primer/i.test(rawShift)) shift = 'Primer Turno (Infantil)';
                   else if (/segund/i.test(rawShift)) shift = 'Segundo Turno (Primaria)';
                   else shift = rawShift;
                 }
-                return { name: (r.nombre||'').toString().trim(), course: (r.curso||'').toString().trim(), shift, status: shift ? 'fixed' : 'sporadic', allergic: false };
+                
+                return { 
+                  name: (r.nombre || '').toString().trim(), 
+                  course: (r.curso || '').toString().trim(), 
+                  shift, 
+                  status: shift ? 'fixed' : 'sporadic', 
+                  allergic: false 
+                };
               });
+              
               const added = await addStudentBatch(mapped);
               dom.importStatusInitial.textContent = `Importación completa ✅ (${added})`;
               appState.students = await fetchStudents();
+              
               if (appState.currentShift) await renderCourses(appState.currentShift);
             } catch (err) {
               console.error('CSV import error', err);
               dom.importStatusInitial.textContent = 'Error al procesar CSV. Mira la consola.';
-            } finally { setTimeout(()=>dom.importStatusInitial.textContent='',5000); }
+            } finally { 
+              setTimeout(() => dom.importStatusInitial.textContent = '', 5000); 
+            }
           },
-          error: (err) => { console.error(err); dom.importStatusInitial.textContent = 'Error leyendo CSV'; setTimeout(()=>dom.importStatusInitial.textContent='',3000); }
+          error: (err) => { 
+            console.error(err); 
+            dom.importStatusInitial.textContent = 'Error leyendo CSV'; 
+            setTimeout(() => dom.importStatusInitial.textContent = '', 3000); 
+          }
         });
       }
 
@@ -556,26 +676,47 @@
       async function exportFullDayCsv(dateStr) {
         const all = await fetchStudents();
         const attendance = await fetchAttendanceByDate(dateStr);
-        const rows = all.map(s => ({ Fecha: dateStr, Turno: s.shift || '(Esporádico)', Nombre: s.name, Curso: s.course, Estado: attendance[s.id] || 'pending' }));
-        rows.sort((a,b) => (a.Turno||'').localeCompare(b.Turno||'') || a.Curso.localeCompare(b.Curso) || a.Nombre.localeCompare(b.Nombre));
+        
+        const rows = all.map(s => ({ 
+          Fecha: dateStr, 
+          Turno: s.shift || '(Esporádico)', 
+          Nombre: s.name, 
+          Curso: s.course, 
+          Estado: attendance[s.id] || 'pending' 
+        }));
+        
+        rows.sort((a,b) => (a.Turno || '').localeCompare(b.Turno || '') || a.Curso.localeCompare(b.Curso) || a.Nombre.localeCompare(b.Nombre));
+        
         const csv = Papa.unparse(rows);
         const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `asistencia_${dateStr}.csv`; a.click(); URL.revokeObjectURL(url);
+        const a = document.createElement('a'); 
+        a.href = url; 
+        a.download = `asistencia_${dateStr}.csv`; 
+        a.click(); 
+        URL.revokeObjectURL(url);
       }
 
       /* ----- Finalizar turno ----- */
       async function finalizeShift() {
         if (!confirm('¿Seguro que quieres finalizar el turno? Los pendientes pasarán a ausentes.')) return;
+        
         const today = new Date().toISOString().slice(0,10);
         const toMark = [];
+        
         for (const id in appState.attendance) {
           if (appState.attendance[id] === 'pending') {
             appState.attendance[id] = 'absent';
             toMark.push(id);
-            const el = document.getElementById(id); if (el) { el.classList.remove('pending','present','absent'); el.classList.add('absent'); }
+            
+            const el = document.querySelector(`[data-student-id="${id}"]`);
+            if (el) { 
+              el.classList.remove('pending', 'present', 'absent'); 
+              el.classList.add('absent'); 
+            }
           }
         }
+        
         await logBatchAttendance(toMark, today, 'absent');
         updateSummary();
       }
@@ -584,158 +725,436 @@
       async function showHistoryModal() {
         document.getElementById('history-modal').classList.add('active');
         dom.historyStudentList.innerHTML = '<p class="small-muted">Cargando...</p>';
-        const all = await fetchStudents(); all.sort((a,b)=>a.name.localeCompare(b.name));
-        if (!all.length) dom.historyStudentList.innerHTML = '<p class="small-muted">No hay alumnos registrados.</p>';
-        else dom.historyStudentList.innerHTML = all.map(s => `<div class="history-student p-2" data-id="${s.id}" data-name="${s.name}" style="border-bottom:1px solid var(--card-border);padding:8px;cursor:pointer"><strong>${s.name}</strong><div class="small-muted">${s.shift || '(Esporádico)'} • ${s.course}</div></div>`).join('');
+        
+        try {
+          const all = await fetchStudents(); 
+          all.sort((a,b) => a.name.localeCompare(b.name));
+          
+          if (!all.length) {
+            dom.historyStudentList.innerHTML = '<p class="small-muted">No hay alumnos registrados.</p>';
+          } else {
+            dom.historyStudentList.innerHTML = all.map(s => `
+              <div class="history-student" data-id="${s.id}" data-name="${s.name}" style="border-bottom:1px solid var(--card-border);padding:8px;cursor:pointer">
+                <strong>${s.name}</strong>
+                <div class="small-muted">${s.shift || '(Esporádico)'} • ${s.course}</div>
+              </div>
+            `).join('');
+          }
+        } catch (error) {
+          console.error('Error loading students for history:', error);
+          dom.historyStudentList.innerHTML = '<p class="small-muted">Error al cargar alumnos.</p>';
+        }
+        
+        dom.historyStudentName.textContent = 'Selecciona un alumno';
+        dom.historyDatesList.innerHTML = '';
       }
+      
       async function showStudentHistory(id, name) {
         dom.historyStudentName.textContent = `Historial de: ${name}`;
         dom.historyDatesList.innerHTML = '<p class="small-muted">Buscando...</p>';
-        const snap = await db.collection('attendance').where('studentId','==',id).get();
-        const dates = snap.docs.map(d=>d.data().date).sort().reverse();
-        dom.historyDatesList.innerHTML = dates.length ? dates.map(d=>`<div style="padding:6px;border-bottom:1px solid var(--card-border)">${new Date(d+'T00:00:00').极速toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>`).join('') : '<p class="small-muted">Sin registros.</p>';
+        
+        try {
+          const snap = await db.collection('attendance').where('studentId', '==', id).get();
+          const dates = snap.docs.map(d => d.data().date).sort().reverse();
+          
+          if (dates.length) {
+            dom.historyDatesList.innerHTML = dates.map(d => `
+              <div style="padding:6px;border-bottom:1px solid var(--card-border)">
+                ${new Date(d + 'T00:00:00').toLocaleDateString('es-ES', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}
+              </div>
+            `).join('');
+          } else {
+            dom.historyDatesList.innerHTML = '<p class="small-muted">Este alumno no tiene registros de asistencia.</p>';
+          }
+        } catch (error) {
+          console.error('Error fetching student history:', error);
+          dom.historyDatesList.innerHTML = '<p class="small-muted">Error al buscar las fechas.</p>';
+        }
       }
 
       /* ----- Monthly report + print ----- */
       async function generateMonthlyReport(ym) {
         dom.monthlyReportContent.innerHTML = '<p class="small-muted">Generando informe...</p>';
-        if (!ym) { dom.monthlyReportContent.innerHTML = '<p style="color:#b45309">Selecciona un mes.</p>'; return; }
-        const [y,m] = ym.split('-').map(v=>parseInt(v,10)); const days = new Date(y,m,0).getDate();
-        const all = await fetchStudents(); const attendanceData = await fetchAttendanceByMonth(ym);
-        const byCourse = all.reduce((acc,s)=>{ (acc[s.course]=acc[s.course]||[]).push(s); return acc; },{});
-        let html = `<div class="printable-area"><h2 style="text-align:center">${new Date(y,m-1,1).toLocaleString('es-ES',{month:'long',year:'numeric'})}</h2>`;
-        Object.keys(byCourse).sort().forEach(course=>{
-          const students = byCourse[course].sort((a,b)=>极速a.name.localeCompare(b.name));
-          html += `<div class="report-wrapper" style="margin-top:12极速px"><div style="display:flex;justify-content:space-between;align-items:center"><strong>${course}</strong><small>Días: ${days} — ${students.length} alumnos</small></div><div style="overflow:auto;margin-top:8px"><table class="report-table"><thead><tr><极速th>Alumno</th>`;
-          for(let d=1; d<=days; d++) html += `<th>${d}</th>`; html += `<th>Total</th></tr></thead><tbody>`;
-          students.forEach(st=>{
-            const attended = attendanceData.get(st.id) || new Set();
-            html += `<tr><td style="text-align:left;padding-left:6px">${st.name}</td>`;
-            for (let d=1; d<=days; d++) html += attended.has(d) ? `<td><span class="attendance-mark">✓</span></td>` : `<td></td>`;
-            html += `<td class="total">${attended.size}</td></tr>`;
+        
+        if (!ym) { 
+          dom.monthlyReportContent.innerHTML = '<p style="color:#b45309">Selecciona un mes.</p>'; 
+          return; 
+        }
+        
+        try {
+          const [y, m] = ym.split('-').map(v => parseInt(v, 10));
+          const daysInMonth = new Date(y, m, 0).getDate();
+          const all = await fetchStudents();
+          const attendanceData = await fetchAttendanceByMonth(ym);
+          
+          const byCourse = all.reduce((acc, s) => {
+            (acc[s.course] = acc[s.course] || []).push(s);
+            return acc;
+          }, {});
+          
+          let html = `
+            <div class="printable-area">
+              <h2 style="text-align:center">
+                ${new Date(y, m-1, 1).toLocaleString('es-ES', {month: 'long', year: 'numeric'})}
+              </h2>
+          `;
+          
+          Object.keys(byCourse).sort().forEach(course => {
+            const students = byCourse[course].sort((a,b) => a.name.localeCompare(b.name));
+            
+            html += `
+              <div class="report-wrapper" style="margin-top:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <strong>${course}</strong>
+                  <small>Días: ${daysInMonth} — ${students.length} alumnos</small>
+                </div>
+                <div style="overflow:auto;margin-top:8px">
+                  <table class="report-table">
+                    <thead>
+                      <tr>
+                        <th>Alumno</th>
+            `;
+            
+            for (let d = 1; d <= daysInMonth; d++) {
+              html += `<th>${d}</th>`;
+            }
+            
+            html += `
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            students.forEach(student => {
+              const attended = attendanceData.get(student.id) || new Set();
+              
+              html += `
+                <tr>
+                  <td style="text-align:left;padding-left:6px">${student.name}</td>
+              `;
+              
+              for (let d = 1; d <= daysInMonth; d++) {
+                html += attended.has(d) 
+                  ? `<td><span class="attendance-mark">✓</span></td>` 
+                  : `<td></td>`;
+              }
+              
+              html += `<td class="total">${attended.size}</td></tr>`;
+            });
+            
+            html += `
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            `;
           });
-          html += `</tbody></table></div></div>`;
-        });
-        html += `</div>`;
-        dom.monthlyReportContent.innerHTML = html;
+          
+          html += `</div>`;
+          dom.monthlyReportContent.innerHTML = html;
+        } catch (error) {
+          console.error('Error generating monthly report:', error);
+          dom.monthlyReportContent.innerHTML = '<p class="small-muted">Error al generar el informe.</p>';
+        }
       }
-
+      
       dom.printReportBtn.addEventListener('click', async () => {
         let ym = dom.reportMonthInput.value;
-        if (!ym) { const now = new Date(); ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; dom.reportMonthInput.value = ym; }
+        
+        if (!ym) { 
+          const now = new Date(); 
+          ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`; 
+          dom.reportMonthInput.value = ym; 
+        }
+        
         await generateMonthlyReport(ym);
+        
         const content = dom.monthlyReportContent.innerHTML;
-        const iframe = document.createElement('iframe'); iframe.style.position='fixed'; iframe.style.right='0'; iframe.style.bottom='0'; iframe.style.width='0'; iframe.style.height='0'; iframe.style.border='0';
+        const iframe = document.createElement('iframe');
+        
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        
         document.body.appendChild(iframe);
+        
         const doc = iframe.contentWindow.document;
         const successColor = getComputedStyle(document.documentElement).getPropertyValue('--success') || '#004623';
-        const styles = `<style>body{font-family:Inter,Arial;padding:18px;color:#111} .attendance-mark{display:inline-block;width:20极速px;height:20px;background:${successColor};color:#fff;border-radius:50%;text-align:center;line-height:20px;font-weight:700}</style>`;
-        doc.open(); doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Imprimir informe ${ym}</title>${styles}</head><body>${content}</body></html>`); doc.close();
-        setTimeout(()=>{ try{ iframe.contentWindow.focus(); iframe.contentWindow.print(); } catch(e){ console.error(e); alert('Error al imprimir: '+e.message);} setTimeout(()=>{ try{ document.body.removeChild(iframe); } catch(e){} },800); },300);
+        
+        const styles = `
+          <style>
+            body {
+              font-family: Inter, Arial;
+              padding: 18px;
+              color: #111;
+            }
+            
+            .attendance-mark {
+              display: inline-block;
+              width: 20px;
+              height: 20px;
+              background: ${successColor};
+              color: #fff;
+              border-radius: 50%;
+              text-align: center;
+              line-height: 20px;
+              font-weight: 700;
+            }
+          </style>
+        `;
+        
+        doc.open();
+        doc.write(`
+          <!doctype html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Imprimir informe ${ym}</title>
+              ${styles}
+            </head>
+            <body>
+              ${content}
+            </body>
+          </html>
+        `);
+        
+        doc.close();
+        
+        setTimeout(() => {
+          try {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+          } catch (e) {
+            console.error(e);
+            alert('Error al imprimir: ' + e.message);
+          }
+          
+          setTimeout(() => {
+            try {
+              document.body.removeChild(iframe);
+            } catch (e) {}
+          }, 800);
+        }, 300);
       });
 
       /* ----- Manage students modal (admin) ----- */
       async function openManageStudentsModal() {
         dom.manageStudentsModal.classList.add('active');
         dom.manageStudentsContent.innerHTML = '<p class="small-muted">Cargando...</p>';
-        const all = await fetchStudents(); const byCourse = all.reduce((acc,s)=>{ (acc[s.course]=acc[s.course]||[]).push(s); return acc; },{});
-        let html = '';
-        Object.keys(byCourse).sort().forEach(course=>{
-          html += `<h4 style="margin-top:12px;color:var(--brand)极速">${course}</h4>`;
-          byCourse[course].sort((a,b)=>a.name.localeCompare(b.name)).forEach(s=>{
-            const checkedPrimer = s.shift === 'Primer Turno (Infantil)' ? 'checked' : '';
-            const checkedSegundo = s.sh极速ift === 'Segundo Turno (Primaria)' ? 'checked' : '';
-            const isAllergic = s.allergic ? 'checked' : '';
-            const isSporadic = !s.shift || s.shift.trim()==='';
-            html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px;border-bottom:1px solid var(--card-border);align-items:center">
-                      <div><strong>${s.name}</strong></div>
-                      <div style="display:flex;gap:8极速px;align-items:center">
-                        <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="primer" ${checkedPrimer}> Primer</label>
-                        <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="segundo" ${checkedSegundo}> Segundo</label>
-                      </div>
-                      <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center">
-                        <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-update-control" data-id="${s.id}" data-prop="allergic" ${isAllergic}> Alergia</label>
-                        <button class="toggle-status-btn ghost small" data-id="${s.id}" data-status="${s.status||'fixed'}">${isSporadic ? 'Hacer Fijo' : 'Hacer Esporádico'}</button>
-                      </div>
-                     </div>`;
+        
+        try {
+          const all = await fetchStudents();
+          const byCourse = all.reduce((acc, s) => {
+            (acc[s.course] = acc[s.course] || []).push(s);
+            return acc;
+          }, {});
+          
+          let html = '';
+          
+          Object.keys(byCourse).sort().forEach(course => {
+            html += `<h4 style="margin-top:12px;color:var(--brand)">${course}</h4>`;
+            
+            byCourse[course].sort((a,b) => a.name.localeCompare(b.name)).forEach(s => {
+              const checkedPrimer = s.shift === 'Primer Turno (Infantil)' ? 'checked' : '';
+              const checkedSegundo = s.shift === 'Segundo Turno (Primaria)' ? 'checked' : '';
+              const isAllergic = s.allergic ? 'checked' : '';
+              const isSporadic = !s.shift || s.shift.trim() === '';
+              
+              html += `
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px;border-bottom:1px solid var(--card-border);align-items:center">
+                  <div><strong>${s.name}</strong></div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <label style="display:flex;align-items:center;gap:6px">
+                      <input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="primer" ${checkedPrimer}>
+                      Primer
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px">
+                      <input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="segundo" ${checkedSegundo}>
+                      Segundo
+                    </label>
+                  </div>
+                  <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center">
+                    <label style="display:flex;align-items:center;gap:6px">
+                      <input type="checkbox" class="student-update-control" data-id="${s.id}" data-prop="allergic" ${isAllergic}>
+                      Alergia
+                    </label>
+                    <button class="toggle-status-btn ghost small" data-id="${s.id}" data-status="${s.status || 'fixed'}">
+                      ${isSporadic ? 'Hacer Fijo' : 'Hacer Esporádico'}
+                    </button>
+                  </div>
+                </div>
+              `;
+            });
           });
-        });
-        dom.manageStudentsContent.innerHTML = html;
-
-        // event listeners
-        dom.manageStudentsContent.querySelectorAll('.student-shift-checkbox').forEach(cb => {
-          cb.addEventListener('change', async (ev) => {
-            const id = ev.target.dataset.id;
-            const primer = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="primer"]`).checked;
-            const segundo = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][极速data-prop="segundo"]`).checked;
-            let newShift = '';
-            if (primer && !segundo) newShift = 'Primer Turno (Infantil)';
-            else if (!primer && segundo) newShift = 'Segundo Turno (Primaria)';
-            else newShift = '';
-            const ok = await updateStudentDoc(id, { shift: newShift, status: newShift ? 'fixed' : 'sporadic' });
-            if (ok) { const s = appState.students.find(x=>x.id===id); if (s) { s.shift = newShift; s.status = newShift ? 'fixed' : 'sporadic'; } dom.importStatusInitial.textContent = 'Guardado'; setTimeout(()=>dom.importStatusInitial.textContent='',1200); }
-          });
-        });
-
-        dom.manageStudentsContent.querySelectorAll('.student-update-control[data-prop="allergic"]').forEach(cb => {
-          cb.addEventListener('change', async (ev) => {
-            const id = ev.target.dataset.id; const val = !!ev.target.checked; const ok = await updateStudentDoc(id,{ allergic: val });
-            if (ok) { const s = appState.students.find(x=>x.id===id); if (s) s.allergic = val; dom.importStatusInitial.textContent = 'Guardado'; setTimeout(()=>dom.importStatusInitial.textContent='',1200); }
-          });
-        });
-
-        dom.manageStudentsContent.querySelectorAll('.toggle-status-btn').forEach(btn => {
-          btn.addEventListener('click', async (ev) => {
-            const id = ev.target.dataset.id; const current = ev.target.dataset.status || 'fixed';
-            if (current === 'sporadic') {
-              const ok = await updateStudentDoc(id, { status: 'fixed' });
-              if (ok) { ev.target.dataset.status = 'fixed'; ev.target.textContent = 'Hacer Esporádico'; dom.importStatusInitial.textContent='Guardado'; setTimeout(()=>dom.importStatusInitial.textContent='',1200); }
-            } else {
-              const ok = await updateStudentDoc(id, { status: 'sporadic', shift: '' });
+          
+          dom.manageStudentsContent.innerHTML = html;
+          
+          // Event listeners for shift checkboxes
+          dom.manageStudentsContent.querySelectorAll('.student-shift-checkbox').forEach(cb => {
+            cb.addEventListener('change', async (ev) => {
+              const id = ev.target.dataset.id;
+              const prop = ev.target.dataset.prop;
+              
+              const primer = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="primer"]`).checked;
+              const segundo = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="segundo"]`).checked;
+              
+              let newShift = '';
+              if (primer && !segundo) newShift = 'Primer Turno (Infantil)';
+              else if (!primer && segundo) newShift = 'Segundo Turno (Primaria)';
+              else newShift = '';
+              
+              const ok = await updateStudentDoc(id, { 
+                shift: newShift, 
+                status: newShift ? 'fixed' : 'sporadic' 
+              });
+              
               if (ok) {
-                ev.target.dataset.status = 'sporadic'; ev.target.textContent = 'Hacer Fijo';
-                const p = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="primer"]`);
-                const sbox = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="segundo"]`);
-                if (p) p.checked=false; if (sbox) sbox.checked=false;
-                dom.importStatusInitial.textContent='Guardado'; setTimeout(()=>dom.importStatusInitial.textContent='',1200);
+                const s = appState.students.find(x => x.id === id);
+                if (s) {
+                  s.shift = newShift;
+                  s.status = newShift ? 'fixed' : 'sporadic';
+                }
+                
+                dom.importStatusInitial.textContent = 'Guardado';
+                setTimeout(() => dom.importStatusInitial.textContent = '', 1200);
               }
-            }
+            });
           });
-        });
-
+          
+          // Event listeners for allergy checkboxes
+          dom.manageStudentsContent.querySelectorAll('.student-update-control[data-prop="allergic"]').forEach(cb => {
+            cb.addEventListener('change', async (ev) => {
+              const id = ev.target.dataset.id;
+              const val = !!ev.target.checked;
+              
+              const ok = await updateStudentDoc(id, { allergic: val });
+              
+              if (ok) {
+                const s = app极State.students.find(x => x.id === id);
+                if (s) s.allergic = val;
+                
+                dom.importStatusInitial.textContent = 'Guardado';
+                setTimeout(() => dom.importStatusInitial.textContent = '', 1200);
+              }
+            });
+          });
+          
+          // Event listeners for status toggle buttons
+          dom.manageStudentsContent.querySelectorAll('.toggle-status-btn').forEach(btn => {
+            btn.addEventListener('click', async (ev) => {
+              const id = ev.target.dataset.id;
+              const current = ev.target.dataset.status || 'fixed';
+              
+              if (current === 'sporadic') {
+                const ok = await updateStudentDoc(id, { status: 'fixed' });
+                
+                if (ok) {
+                  ev.target.dataset.status = 'fixed';
+                  ev.target.textContent = 'Hacer Esporádico';
+                  dom.importStatusInitial.textContent = 'Guardado';
+                  setTimeout(() => dom.importStatusInitial.textContent = '', 1200);
+                }
+              } else {
+                const ok = await updateStudentDoc(id, { status: 'sporadic', shift: '' });
+                
+                if (ok) {
+                  ev.target.dataset.status = 'sporadic';
+                  ev.target.textContent = 'Hacer Fijo';
+                  
+                  const p = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="primer"]`);
+                  const sbox = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="segundo"]`);
+                  
+                  if (p) p.checked = false;
+                  if (sbox) sbox.checked = false;
+                  
+                  dom.importStatusInitial.textContent = 'Guardado';
+                  setTimeout(() => dom.importStatusInitial.textContent = '', 1200);
+                }
+              }
+            });
+          });
+        } catch (error) {
+          console.error('Error loading students for management:', error);
+          dom.manageStudentsContent.innerHTML = '<p class="small-muted">Error al cargar alumnos.</p>';
+        }
       }
-
-      dom.closeManageModal.addEventListener('click', ()=> dom.manageStudentsModal.classList.remove('active'));
+      
+      dom.closeManageModal.addEventListener('click', () => {
+        dom.manageStudentsModal.classList.remove('active');
+      });
 
       /* ----- Delegation inside courses (picker / attendance) ----- */
       dom.coursesContainer.addEventListener('click', async (e) => {
+        // Handle sporadic picker button clicks
         const openPickerBtn = e.target.closest('.open-sporadic-picker');
-        if (openPickerBtn) { openSporadicPickerModal(openPickerBtn.dataset.course); return; }
-
-        const studentDiv = e.target.closest('.student-item');
-        if (!studentDiv) return;
-        const studentId = studentDiv.dataset.studentId || studentDiv.id;
-        const isX = e.target.closest('.mark-absent-btn');
-        const current = appState.attendance[studentId] || 'pending';
-        const newState = is极速X ? (current === 'absent' ? 'pending' : 'absent') : (current === 'present' ? 'pending' : 'present');
-        appState.attendance[studentId] = newState;
-        studentDiv.classList.remove('pending','present','absent'); studentDiv.classList.add(newState);
-        updateSummary();
-        try { await logAttendance(studentId, new Date().toISOString().slice(0,10), newState); } catch(err){ console.error('logAttendance error', err); }
+        if (openPickerBtn) {
+          openSporadicPickerModal(openPickerBtn.dataset.course);
+          return;
+        }
+        
+        // Handle absence button clicks
+        const absentBtn = e.target.closest('.mark-absent-btn');
+        if (absentBtn) {
+          const studentItem = absentBtn.closest('.student-item');
+          if (!studentItem) return;
+          
+          const studentId = studentItem.dataset.studentId;
+          const current = appState.attendance[studentId] || 'pending';
+          const newState = current === 'absent' ? 'pending' : 'absent';
+          
+          appState.attendance[studentId] = newState;
+          studentItem.classList.remove('pending', 'present', 'absent');
+          studentItem.classList.add(newState);
+          
+          updateSummary();
+          
+          try {
+            await logAttendance(studentId, new Date().toISOString().slice(0,10), newState);
+          } catch (err) {
+            console.error('logAttendance error', err);
+          }
+          
+          return;
+        }
+        
+        // Handle student item clicks (mark as present)
+        const studentItem = e.target.closest('.student-item');
+        if (studentItem) {
+          const studentId = studentItem.dataset.studentId;
+          const current = appState.attendance[studentId] || 'pending';
+          const newState = current === 'present' ? 'pending' : 'present';
+          
+          appState.attendance[studentId] = newState;
+          studentItem.classList.remove('pending', 'present', 'absent');
+          studentItem.classList.add(newState);
+          
+          updateSummary();
+          
+          try {
+            await logAttendance(studentId, new Date().toISOString().slice(0,10), newState);
+          } catch (err) {
+            console.error('logAttendance error', err);
+          }
+        }
       });
 
       /* ----- Routing & UI visibility (default to profesor) ----- */
       function setUIForRole(isAdmin) {
         if (isAdmin) {
           dom.roleDisplay.textContent = 'Admin: ' + (auth.currentUser ? (auth.currentUser.displayName || 'Admin') : 'Admin');
-          document.querySelectorAll('.admin-only').forEach(el=>el.style.display='block');
+          document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
           dom.logoutBtn.style.display = 'inline-flex';
         } else {
           dom.roleDisplay.textContent = 'Modo: Profesor / Cuidador';
-          document.querySelectorAll('.admin-only').forEach(el=>el.style.display='none');
+          document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
           dom.logoutBtn.style.display = 'none';
         }
-        // always show shift-selection to start (profesor-side entry)
+        
+        // Always show shift-selection to start (profesor-side entry)
         document.getElementById('dashboard').classList.add('hidden');
         document.getElementById('shift-selection').style.display = 'block';
       }
@@ -746,23 +1165,57 @@
       });
 
       /* ----- Controls wiring ----- */
-      dom.loginAdminBtn.addEventListener('click', ()=> auth.signInWithPopup(googleProvider).catch(e=>{ console.error(e); alert('Error login'); }));
-      dom.logoutBtn.addEventListener('click', ()=> auth.signOut().then(()=>{ setUIForRole(false); }));
-      dom.importCsvBtnInitial.addEventListener('click', ()=> dom.csvFileInput.click());
+      dom.loginAdminBtn.addEventListener('click', () => {
+        auth.signInWithPopup(googleProvider).catch(e => {
+          console.error(e);
+          alert('Error al iniciar sesión con Google');
+        });
+      });
+      
+      dom.logoutBtn.addEventListener('click', () => {
+        auth.signOut().then(() => {
+          setUIForRole(false);
+        });
+      });
+      
+      dom.importCsvBtnInitial.addEventListener('click', () => dom.csvFileInput.click());
       dom.csvFileInput.addEventListener('change', e => handleCsvImport(e.target.files[0]));
       dom.manageStudentsBtn.addEventListener('click', openManageStudentsModal);
-      dom.wipeDbBtn.addEventListener('click', async ()=> { if (!confirm('¿Borrar todos los alumnos?')) return; await deleteAllStudents(); appState.students = []; if (appState.currentShift) renderCourses(appState.currentShift); });
-      dom.exportCsvBtn.addEventListener('click', ()=> { const d = dom.exportDateInput.value || new Date().toISOString().slice(0,10); exportFullDayCsv(d); });
+      
+      dom.wipeDbBtn.addEventListener('click', async () => {
+        if (!confirm('¿Borrar todos los alumnos?')) return;
+        
+        await deleteAllStudents();
+        appState.students = [];
+        
+        if (appState.currentShift) renderCourses(appState.currentShift);
+      });
+      
+      dom.exportCsvBtn.addEventListener('click', () => {
+        const d = dom.exportDateInput.value || new Date().toISOString().slice(0,10);
+        exportFullDayCsv(d);
+      });
 
-      document.querySelectorAll('#shift-buttons button').forEach(btn => btn.addEventListener('click', ()=> renderCourses(btn.dataset.shift)));
+      document.querySelectorAll('#shift-buttons button').forEach(btn => {
+        btn.addEventListener('click', () => renderCourses(btn.dataset.shift));
+      });
+      
       dom.finalizeShiftBtn.addEventListener('click', finalizeShift);
-      dom.backToShiftsBtn.addEventListener('click', ()=> { document.getElementById('shift-selection').style.display='block'; document.getElementById('dashboard').classList.add('hidden'); });
+      
+      dom.backToShiftsBtn.addEventListener('click', () => {
+        document.getElementById('shift-selection').style.display = 'block';
+        document.getElementById('dashboard').classList.add('hidden');
+      });
 
       // Add event listeners for the history and monthly report buttons
       if (dom.showMonthlyReportBtn) {
-        dom.showMonthlyReportBtn.addEventListener('click', async ()=> {
-          const now = new Date(); const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-          dom.reportMonthInput.value = ym; dom.monthlyReportModal.classList.add('active'); await generateMonthlyReport(ym);
+        dom.showMonthlyReportBtn.addEventListener('click', async () => {
+          const now = new Date();
+          const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+          
+          dom.reportMonthInput.value = ym;
+          dom.monthlyReportModal.classList.add('active');
+          await generateMonthlyReport(ym);
         });
       }
 
@@ -770,46 +1223,64 @@
         dom.showHistoryBtn.addEventListener('click', showHistoryModal);
       }
       
-      document.getElementById('close-history-btn')?.addEventListener('click', ()=> document.getElementById('history-modal').classList.remove('active'));
-      dom.historyStudentList.addEventListener('click', ev => { const row = ev.target.closest('.history-student'); if (!row) return; showStudentHistory(row.dataset.id, row.dataset.name); });
-      dom.historySearch.addEventListener('input', (e)=>{ const q=e.target.value.toLowerCase(); document.querySelectorAll('#history-student-list .history-student').forEach(el=> el.style.display = (el.dataset.name.toLowerCase().includes(q)?'':'none')); });
+      document.getElementById('close-history-btn')?.addEventListener('click', () => {
+        document.getElementById('history-modal').classList.remove('active');
+      });
+      
+      dom.historyStudentList.addEventListener('click', ev => {
+        const row = ev.target.closest('.history-student');
+        if (!row) return;
+        
+        showStudentHistory(row.dataset.id, row.dataset.name);
+      });
+      
+      dom.historySearch.addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase();
+        
+        document.querySelectorAll('#history-student-list .history-student').forEach(el => {
+          el.style.display = el.dataset.name.toLowerCase().includes(q) ? '' : 'none';
+        });
+      });
 
-      document.getElementById('close-report-btn')?.addEventListener('click', ()=> dom.monthlyReportModal.classList.remove('active'));
+      document.getElementById('close-report-btn')?.addEventListener('click', () => {
+        dom.monthlyReportModal.classList.remove('active');
+      });
 
-      // safety logs
-      window.addEventListener('error', ev => console.error('GLOBAL ERROR:', ev.message));
-      window.addEventListener('unhandledrejection', ev极速 => console.error('UNHANDLED REJECTION:', ev.reason));
-
-      // initial UI
+      // Initial UI setup
       setUIForRole(false);
       document.getElementById('export-date-input').value = new Date().toISOString().slice(0,10);
 
       // Hash handling: permitir /#admin
       function handleHash() {
-        const h = (location.hash || '').replace('#','');
+        const h = (location.hash || '').replace('#', '');
+        
         if (h === 'admin') {
-          // mostrar vista admin-login-view y ocultar la selección por defecto
+          // Mostrar vista admin-login-view y ocultar la selección por defecto
           dom.adminLoginView.classList.remove('hidden');
           dom.adminLoginView.style.display = 'block';
           document.getElementById('shift-selection').style.display = 'none';
           document.getElementById('dashboard').classList.add('hidden');
-          window.scrollTo(0,0);
-          // opcional: dar foco al botón de login
-          try { dom.loginAdminBtn.focus(); } catch(e){}
+          window.scrollTo(0, 0);
+          
+          // Opcional: dar foco al botón de login
+          try { dom.loginAdminBtn.focus(); } catch (e) {}
         } else {
-          // si hash distinto, asegurarse de que la vista admin no se quede visible
+          // Si hash distinto, asegurarse de que la vista admin no se quede visible
           if (!auth.currentUser) {
             dom.adminLoginView.classList.add('hidden');
           }
-          // leave default UI as setUIForRole
         }
       }
+      
       window.addEventListener('hashchange', handleHash);
-      // Llamada inicial
-      handleHash();
+      handleHash(); // Llamada inicial
 
-      // service worker (no-fatal)
-      if ('serviceWorker' in navigator) { navigator.serviceWorker.register && navigator.serviceWorker.register('/sw.js').then(()=>console.log('sw registered')).catch(()=>{}); }
+      // Service worker (no-fatal)
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register && navigator.serviceWorker.register('/sw.js')
+          .then(() => console.log('Service Worker registered'))
+          .catch(() => {});
+      }
 
     }); // DOMContentLoaded
   </script>
