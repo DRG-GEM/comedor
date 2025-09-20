@@ -52,9 +52,13 @@
     button.ghost { background:#fff; border:1px solid rgba(15,23,42,0.06); padding:10px 14px; border-radius:10px; cursor:pointer; }
     button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 
-    /* Summary + grid */
-    .summary-card { background:var(--paper); padding:14px; border-radius:10px; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.03); text-align:center; }
-    #courses-container { margin-top:14px; display:grid; gap:14px; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); }
+    /* Summary + grid: reduced size & centered */
+    .summary-row { display:flex; gap:12px; justify-content:center; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+    .summary-card { background:var(--paper); padding:10px 12px; border-radius:10px; border:1px solid var(--card-border); box-shadow:0 8px 20px rgba(15,23,42,0.03); text-align:center; width:140px; }
+    .summary-card .label { font-size:0.78rem; color:var(--muted); margin-bottom:6px; display:block; }
+    .summary-card .value { font-size:18px; font-weight:800; color:var(--text); }
+
+    #courses-container { margin-top:8px; display:grid; gap:14px; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); }
 
     /* Course card */
     .course-card { background:var(--paper); border-radius:10px; padding:12px; border:1px solid var(--card-border); box-shadow:0 8px 24px rgba(15,23,42,0.03); display:flex; flex-direction:column; gap:8px; overflow:hidden; min-width:0; }
@@ -120,6 +124,11 @@
     /* images/svg responsive */
     img, svg { max-width:100%; height:auto; display:block; }
 
+    @media (max-width:900px) {
+      .summary-card { width:120px; padding:8px 10px; }
+      .summary-card .value { font-size:16px; }
+    }
+
     @media (max-width:800px){
       #courses-container { grid-template-columns:1fr; }
     }
@@ -142,6 +151,7 @@
       .report-table th, .report-table td { font-size:11px; padding:4px; }
       .modal-content { width:96%; padding:12px; max-width:720px; }
       #shift-buttons button { padding:8px 12px; font-size:0.95rem; white-space:normal; }
+      .summary-row { justify-content:center; }
     }
 
     @media print{
@@ -171,7 +181,9 @@
       </div>
 
       <div class="header-actions">
-        <!-- botón de informe mensual añadido aquí -->
+        <!-- ahora junto con los otros botones -->
+        <button id="import-csv-btn-initial" class="ghost small" title="Importar CSV">Importar CSV</button>
+        <button id="manage-students-btn" class="ghost small" title="Gestionar alumnos">Gestionar</button>
         <button id="show-monthly-report-btn" class="ghost small" title="Informe mensual">Informe mensual</button>
         <button id="logout-btn" class="ghost small" title="Cerrar sesión" style="display:none">Cerrar sesión</button>
       </div>
@@ -198,8 +210,8 @@
         <div class="admin-panel admin-only" style="margin-top:18px">
           <h3 style="text-align:center;margin-bottom:10px">Panel de Gestión</h3>
           <div class="btn-row" role="group" aria-label="gestion-datos">
-            <button id="import-csv-btn-initial" class="primary">📤 Importar Alumnos (CSV)</button>
-            <button id="manage-students-btn" class="primary">👥 Gestionar Alumnos</button>
+            <!-- botones duplicados arriba, se mantienen para conveniencia en admin panel -->
+            <button id="import-csv-btn" class="primary">📤 Importar Alumnos (CSV)</button>
             <button id="wipe-db" class="ghost">🗑️ Borrar todos los alumnos</button>
           </div>
           <div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap">
@@ -218,12 +230,13 @@
           </div>
         </div>
 
-        <section style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px">
-          <div class="summary-card"><div class="small-muted">Comensales</div><div id="summary-diners" style="font-size:22px;font-weight:800">0</div></div>
-          <div class="summary-card"><div class="small-muted">Ausentes</div><div id="summary-absent" style="font-size:22px;font-weight:800">0</div></div>
-          <div class="summary-card"><div class="small-muted">Pendientes</div><div id="summary-pending" style="font-size:22px;font-weight:800">0</div></div>
-          <div class="summary-card"><div class="small-muted">Presentes</div><div id="summary-present" style="font-size:22px;font-weight:800">0</div></div>
-        </section>
+        <!-- summary row centrado y más pequeño -->
+        <div class="summary-row" role="status" aria-live="polite">
+          <div class="summary-card"><span class="label">Comensales</span><span id="summary-diners" class="value">0</span></div>
+          <div class="summary-card"><span class="label">Ausentes</span><span id="summary-absent" class="value">0</span></div>
+          <div class="summary-card"><span class="label">Pendientes</span><span id="summary-pending" class="value">0</span></div>
+          <div class="summary-card"><span class="label">Presentes</span><span id="summary-present" class="value">0</span></div>
+        </div>
 
         <section id="student-lists">
           <div id="courses-container"></div>
@@ -318,7 +331,7 @@
       const googleProvider = new firebase.auth.GoogleAuthProvider();
 
       // tempSporadicByShift: objeto donde la clave es el nombre del turno y el valor un Set de IDs esporádicos añadidos para *ese* turno hoy.
-      const appState = { currentShift: null, students: [], attendance: {}, tempSporadicByShift: {}, };
+      const appState = { currentShift: null, students: [], attendance: {}, tempSporadicByShift: {} };
 
       const dom = {
         roleDisplay: document.getElementById('role-display'),
@@ -347,6 +360,7 @@
         historySearch: document.getElementById('history-search'),
         loginAdminBtn: document.getElementById('login-admin-btn'),
         importCsvBtnInitial: document.getElementById('import-csv-btn-initial'),
+        importCsvBtn: document.getElementById('import-csv-btn'),
         manageStudentsBtn: document.getElementById('manage-students-btn'),
         wipeDbBtn: document.getElementById('wipe-db'),
         exportCsvBtn: document.getElementById('export-csv-btn'),
@@ -464,7 +478,10 @@
       function openSporadicPickerModal(course) {
         currentPickerCourse = course;
         dom.sporadicPickerTitle.textContent = `Seleccionar esporádicos — ${course}`;
-        // candidates: students in that course WITHOUT an assigned shift
+
+        // candidates:
+        // - alumnos que pertenecen a este curso y no tienen turno asignado
+        // That means an unassigned alumno in that course will appear in the picker for both shifts.
         const candidates = appState.students.filter(s => s.course === course && (!s.shift || s.shift.trim()==='') && !(s.id && s.id.startsWith && s.id.startsWith('sporadic_')));
         const container = dom.sporadicPickerContent;
         if (!candidates.length) {
@@ -472,7 +489,7 @@
         } else {
           let html = `<div style="display:flex;flex-direction:column;gap:8px">`;
           candidates.sort((a,b)=>a.name.localeCompare(b.name)).forEach(s => {
-            html += `<label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--card-border);border-radius:8px;background:#fff">
+            html += `<label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--card-border);border-radius:8px;background:#fff;min-width:0">
                        <input type="checkbox" class="sporadic-candidate" data-id="${s.id}">
                        <div style="flex:1;min-width:0"><strong>${s.name}</strong><div class="small-muted">${s.course}</div></div>
                      </label>`;
@@ -494,7 +511,7 @@
 
         for (const id of checked) {
           try {
-            // register attendance for today as present (change to 'pending' if you prefer)
+            // register attendance for today as present
             await logAttendance(id, today, 'present');
             appState.tempSporadicByShift[shift].add(id); // only for this shift
             appState.attendance[id] = 'present';
@@ -561,8 +578,7 @@
           if (appState.attendance[id] === 'pending') {
             appState.attendance[id] = 'absent';
             toMark.push(id);
-            // We don't have element IDs identical to student ids, we use dataset, but keep safe approach:
-            // try to update classes for any matching node
+            // actualiza nodos mostrados
             document.querySelectorAll('.student-item').forEach(el => {
               if (el.dataset && el.dataset.studentId === id) {
                 el.classList.remove('pending','present','absent');
@@ -619,7 +635,7 @@
         let ym = dom.reportMonthInput.value;
         if (!ym) { const now = new Date(); ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; dom.reportMonthInput.value = ym; }
         await generateMonthlyReport(ym);
-        const content = dom.monthlyReportContent.innerHTML;
+        const content = dom.monthly-report-content?.innerHTML || dom.monthlyReportContent.innerHTML;
         const iframe = document.createElement('iframe'); iframe.style.position='fixed'; iframe.style.right='0'; iframe.style.bottom='0'; iframe.style.width='0'; iframe.style.height='0'; iframe.style.border='0';
         document.body.appendChild(iframe);
         const doc = iframe.contentWindow.document;
@@ -641,16 +657,15 @@
             const checkedPrimer = s.shift === 'Primer Turno (Infantil)' ? 'checked' : '';
             const checkedSegundo = s.shift === 'Segundo Turno (Primaria)' ? 'checked' : '';
             const isAllergic = s.allergic ? 'checked' : '';
-            const isSporadic = !s.shift || s.shift.trim()==='';
+            // ONLY 3 controls: 1º turno, 2º turno, alergia
             html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px;border-bottom:1px solid var(--card-border);align-items:center;min-width:0">
                       <div style="min-width:0"><strong>${s.name}</strong></div>
                       <div style="display:flex;gap:8px;align-items:center">
-                        <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="primer" ${checkedPrimer}> Primer</label>
-                        <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="segundo" ${checkedSegundo}> Segundo</label>
+                        <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="primer" ${checkedPrimer}> 1º turno</label>
+                        <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="segundo" ${checkedSegundo}> 2º turno</label>
                       </div>
                       <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center">
                         <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-update-control" data-id="${s.id}" data-prop="allergic" ${isAllergic}> Alergia</label>
-                        <button class="toggle-status-btn ghost small" data-id="${s.id}" data-status="${s.status||'fixed'}">${isSporadic ? 'Hacer Fijo' : 'Hacer Esporádico'}</button>
                       </div>
                      </div>`;
           });
@@ -667,8 +682,8 @@
             if (primer && !segundo) newShift = 'Primer Turno (Infantil)';
             else if (!primer && segundo) newShift = 'Segundo Turno (Primaria)';
             else newShift = '';
-            const ok = await updateStudentDoc(id, { shift: newShift, status: newShift ? 'fixed' : 'sporadic' });
-            if (ok) { const s = appState.students.find(x=>x.id===id); if (s) { s.shift = newShift; s.status = newShift ? 'fixed' : 'sporadic'; } dom.importStatusInitial.textContent = 'Guardado'; setTimeout(()=>dom.importStatusInitial.textContent='',1200); }
+            const ok = await updateStudentDoc(id, { shift: newShift });
+            if (ok) { const s = appState.students.find(x=>x.id===id); if (s) { s.shift = newShift; } dom.importStatusInitial.textContent = 'Guardado'; setTimeout(()=>dom.importStatusInitial.textContent='',1200); }
           });
         });
 
@@ -676,25 +691,6 @@
           cb.addEventListener('change', async (ev) => {
             const id = ev.target.dataset.id; const val = !!ev.target.checked; const ok = await updateStudentDoc(id,{ allergic: val });
             if (ok) { const s = appState.students.find(x=>x.id===id); if (s) s.allergic = val; dom.importStatusInitial.textContent = 'Guardado'; setTimeout(()=>dom.importStatusInitial.textContent='',1200); }
-          });
-        });
-
-        dom.manageStudentsContent.querySelectorAll('.toggle-status-btn').forEach(btn => {
-          btn.addEventListener('click', async (ev) => {
-            const id = ev.target.dataset.id; const current = ev.target.dataset.status || 'fixed';
-            if (current === 'sporadic') {
-              const ok = await updateStudentDoc(id, { status: 'fixed' });
-              if (ok) { ev.target.dataset.status = 'fixed'; ev.target.textContent = 'Hacer Esporádico'; dom.importStatusInitial.textContent='Guardado'; setTimeout(()=>dom.importStatusInitial.textContent='',1200); }
-            } else {
-              const ok = await updateStudentDoc(id, { status: 'sporadic', shift: '' });
-              if (ok) {
-                ev.target.dataset.status = 'sporadic'; ev.target.textContent = 'Hacer Fijo';
-                const p = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="primer"]`);
-                const sbox = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="segundo"]`);
-                if (p) p.checked=false; if (sbox) sbox.checked=false;
-                dom.importStatusInitial.textContent='Guardado'; setTimeout(()=>dom.importStatusInitial.textContent='',1200);
-              }
-            }
           });
         });
 
@@ -744,6 +740,7 @@
       dom.loginAdminBtn.addEventListener('click', ()=> auth.signInWithPopup(googleProvider).catch(e=>{ console.error(e); alert('Error login'); }));
       dom.logoutBtn.addEventListener('click', ()=> auth.signOut().then(()=>{ setUIForRole(false); }));
       dom.importCsvBtnInitial.addEventListener('click', ()=> dom.csvFileInput.click());
+      if (dom.importCsvBtn) dom.importCsvBtn.addEventListener('click', ()=> dom.csvFileInput.click());
       dom.csvFileInput.addEventListener('change', e => handleCsvImport(e.target.files[0]));
       dom.manageStudentsBtn.addEventListener('click', openManageStudentsModal);
       dom.wipeDbBtn.addEventListener('click', async ()=> { if (!confirm('¿Borrar todos los alumnos?')) return; await deleteAllStudents(); appState.students = []; if (appState.currentShift) renderCourses(appState.currentShift); });
@@ -777,7 +774,6 @@
       function handleHash() {
         const h = (location.hash || '').replace('#','');
         if (h === 'admin') {
-          // mostrar vista admin-login-view y ocultar la selección por defecto
           dom.adminLoginView.classList.remove('hidden');
           dom.adminLoginView.style.display = 'block';
           document.getElementById('shift-selection').style.display = 'none';
