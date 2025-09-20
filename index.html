@@ -200,19 +200,10 @@ button.ghost {
 .student-item.pending { border-left-color: #cbd5e1; background: #ffffff; }
 .student-item.present { 
   border-left-color: var(--success); 
-  background-color: #dcfce7;
+  background-color: #dcfce7; /* Verde más visible */
   box-shadow: 0 8px 20px rgba(6,122,70,0.04); 
 }
 .student-item.absent { border-left-color: var(--danger); background: linear-gradient(90deg, rgba(201,42,42,0.04), #fff); opacity: .95; text-decoration: line-through; }
-.student-item.allergic {
-  box-shadow: 0 0 0 2px var(--danger);
-}
-.student-item .name.allergic::after {
-    content: '⚠️';
-    margin-left: 8px;
-    font-size: 0.8em;
-}
-
 
 /* mark-absent control */
 .mark-absent-btn {
@@ -235,17 +226,21 @@ button.ghost {
 .attendance-mark { width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; background:var(--success); color:#fff; border-radius:50%; font-weight:700; font-size:12px; }
 .report-table td.total { font-weight:700; color:var(--brand); }
 
+/* Small screens */
 @media (max-width:900px){
   .report-table th, .report-table td { padding:.25rem .35rem; font-size:11px; min-width:22px; }
   .admin-panel .controls { flex-direction: column; gap: .75rem; }
 }
 
+/* print */
 @media print {
   body > *:not(.printable-area) {
     display: none !important;
   }
+  .printable-area, .printable-area * {
+    visibility: visible !important;
+  }
   .printable-area {
-    display: block !important;
     position: absolute;
     left: 0;
     top: 0;
@@ -276,38 +271,17 @@ button.ghost {
     margin: 0.5cm;
   }
 }
-
-.fixed-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background-color: white;
-  border-radius: 12px;
-  padding: 20px;
-  width: 90%;
-  max-width: 800px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
 </style>
+
+<!-- ===== end styles ===== -->
 </head>
 <body>
 
+<!-- App principal -->
 <div id="app" class="container mx-auto p-4 md:p-8 max-w-7xl">
   <header class="text-center mb-10">
     <div class="flex justify-between items-center">
-        <div class="w-14"></div>
+        <div class="w-14"></div> <!-- Espaciador izquierdo -->
         <div class="flex flex-col items-center">
             <div class="logo"><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><rect fill='%23ffffff' width='48' height='48' rx='8'/><text x='50%' y='55%' font-size='18' text-anchor='middle' fill='%238b0630' font-family='Inter'>CEVP</text></svg>" alt="logo" style="width:44px;height:44px;border-radius:8px;"></div>
             <h1 class="text-4xl font-extrabold text-black mt-2">Gestor de Comedor</h1>
@@ -321,6 +295,7 @@ button.ghost {
     <p id="role-display" class="text-muted text-slate-600 mt-2 font-semibold">Cargando...</p>
   </header>
 
+  <!-- Login view / Main -->
   <div id="admin-login-view" class="hidden text-center bg-white p-8 rounded-2xl max-w-md mx-auto shadow-sm">
       <h2 class="text-2xl font-bold mb-6 text-black">Acceso de Administrador</h2>
       <button id="login-admin-btn" class="primary inline-flex items-center gap-3">
@@ -331,12 +306,13 @@ button.ghost {
 
   <div id="main-content" class="hidden">
 
+      <!-- Selección de turno -->
       <div id="shift-selection" class="text-center">
         <h2 class="text-2xl font-bold mb-6 text-black">Elige un turno de comedor</h2>
         <div id="shift-buttons" class="flex flex-wrap justify-center gap-6">
-          <button class="primary large" data-shift="Primer Turno (Infantil)">Primer Turno (Infantil)</button>
-          <button class="primary large" data-shift="Segundo Turno (Primaria)">Segundo Turno (Primaria)</button>
-        </div>
+  <button class="primary large" data-shift="Primer Turno (Infantil)">Primer Turno (Infantil)</button>
+  <button class="primary large" data-shift="Segundo Turno (Primaria)">Segundo Turno (Primaria)</button>
+</div>
 
         <div class="mt-12 pt-8 admin-panel admin-only">
           <h3 class="text-xl font-bold mb-2 text-center">Panel de Gestión</h3>
@@ -344,7 +320,6 @@ button.ghost {
             <h4 class="text-lg font-semibold mb-4 text-center" style="color:#475569;">Gestión de Datos</h4>
             <div class="btn-row" role="group" aria-label="gestion-datos">
               <button id="import-csv-btn-initial" class="primary" title="Importar CSV">📤 Importar Alumnos (CSV)</button>
-              <button id="manage-students-btn" class="primary" title="Gestionar alumnos">👥 Gestionar Alumnos</button>
               <button id="wipe-db" class="ghost" title="Borrar todos los alumnos">🗑️ Borrar todos los alumnos</button>
             </div>
             <p id="import-status-initial" class="text-center mt-3" style="min-height:18px"></p>
@@ -367,6 +342,7 @@ button.ghost {
 
       </div>
 
+      <!-- Dashboard -->
       <main id="dashboard" class="hidden">
         <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
           <button id="back-to-shifts" class="ghost">&larr; Volver a Turnos</button>
@@ -391,22 +367,7 @@ button.ghost {
 
 <input type="file" id="csv-file-input" class="hidden" accept=".csv">
 
-<div id="manage-students-modal" class="fixed-modal hidden no-print">
-  <div class="modal-content">
-    <header class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold text-brand">Gestionar Alumnos</h2>
-        <div class="flex items-center gap-4">
-            <button id="save-student-changes-btn" class="primary">Guardar Cambios</button>
-            <button id="close-manage-modal" class="text-3xl font-bold hover:text-red-500">&times;</button>
-        </div>
-    </header>
-    <div id="manage-students-content" class="max-h-[70vh] overflow-y-auto">
-        <!-- Content will be generated here -->
-    </div>
-  </div>
-</div>
-
-
+<!-- History Modal -->
 <div id="history-modal" class="fixed inset-0 bg-black/10 flex items-center justify-center p-4 hidden opacity-0 z-40 no-print">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-full max-h-[90vh] flex flex-col border border-gray-100 overflow-hidden">
         <header class="p-4 border-b border-gray-100 flex justify-between items-center">
@@ -426,7 +387,8 @@ button.ghost {
     </div>
 </div>
 
-<div id="monthly-report-modal" class="fixed inset-0 bg-black/10 flex items-center justify-center p-4 hidden opacity-0 z-40 no-print">
+<!-- Monthly Report Modal -->
+<div id="monthly-report-modal" class="fixed inset-0 bg-black/10 flex items-center justify-center p-4 hidden opacity-0 z-40">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-full max-h-[90vh] flex flex-col border border-gray-100 overflow-hidden">
         <header class="p-4 border-b border-gray-100 flex justify-between items-center no-print">
             <h2 class="text-2xl font-bold" style="color:var(--brand)">Informe de Asistencia Mensual</h2>
@@ -442,11 +404,14 @@ button.ghost {
     </div>
 </div>
 
+<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<!-- PapaParse -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
+<!-- ===== JS: lógica (sin tocar la estructura principal) ===== -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -492,8 +457,13 @@ document.addEventListener('DOMContentLoaded', () => {
     manageStudentsBtn: document.getElementById('manage-students-btn'),
     manageStudentsModal: document.getElementById('manage-students-modal'),
     closeManageModal: document.getElementById('close-manage-modal'),
-    manageStudentsContent: document.getElementById('manage-students-content'),
-    saveStudentsBtn: document.getElementById('save-students-btn')
+    saveStudentsBtn: document.getElementById('save-students-btn'),
+    fixedStudentsList: document.getElementById('fixed-students-list'),
+    sporadicStudentsList: document.getElementById('sporadic-students-list'),
+    allStudentsList: document.getElementById('all-students-list'),
+    fixedSearch: document.getElementById('fixed-search'),
+    sporadicSearch: document.getElementById('sporadic-search'),
+    allSearch: document.getElementById('all-search')
   };
 
   /* ---------------- UI visibility ---------------- */
