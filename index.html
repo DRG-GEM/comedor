@@ -308,299 +308,33 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutBtn: document.getElementById('logout-btn')
   };
 
-  // Aquí continúa la lógica: fetch, render, picker, gestión, informes, eventos...
-
-</script>
-
-<script>
-  /* ----- Firestore helpers ----- */
-  async function fetchStudents() {
-    const snap = await db.collection('students').get();
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  }
-
-  async function updateStudentDoc(id, updates) {
-    try {
-      await db.collection('students').doc(id).update(updates);
-      return true;
-    } catch (e) {
-      console.error(e);
-      return false;
+  // 🔐 Autenticación y rol
+  auth.onAuthStateChanged(async user => {
+    if (!user) {
+      dom.roleDisplay.textContent = 'No autenticado';
+      dom.adminLoginView.classList.remove('hidden');
+      dom.mainContent.classList.add('hidden');
+      return;
     }
-  }
 
-  async function addStudentBatch(students) {
-    const batch = db.batch();
-    const col = db.collection('students');
-    let added = 0;
-    students.forEach(s => {
-      if (s.name && s.course) {
-        const docRef = col.doc();
-        batch.set(docRef, {
-          name: s.name.trim(),
-          course: s.course.trim(),
-          shift: s.shift ? s.shift.trim() : '',
-          status: s.shift ? 'fixed' : 'sporadic',
-          allergic: !!s.allergic
-        });
-        added++;
-      }
+    const email = user.email || '';
+    const isAdmin = email.includes('@admin.com'); // ajusta según tu dominio
+    dom.roleDisplay.textContent = isAdmin ? 'Administrador' : 'Profesor';
+    dom.logoutBtn.classList.remove('hidden');
+    dom.adminLoginView.classList.add('hidden');
+    dom.mainContent.classList.remove('hidden');
+
+    document.querySelectorAll('.admin-only').forEach(el => {
+      el.classList.toggle('hidden', !isAdmin);
     });
-    if (added) await batch.commit();
-    return added;
-  }
 
-  async function deleteAllStudents() {
-    const snap = await db.collection('students').get();
-    const batch = db.batch();
-    snap.docs.forEach(d => batch.delete(d.ref));
-    await batch.commit();
-  }
-
-  async function logAttendance(studentId, dateStr, state) {
-    if (studentId.startsWith && studentId.startsWith('sporadic_')) return;
-    const docRef = db.collection('attendance').doc(`${studentId}_${dateStr}`);
-    await docRef.set({ studentId, date: dateStr, state });
-  }
-
-  async function logBatchAttendance(ids, dateStr, state) {
-    const valid = ids.filter(id => !(id.startsWith && id.startsWith('sporadic_')));
-    if (!valid.length) return;
-    const batch = db.batch();
-    const col = db.collection('attendance');
-    valid.forEach(id => batch.set(col.doc(`${id}_${dateStr}`), { studentId: id, date: dateStr, state }));
-    await batch.commit();
-  }
-
-  async function fetchAttendanceByDate(dateStr) {
-    const snap = await db.collection('attendance').where('date', '==', dateStr).get();
-    const out = {};
-    snap.docs.forEach(d => out[d.data().studentId] = d.data().state);
-    return out;
-  }
-
-  async function fetchAttendanceByMonth(ym) {
-    const start = ym + '-01', end = ym + '-31';
-    const snap = await db.collection('attendance').where('date', '>=', start).where('date', '<=', end).get();
-    const map = new Map();
-    snap.docs.forEach(d => {
-      const r = d.data();
-      if (!map.has(r.studentId)) map.set(r.studentId, new Set());
-      const day = parseInt(r.date.slice(-2).replace(/^0+/, ''), 10);
-      if (!isNaN(day)) map.get(r.studentId).add(day);
-    });
-    return map;
-  }
-
-  // Aquí continúa: renderCourses, picker, gestión, informes, eventos, UI...
-</script>
-
-<script>
-  /* ----- UI helpers ----- */
-  function updateSummary() {
-    const vals = Object.values(appState.attendance || {});
-    dom.summary.diners.textContent = vals.length;
-    dom.summary.absent.textContent = vals.filter(v => v === 'absent').length;
-    dom.summary.present.textContent = vals.filter(v => v === 'present').length;
-    dom.summary.pending.textContent = vals.filter(v => v === 'pending').length;
-  }
-
-  function createStudentElement(s) {
-    const div = document.createElement('div');
-    const stateClass = appState.attendance?.[s.id] || 'pending';
-    div.className = `student-item ${stateClass}${s.allergic ? ' allergic' : ''}`;
-    div.dataset.studentId = s.id;
-    div.dataset.studentName = s.name;
-    div.innerHTML = `
-      <span class="name ${s.allergic ? 'allergic' : ''}">${s.name}</span>
-      <div class="flex items-center gap-2">
-        <button class="mark-absent-btn" title="Marcar ausente">&times;</button>
-      </div>
-    `;
-    return div.outerHTML;
-  }
-
-  async function renderCourses(shift) {
-    appState.currentShift = shift;
-    document.getElementById('shift-selection').style.display = 'none';
-    document.getElementById('dashboard').classList.remove('hidden');
-    dom.coursesContainer.innerHTML = '<p class="small-muted">Cargando alumnos...</p>';
-
-    appState.students = await fetchStudents();
-    const today = new Date().toISOString().slice(0, 10);
-    const attendance = await fetchAttendanceByDate(today);
-    appState.attendance = {};
-    appState.students.forEach(s => appState.attendance[s.id] = attendance[s.id] || 'pending');
-
-    dom.coursesContainer.innerHTML = '';
-    const assigned = appState.students.filter(s => (s.shift === shift) || appState.tempSporadic.has(s.id));
-    const courses = [...new Set(assigned.map(s => s.course))].sort();
-
-    if (!courses.length) {
-      dom.coursesContainer.innerHTML = '<p class="small-muted">No hay alumnos en este turno.</p>';
-    } else {
-      courses.forEach(course => {
-        const card = document.createElement('div');
-        card.className = 'course-card';
-        const studentsInCourse = assigned.filter(s => s.course === course).sort((a, b) => a.name.localeCompare(b.name));
-        const listHtml = studentsInCourse.map(createStudentElement).join('');
-        const pickerBtn = `<div style="margin-top:8px"><button class="open-sporadic-picker primary" data-course="${course}">+ Añadir esporádico</button></div>`;
-        card.innerHTML = `<div><h3>${course}</h3><div style="display:flex;flex-direction:column;gap:8px" data-course-list="${course}">${listHtml}</div></div>${pickerBtn}`;
-        dom.coursesContainer.appendChild(card);
-      });
-    }
-    updateSummary();
-  }
-
-  function openSporadicPickerModal(course) {
-    const candidates = appState.students.filter(s => s.course === course && !s.shift && !s.id.startsWith('sporadic_'));
-    const container = dom.sporadicPickerContent;
-    if (!candidates.length) {
-      container.innerHTML = `<p class="small-muted">No hay alumnos sin turno asignado en ${course}.</p>`;
-    } else {
-      let html = `<div style="display:flex;flex-direction:column;gap:8px">`;
-      candidates.sort((a, b) => a.name.localeCompare(b.name)).forEach(s => {
-        html += `<label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--card-border);border-radius:8px;background:#fff">
-                   <input type="checkbox" class="sporadic-candidate" data-id="${s.id}">
-                   <div style="flex:1"><strong>${s.name}</strong><div class="small-muted">${s.course}</div></div>
-                 </label>`;
-      });
-      html += `</div>`;
-      container.innerHTML = html;
-    }
-    dom.sporadicPickerTitle.textContent = `Seleccionar esporádicos — ${course}`;
-    dom.sporadicPickerModal.classList.add('active');
-  }
-
-  dom.confirmSporadicAdd.addEventListener('click', async () => {
-    const checked = Array.from(dom.sporadicPickerContent.querySelectorAll('.sporadic-candidate:checked')).map(cb => cb.dataset.id);
-    if (!checked.length) return alert('Selecciona al menos un alumno.');
-    const today = new Date().toISOString().slice(0, 10);
-    for (const id of checked) {
-      try {
-        await logAttendance(id, today, 'present');
-        appState.tempSporadic.add(id);
-        appState.attendance[id] = 'present';
-      } catch (e) {
-        console.error('Error al añadir esporádico', e);
-      }
-    }
-    if (appState.currentShift) await renderCourses(appState.currentShift);
-    dom.sporadicPickerModal.classList.remove('active');
+    document.getElementById('shift-selection').style.display = 'block';
+    document.getElementById('dashboard').classList.add('hidden');
   });
 
-  dom.closeSporadicPicker.addEventListener('click', () => dom.sporadicPickerModal.classList.remove('active'));
-
-  // Aquí continúa: gestión de alumnos, informes, historial, eventos y UI final...
-</script>
-
-<script>
-  /* ----- Finalizar turno ----- */
-  async function finalizeShift() {
-    if (!confirm('¿Finalizar turno? Los pendientes pasarán a ausentes.')) return;
-    const today = new Date().toISOString().slice(0, 10);
-    const toMark = [];
-    for (const id in appState.attendance) {
-      if (appState.attendance[id] === 'pending') {
-        appState.attendance[id] = 'absent';
-        toMark.push(id);
-        const el = document.querySelector(`[data-student-id="${id}"]`);
-        if (el) {
-          el.classList.remove('pending', 'present', 'absent');
-          el.classList.add('absent');
-        }
-      }
-    }
-    await logBatchAttendance(toMark, today, 'absent');
-    updateSummary();
-  }
-
-  /* ----- Historial ----- */
-  async function showHistoryModal() {
-    dom.historyModal.classList.add('active');
-    dom.historyStudentList.innerHTML = '<p class="small-muted">Cargando...</p>';
-    const all = await fetchStudents();
-    all.sort((a, b) => a.name.localeCompare(b.name));
-    dom.historyStudentList.innerHTML = all.map(s => `
-      <div class="history-student p-2" data-id="${s.id}" data-name="${s.name}" style="border-bottom:1px solid var(--card-border);padding:8px;cursor:pointer">
-        <strong>${s.name}</strong>
-        <div class="small-muted">${s.shift || '(Esporádico)'} • ${s.course}</div>
-      </div>
-    `).join('');
-  }
-
-  async function showStudentHistory(id, name) {
-    dom.historyStudentName.textContent = `Historial de: ${name}`;
-    dom.historyDatesList.innerHTML = '<p class="small-muted">Buscando...</p>';
-    const snap = await db.collection('attendance').where('studentId', '==', id).get();
-    const dates = snap.docs.map(d => d.data().date).sort().reverse();
-    dom.historyDatesList.innerHTML = dates.length
-      ? dates.map(d => `<div style="padding:6px;border-bottom:1px solid var(--card-border)">${new Date(d + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>`).join('')
-      : '<p class="small-muted">Sin registros.</p>';
-  }
-
-  /* ----- Informe mensual ----- */
-  async function generateMonthlyReport(ym) {
-    dom.monthlyReportContent.innerHTML = '<p class="small-muted">Generando informe...</p>';
-    if (!ym) return dom.monthlyReportContent.innerHTML = '<p style="color:#b45309">Selecciona un mes.</p>';
-    const [y, m] = ym.split('-').map(v => parseInt(v, 10));
-    const days = new Date(y, m, 0).getDate();
-    const all = await fetchStudents();
-    const attendanceData = await fetchAttendanceByMonth(ym);
-    const byCourse = all.reduce((acc, s) => {
-      (acc[s.course] = acc[s.course] || []).push(s);
-      return acc;
-    }, {});
-    let html = `<div class="printable-area"><h2 style="text-align:center">${new Date(y, m - 1, 1).toLocaleString('es-ES', { month: 'long', year: 'numeric' })}</h2>`;
-    Object.keys(byCourse).sort().forEach(course => {
-      const students = byCourse[course].sort((a, b) => a.name.localeCompare(b.name));
-      html += `<div class="report-wrapper" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center"><strong>${course}</strong><small>Días: ${days} — ${students.length} alumnos</small></div><div style="overflow:auto;margin-top:8px"><table class="report-table"><thead><tr><th>Alumno</th>`;
-      for (let d = 1; d <= days; d++) html += `<th>${d}</th>`;
-      html += `<th>Total</th></tr></thead><tbody>`;
-      students.forEach(st => {
-        const attended = attendanceData.get(st.id) || new Set();
-        html += `<tr><td style="text-align:left;padding-left:6px">${st.name}</td>`;
-        for (let d = 1; d <= days; d++) html += attended.has(d) ? `<td><span class="attendance-mark">✓</span></td>` : `<td></td>`;
-        html += `<td class="total">${attended.size}</td></tr>`;
-      });
-      html += `</tbody></table></div></div>`;
-    });
-    html += `</div>`;
-    dom.monthlyReportContent.innerHTML = html;
-  }
-
-  dom.printReportBtn.addEventListener('click', async () => {
-    let ym = dom.reportMonthInput.value;
-    if (!ym) {
-      const now = new Date();
-      ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      dom.reportMonthInput.value = ym;
-    }
-    await generateMonthlyReport(ym);
-    const content = dom.monthlyReportContent.innerHTML;
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = '0';
-    document.body.appendChild(iframe);
-    const doc = iframe.contentWindow.document;
-    const successColor = getComputedStyle(document.documentElement).getPropertyValue('--success') || '#004623';
-    const styles = `<style>body{font-family:Inter,Arial;padding:18px;color:#111} .attendance-mark{display:inline-block;width:20px;height:20px;background:${successColor};color:#fff;border-radius:50%;text-align:center;line-height:20px;font-weight:700}</style>`;
-    doc.open();
-    doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Informe ${ym}</title>${styles}</head><body>${content}</body></html>`);
-    doc.close();
-    setTimeout(() => {
-      try { iframe.contentWindow.focus(); iframe.contentWindow.print(); } catch (e) { console.error(e); alert('Error al imprimir: ' + e.message); }
-      setTimeout(() => { try { document.body.removeChild(iframe); } catch (e) {} }, 800);
-    }, 300);
-  });
-
-  /* ----- Eventos UI ----- */
+  // 🔘 Botones
   dom.loginAdminBtn.addEventListener('click', () => auth.signInWithPopup(googleProvider).catch(e => alert('Error login')));
-  dom.logoutBtn.addEventListener('click', () => auth.signOut().then(() => setUIForRole(false)));
+  dom.logoutBtn.addEventListener('click', () => auth.signOut().then(() => location.reload()));
   dom.importCsvBtnInitial.addEventListener('click', () => dom.csvFileInput.click());
   dom.csvFileInput.addEventListener('change', e => handleCsvImport(e.target.files[0]));
   dom.manageStudentsBtn.addEventListener('click', openManageStudentsModal);
@@ -612,57 +346,17 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('show-monthly-report-btn')?.addEventListener('click', async () => { const now = new Date(); const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`; dom.reportMonthInput.value = ym; dom.monthlyReportModal.classList.add('active'); await generateMonthlyReport(ym); });
   document.getElementById('show-history-btn')?.addEventListener('click', showHistoryModal);
   document.getElementById('close-history-btn')?.addEventListener('click', () => dom.historyModal.classList.remove('active'));
-  dom.historyStudentList.addEventListener('click', ev => { const row = ev.target.closest('.history-student'); if (row) showStudentHistory(row.dataset.id, row.dataset.name); });
-    dom.historySearch.addEventListener('input', (e) => {
+  dom.historySearch.addEventListener('input', (e) => {
     const q = e.target.value.toLowerCase();
     document.querySelectorAll('#history-student-list .history-student').forEach(el => {
       el.style.display = el.dataset.name.toLowerCase().includes(q) ? '' : 'none';
     });
   });
-
   dom.closeReportBtn?.addEventListener('click', () => dom.monthlyReportModal.classList.remove('active'));
   dom.closeManageModal.addEventListener('click', () => dom.manageStudentsModal.classList.remove('active'));
+  dom.closeSporadicPicker.addEventListener('click', () => dom.sporadicPickerModal.classList.remove('active'));
 
-  // Delegación de clics en alumnos y picker
-  dom.coursesContainer.addEventListener('click', async (e) => {
-    const openPickerBtn = e.target.closest('.open-sporadic-picker');
-    if (openPickerBtn) {
-      openSporadicPickerModal(openPickerBtn.dataset.course);
-      return;
-    }
-
-    const studentDiv = e.target.closest('.student-item');
-    if (!studentDiv) return;
-    const studentId = studentDiv.dataset.studentId;
-    const isX = e.target.closest('.mark-absent-btn');
-    const current = appState.attendance[studentId] || 'pending';
-    const newState = isX ? (current === 'absent' ? 'pending' : 'absent') : (current === 'present' ? 'pending' : 'present');
-    appState.attendance[studentId] = newState;
-    studentDiv.classList.remove('pending', 'present', 'absent');
-    studentDiv.classList.add(newState);
-    updateSummary();
-    try {
-      await logAttendance(studentId, new Date().toISOString().slice(0, 10), newState);
-    } catch (err) {
-      console.error('logAttendance error', err);
-    }
-  });
-
-  // Inicialización de interfaz
-  function setUIForRole(isAdmin) {
-    dom.roleDisplay.textContent = isAdmin ? 'Administrador' : 'Modo: Profesor / Cuidador';
-    document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('hidden', !isAdmin));
-    dom.logoutBtn.style.display = isAdmin ? 'inline-flex' : 'none';
-    document.getElementById('dashboard').classList.add('hidden');
-    document.getElementById('shift-selection').style.display = 'block';
-  }
-
-  auth.onAuthStateChanged(user => {
-    const isAdmin = user && !user.isAnonymous;
-    setUIForRole(isAdmin);
-  });
-
-  // Hash #admin para mostrar login
+  // 🧠 Hash #admin
   function handleHash() {
     const h = (location.hash || '').replace('#', '');
     if (h === 'admin') {
@@ -671,27 +365,22 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('shift-selection').style.display = 'none';
       document.getElementById('dashboard').classList.add('hidden');
       try { dom.loginAdminBtn.focus(); } catch (e) {}
-    } else {
-      if (!auth.currentUser) dom.adminLoginView.classList.add('hidden');
     }
   }
   window.addEventListener('hashchange', handleHash);
   handleHash();
 
-  // Service worker (no bloqueante)
+  // 🛡️ Seguridad y extras
+  window.addEventListener('error', ev => console.error('GLOBAL ERROR:', ev.message));
+  window.addEventListener('unhandledrejection', ev => console.error('UNHANDLED REJECTION:', ev.reason));
+  dom.exportDateInput.value = new Date().toISOString().slice(0, 10);
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register?.('/sw.js').then(() => console.log('SW registrado')).catch(() => {});
   }
-
-  // Seguridad: logs globales
-  window.addEventListener('error', ev => console.error('GLOBAL ERROR:', ev.message));
-  window.addEventListener('unhandledrejection', ev => console.error('UNHANDLED REJECTION:', ev.reason));
-
-  // Fecha por defecto en exportación
-  dom.exportDateInput.value = new Date().toISOString().slice(0, 10);
 });
 </script>
 </body>
 </html>
+
 
 
