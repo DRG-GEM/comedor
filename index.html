@@ -416,79 +416,63 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('dashboard').classList.remove('hidden');
   dom.coursesContainer.innerHTML = '<p class="small-muted">Cargando alumnos...</p>';
 
-  // Obtener alumnos y asistencia
+  // Cargar datos
   appState.students = await fetchStudents();
   const today = new Date().toISOString().slice(0,10);
-  const attendanceData = await fetchAttendanceByDate(today);
-  const attendanceStates = attendanceData.states || {};
-  const attendanceRecords = attendanceData.records || [];
-
+  const attendance = await fetchAttendanceByDate(today); // mapa id -> estado
   appState.attendance = {};
-  appState.students.forEach(s => {
-    appState.attendance[s.id] = attendanceStates[s.id] || 'pending';
-  });
+  appState.students.forEach(s => { appState.attendance[s.id] = attendance[s.id] || 'pending'; });
 
   dom.coursesContainer.innerHTML = '';
 
-  // --- Filtrar alumnos ---
-  let fixed = [];
-  if (shift === 'Primer Turno') {
-    fixed = appState.students.filter(s => s.turno1);
-  } else if (shift === 'Segundo Turno') {
-    fixed = appState.students.filter(s => s.turno2);
-  }
+  // Conjunto de tempSporadic para este turno (seguridad por si no existiera)
+  const sporadicSetForShift = (appState.tempSporadic && appState.tempSporadic[shift]) ? appState.tempSporadic[shift] : new Set();
 
-  // Alumnos sin turno (candidatos esporádicos, siempre disponibles en ambos turnos)
-  const esporadicos = appState.students.filter(s => !s.turno1 && !s.turno2);
+  // Alumnos fijos para el turno (comprobamos el string completo de shift)
+  const fixed = appState.students.filter(s => s.shift && s.shift === shift);
 
-  // Reunir todos los cursos que tengan al menos un fijo o un esporádico
-  const allCourses = new Set([
-    ...fixed.map(s => s.course),
-    ...esporadicos.map(s => s.course)
-  ]);
+  // Alumnos sin turno asignado -> candidatos esporádicos (aparecen en ambos turnos)
+  const esporadicos = appState.students.filter(s => !s.shift || s.shift.trim() === '');
 
-  if (!allCourses.size) {
+  // Alumnos asignados a mostrar: fijos + esporádicos añadidos temporalmente para este turno
+  const assigned = appState.students.filter(s => (s.shift && s.shift === shift) || sporadicSetForShift.has(s.id));
+
+  // Reunir cursos que tengan al menos un asignado o al menos un candidato esporádico
+  const courseSet = new Set();
+  assigned.forEach(s => courseSet.add(s.course));
+  esporadicos.forEach(s => courseSet.add(s.course));
+
+  const courses = [...courseSet].sort((a,b) => (a||'').localeCompare(b||''));
+
+  if (!courses.length) {
     dom.coursesContainer.innerHTML = '<p class="small-muted">No hay alumnos en este turno.</p>';
+    updateSummary();
     return;
   }
 
-  // Pintar cada curso
-  [...allCourses].sort().forEach(course => {
+  // Pintar cursos
+  courses.forEach(course => {
     const card = document.createElement('div');
     card.className = 'course-card';
 
-    const studentsFixed = fixed.filter(s => s.course === course)
-      .sort((a,b)=>a.name.localeCompare(b.name));
+    // Los que deben listarse como filas: solo los "assigned" (fijos del turno + los esporádicos ya añadidos para este turno)
+    const studentsInCourse = assigned.filter(s => s.course === course).sort((a,b) => a.name.localeCompare(b.name));
+    const listHtml = studentsInCourse.map(createStudentElement).join('');
 
-    const listHtml = studentsFixed.map(createStudentElement).join('');
+    // Candidatos esporádicos por curso: todos los sin turno de ese curso
+    const sporadicCandidates = esporadicos.filter(s => s.course === course).sort((a,b) => a.name.localeCompare(b.name));
 
-    const sporadicCandidates = esporadicos.filter(s => s.course === course)
-      .sort((a,b)=>a.name.localeCompare(b.name));
+    const pickerBtn = sporadicCandidates.length > 0
+      ? `<div style="margin-top:8px"><button class="open-sporadic-picker primary" data-course="${course}">+ Añadir esporádico</button></div>`
+      : '';
 
-    let sporadicBtn = '';
-    if (sporadicCandidates.length > 0) {
-      sporadicBtn = `
-        <div style="margin-top:8px">
-          <button class="open-sporadic-picker primary" data-course="${course}">
-            + Añadir esporádico
-          </button>
-        </div>`;
-    }
-
-    card.innerHTML = `
-      <div>
-        <h3>${course}</h3>
-        <div style="display:flex;flex-direction:column;gap:8px" data-course-list="${course}">
-          ${listHtml}
-        </div>
-      </div>
-      ${sporadicBtn}
-    `;
+    card.innerHTML = `<div><h3>${course}</h3><div style="display:flex;flex-direction:column;gap:8px" data-course-list="${course}">${listHtml}</div></div>${pickerBtn}`;
     dom.coursesContainer.appendChild(card);
   });
 
   updateSummary();
 }
+
 
 
   /* ----- Sporadic picker ----- */
