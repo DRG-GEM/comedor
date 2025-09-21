@@ -751,8 +751,46 @@ if (dom.printReportBtn) {
 
     const doc = iframe.contentWindow.document;
     const successColor = getComputedStyle(document.documentElement).getPropertyValue('--success') || '#004623';
-    const styles = `<style>body{font-family:Inter,Arial;padding:18px;color:#111} .attendance-mark{display:inline-block;width:20px;height:20px;background:${successColor};color:#fff;border-radius:50%;text-align:center;line-height:20px;font-weight:700} table{border-collapse:collapse;width:100%} th,td{border:1px solid #e6e8eb;padding:6px;text-align:center}</style>`;
-    doc.open();
+    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#004080';
+const styles = `
+  <style>
+    body {
+      font-family: Inter, Arial, sans-serif;
+      padding: 18px;
+      color: #111;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .attendance-mark {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      background: ${successColor} !important;
+      color: #fff !important;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 20px;
+      font-weight: 700;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #e6e8eb;
+      padding: 6px;
+      text-align: center;
+    }
+    th {
+      background: #f3f4f6;
+    }
+    .report-wrapper > div:first-child {
+      background: ${primaryColor} !important;
+      color: #fff !important;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+  </style>`;    doc.open();
     doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Informe ${ym}</title>${styles}</head><body>${content}</body></html>`);
     doc.close();
 
