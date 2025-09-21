@@ -212,6 +212,66 @@ img, svg { max-width:100%; height:auto; display:block; }
   /* Si aún existiera overflow en tablas del informe, permitir wrap en impresión ya manejado antes */
   #courses-container { padding-right: 6px; }
 }
+/* -----------------------
+   Pantalla principal
+   ----------------------- */
+.main-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  text-align: center;
+  min-height: calc(100vh - 60px); /* deja margen con la cabecera si la hay */
+}
+
+.app-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--primary, #8b0630);
+  margin-bottom: 8px;
+}
+
+.app-subtitle {
+  font-size: 1.1rem;
+  color: #374151;
+  margin-bottom: 28px;
+}
+
+.turn-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+}
+
+.turn-btn {
+  background: var(--primary, #8b0630);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  min-width: 160px;
+}
+
+.turn-btn:hover {
+  background: #a50a3d;
+}
+
+.turn-btn:active {
+  transform: scale(0.97);
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+  .app-title { font-size: 1.5rem; }
+  .app-subtitle { font-size: 1rem; margin-bottom: 20px; }
+  .turn-btn { font-size: 1rem; padding: 12px 22px; min-width: 140px; }
+}
 
 </style>
 </head>
@@ -243,29 +303,30 @@ img, svg { max-width:100%; height:auto; display:block; }
   <!-- Main -->
   <div id="main-content" style="margin-top:18px">
 
-    <section id="shift-selection" style="text-align:center">
-      <h2 style="margin-bottom:12px">Elige un turno de comedor</h2>
-      <div class="btn-row" id="shift-buttons" style="justify-content:center">
-        <button class="primary large" data-shift="Primer Turno (Infantil)">Primer Turno (Infantil)</button>
-        <button class="primary large" data-shift="Segundo Turno (Primaria)">Segundo Turno (Primaria)</button>
-      </div>
+    <section id="shift-selection" class="shift-selection">
+  <h2 class="app-subtitle">Selecciona un turno</h2>
+  <div class="turn-buttons" id="shift-buttons">
+    <button class="turn-btn" data-shift="Primer Turno">Primer Turno</button>
+    <button class="turn-btn" data-shift="Segundo Turno">Segundo Turno</button>
+  </div>
 
-      <div class="admin-panel admin-only" style="margin-top:18px">
-        <h3 style="text-align:center;margin-bottom:10px">Panel de Gestión</h3>
-        <div class="btn-row" role="group" aria-label="gestion-datos">
-          <button id="import-csv-btn-initial" class="primary">📤 Importar Alumnos (CSV)</button>
-          <button id="manage-students-btn" class="primary">👥 Gestionar Alumnos</button>
-          <button id="wipe-db" class="ghost">🗑️ Borrar todos los alumnos</button>
-          <button id="show-monthly-report-btn" class="primary">📅 Informe Mensual</button>
-          <button id="show-history-btn" class="primary">📜 Historial</button>
-        </div>
-        <div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap">
-          <input id="export-date-input" type="date" style="padding:8px;border-radius:8px;border:1px solid var(--card-border);background:#fff">
-          <button id="export-csv-btn" class="primary">💾 Exportar CSV del Día</button>
-        </div>
-        <p id="import-status-initial" style="text-align:center;margin-top:10px;min-height:18px;color:#059669"></p>
-      </div>
-    </section>
+  <!-- Panel de gestión (solo admin) -->
+  <div class="admin-panel admin-only">
+    <h3 style="text-align:center;margin-bottom:10px">Panel de Gestión</h3>
+    <div class="btn-row" role="group" aria-label="gestion-datos">
+      <button id="import-csv-btn-initial" class="primary">📤 Importar Alumnos (CSV)</button>
+      <button id="manage-students-btn" class="primary">👥 Gestionar Alumnos</button>
+      <button id="wipe-db" class="ghost">🗑️ Borrar todos los alumnos</button>
+      <button id="show-monthly-report-btn" class="primary">📅 Informe Mensual</button>
+      <button id="show-history-btn" class="primary">📜 Historial</button>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap">
+      <input id="export-date-input" type="date" style="padding:8px;border-radius:8px;border:1px solid var(--card-border);background:#fff">
+      <button id="export-csv-btn" class="primary">💾 Exportar CSV del Día</button>
+    </div>
+    <p id="import-status-initial" style="text-align:center;margin-top:10px;min-height:18px;color:#059669"></p>
+  </div>
+</section>
 
     <main id="dashboard" class="hidden" style="margin-top:18px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
