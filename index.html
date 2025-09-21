@@ -790,7 +790,18 @@ const styles = `
       padding: 6px 10px;
       border-radius: 6px;
     }
-  </style>`;    doc.open();
+
+    /* --- Fix impresión --- */
+    @media print {
+      .report-wrapper div[style*="overflow:auto"] {
+        overflow: visible !important;
+      }
+      .report-table {
+        table-layout: fixed;
+      }
+    }
+  </style>`;
+    doc.open();
     doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Informe ${ym}</title>${styles}</head><body>${content}</body></html>`);
     doc.close();
 
