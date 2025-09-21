@@ -637,41 +637,155 @@ async function showStudentHistory(id, name) {
 }
 
   /* ----- Monthly report + print ----- */
-  async function generateMonthlyReport(ym) {
-    dom.monthlyReportContent.innerHTML = '<p class="small-muted">Generando informe...</p>';
-    if (!ym) { dom.monthlyReportContent.innerHTML = '<p style="color:#b45309">Selecciona un mes.</p>'; return; }
-    const [y,m] = ym.split('-').map(v=>parseInt(v,10)); const days = new Date(y,m,0).getDate();
-    const all = await fetchStudents(); const attendanceData = await fetchAttendanceByMonth(ym);
-    const byCourse = all.reduce((acc,s)=>{ (acc[s.course]=acc[s.course]||[]).push(s); return acc; },{});
-    let html = `<div class="printable-area"><h2 style="text-align:center">${new Date(y,m-1,1).toLocaleString('es-ES',{month:'long',year:'numeric'})}</h2>`;
-    Object.keys(byCourse).sort().forEach(course=>{
-      const students = byCourse[course].sort((a,b)=>a.name.localeCompare(b.name));
-      html += `<div class="report-wrapper" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center"><strong>${course}</strong><small>Días: ${days} — ${students.length} alumnos</small></div><div style="overflow:auto;margin-top:8px"><table class="report-table"><thead><tr><th>Alumno</th>`;
-      for(let d=1; d<=days; d++) html += `<th>${d}</th>`; html += `<th>Total</th></tr></thead><tbody>`;
-      students.forEach(st=>{
-        const attended = attendanceData.get(st.id) || new Set();
-        html += `<tr><td style="text-align:left;padding-left:6px">${st.name}</td>`;
-        for (let d=1; d<=days; d++) html += attended.has(d) ? `<td><span class="attendance-mark">✓</span></td>` : `<td></td>`;
-        html += `<td class="total">${attended.size}</td></tr>`;
-      });
-      html += `</tbody></table></div></div>`;
-    });
-    html += `</div>`;
-    dom.monthlyReportContent.innerHTML = html;
+  /* ---------------------------
+   INFORME MENSUAL (parche)
+   --------------------------- */
+
+async function generateMonthlyReport(ym) {
+  dom.monthlyReportContent.innerHTML = '<p class="small-muted">Generando informe...</p>';
+  if (!ym || !/^\d{4}-\d{2}$/.test(ym)) {
+    dom.monthlyReportContent.innerHTML = '<p style="color:#b45309">Selecciona un mes válido.</p>';
+    return;
   }
 
+  try {
+    const [yStr,mStr] = ym.split('-');
+    const y = parseInt(yStr,10), m = parseInt(mStr,10);
+    const days = new Date(y, m, 0).getDate(); // número de días del mes
+
+    // datos
+    const allStudents = await fetchStudents(); // [{id,name,course,shift,allergic}]
+    const attendanceData = await fetchAttendanceByMonth(ym); // debe devolver Map studentId -> Set(days)
+    // seguridad: si fetchAttendanceByMonth devuelve objeto en otro formato, normalizamos:
+    // (la impl. existente debería devolver Map, si no, adaptarlo)
+    const attendanceMap = (attendanceData instanceof Map) ? attendanceData : new Map(Object.entries(attendanceData || {}));
+
+    // agrupar por curso (incluimos cursos vacíos por si)
+    const byCourse = allStudents.reduce((acc, s) => { (acc[s.course] = acc[s.course] || []).push(s); return acc; }, {});
+
+    if (!Object.keys(byCourse).length) {
+      dom.monthlyReportContent.innerHTML = '<p class="small-muted">No hay alumnos registrados.</p>';
+      return;
+    }
+
+    // construir HTML del informe
+    let html = `<div class="printable-area"><h2 style="text-align:center">${new Date(y, m-1, 1).toLocaleString('es-ES', { month: 'long', year: 'numeric' })}</h2>`;
+
+    Object.keys(byCourse).sort((a,b)=> (a||'').localeCompare(b||'')).forEach(course => {
+      const students = byCourse[course].sort((a,b)=> a.name.localeCompare(b.name));
+      html += `<div class="report-wrapper" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center"><strong>${course}</strong><small>Días: ${days} — ${students.length} alumnos</small></div><div style="overflow:auto;margin-top:8px"><table class="report-table"><thead><tr><th style="min-width:180px;text-align:left;padding-left:8px">Alumno</th>`;
+
+      for (let d=1; d<=days; d++) html += `<th>${d}</th>`;
+      html += `<th>Total</th></tr></thead><tbody>`;
+
+      students.forEach(st => {
+        const attended = attendanceMap.get(st.id) || new Set();
+        html += `<tr><td style="text-align:left;padding-left:8px">${st.name}</td>`;
+        for (let d=1; d<=days; d++) {
+          html += attended.has(d) ? `<td><span class="attendance-mark">✓</span></td>` : `<td></td>`;
+        }
+        html += `<td class="total">${attended.size || 0}</td></tr>`;
+      });
+
+      html += `</tbody></table></div></div>`;
+    });
+
+    html += `</div>`;
+    dom.monthlyReportContent.innerHTML = html;
+  } catch (err) {
+    console.error('Error generando informe mensual:', err);
+    dom.monthlyReportContent.innerHTML = `<p class="small-muted">Error al generar el informe. Mira la consola.</p>`;
+  }
+}
+
+// abre el modal (y preselecciona mes actual si no hay valor)
+function openMonthlyReportModal() {
+  const now = new Date();
+  const ymDefault = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  try {
+    if (!dom.reportMonthInput) {
+      // crear input si no existe (fallback)
+      const wrapper = document.createElement('div');
+      wrapper.style.display = 'inline-flex';
+      wrapper.style.gap = '8px';
+      const input = document.createElement('input');
+      input.type = 'month';
+      input.id = 'report-month-input';
+      input.style.padding = '8px';
+      input.style.borderRadius = '8px';
+      input.style.border = '1px solid var(--card-border)';
+      wrapper.appendChild(input);
+      dom.monthlyReportModal.querySelector('header > div')?.insertBefore(wrapper, dom.printReportBtn || null);
+      dom.reportMonthInput = input;
+    }
+    dom.reportMonthInput.value = dom.reportMonthInput.value || ymDefault;
+  } catch(e){ console.warn('fallback reportMonthInput create', e); }
+
+  dom.monthlyReportModal.classList.add('active');
+  // generar al abrir
+  generateMonthlyReport(dom.reportMonthInput.value || ymDefault);
+}
+
+// Listener imprimir: crea iframe y llama a print (con color coherente)
+if (dom.printReportBtn) {
+  dom.printReportBtn.removeEventListener?.('click', null); // intento de evitar duplicados
   dom.printReportBtn.addEventListener('click', async () => {
-    let ym = dom.reportMonthInput.value;
-    if (!ym) { const now = new Date(); ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; dom.reportMonthInput.value = ym; }
+    let ym = dom.reportMonthInput?.value;
+    if (!ym) {
+      const now = new Date();
+      ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+      if (dom.reportMonthInput) dom.reportMonthInput.value = ym;
+    }
     await generateMonthlyReport(ym);
     const content = dom.monthlyReportContent.innerHTML;
-    const iframe = document.createElement('iframe'); iframe.style.position='fixed'; iframe.style.right='0'; iframe.style.bottom='0'; iframe.style.width='0'; iframe.style.height='0'; iframe.style.border='0';
+    if (!content) { alert('No hay contenido para imprimir.'); return; }
+
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
     document.body.appendChild(iframe);
+
     const doc = iframe.contentWindow.document;
-    const styles = `<style>body{font-family:Inter,Arial;padding:18px;color:#111} .attendance-mark{display:inline-block;width:20px;height:20px;background:${getComputedStyle(document.documentElement).getPropertyValue('--success') || '#004623'};color:#fff;border-radius:50%;text-align:center;line-height:20px;font-weight:700}</style>`;
-    doc.open(); doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Imprimir informe ${ym}</title>${styles}</head><body>${content}</body></html>`); doc.close();
-    setTimeout(()=>{ try{ iframe.contentWindow.focus(); iframe.contentWindow.print(); } catch(e){ console.error(e); alert('Error al imprimir: '+e.message);} setTimeout(()=>{ try{ document.body.removeChild(iframe); } catch(e){} },800); },300);
+    const successColor = getComputedStyle(document.documentElement).getPropertyValue('--success') || '#004623';
+    const styles = `<style>body{font-family:Inter,Arial;padding:18px;color:#111} .attendance-mark{display:inline-block;width:20px;height:20px;background:${successColor};color:#fff;border-radius:50%;text-align:center;line-height:20px;font-weight:700} table{border-collapse:collapse;width:100%} th,td{border:1px solid #e6e8eb;padding:6px;text-align:center}</style>`;
+    doc.open();
+    doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Informe ${ym}</title>${styles}</head><body>${content}</body></html>`);
+    doc.close();
+
+    // pequeño delay para que renderice antes de imprimir
+    setTimeout(() => {
+      try { iframe.contentWindow.focus(); iframe.contentWindow.print(); }
+      catch (e) { console.error('Error al imprimir:', e); alert('Error al imprimir: ' + e.message); }
+      setTimeout(() => { try { document.body.removeChild(iframe); } catch (e) {} }, 800);
+    }, 300);
   });
+}
+
+// Asegurar que existe un botón para abrir el modal. Si no existe, lo creamos dentro del panel admin (admin-only)
+(function ensureMonthlyReportButton() {
+  let btn = document.getElementById('show-monthly-report-btn');
+  if (!btn) {
+    // crear un botón discreto dentro del panel admin
+    const adminPanel = document.querySelector('.admin-panel.admin-only');
+    if (adminPanel) {
+      btn = document.createElement('button');
+      btn.id = 'show-monthly-report-btn';
+      btn.className = 'ghost small';
+      btn.textContent = '📅 Informe Mensual';
+      btn.style.marginTop = '10px';
+      adminPanel.appendChild(btn);
+    }
+  }
+  if (btn) {
+    btn.removeEventListener?.('click', null);
+    btn.addEventListener('click', openMonthlyReportModal);
+  }
+})();
+
 
   /* ----- Manage students modal (admin) ----- */
   async function openManageStudentsModal() {
