@@ -411,38 +411,85 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ----- Render courses ----- */
   async function renderCourses(shift) {
-    appState.currentShift = shift;
-    document.getElementById('shift-selection').style.display = 'none';
-    document.getElementById('dashboard').classList.remove('hidden');
-    dom.coursesContainer.innerHTML = '<p class="small-muted">Cargando alumnos...</p>';
+  appState.currentShift = shift;
+  document.getElementById('shift-selection').style.display = 'none';
+  document.getElementById('dashboard').classList.remove('hidden');
+  dom.coursesContainer.innerHTML = '<p class="small-muted">Cargando alumnos...</p>';
 
-    appState.students = await fetchStudents();
-    const today = new Date().toISOString().slice(0,10);
-    const attendance = await fetchAttendanceByDate(today);
-    appState.attendance = {};
-    appState.students.forEach(s => appState.attendance[s.id] = attendance[s.id] || 'pending');
+  // Obtener alumnos y asistencia
+  appState.students = await fetchStudents();
+  const today = new Date().toISOString().slice(0,10);
+  const attendanceData = await fetchAttendanceByDate(today);
+  const attendanceStates = attendanceData.states || {};
+  const attendanceRecords = attendanceData.records || [];
 
-    dom.coursesContainer.innerHTML = '';
+  appState.attendance = {};
+  appState.students.forEach(s => {
+    appState.attendance[s.id] = attendanceStates[s.id] || 'pending';
+  });
 
-    // assigned: students whose shift === current shift OR added as sporadic for this shift (tempSporadic per-shift)
-    const assigned = appState.students.filter(s => (s.shift && s.shift === shift) || appState.tempSporadic[shift].has(s.id));
-    // Get list of courses present in assigned
-    const courses = [...new Set(assigned.map(s => s.course))].sort();
+  dom.coursesContainer.innerHTML = '';
 
-    if (!courses.length) {
-      dom.coursesContainer.innerHTML = '<p class="small-muted">No hay alumnos en este turno.</p>';
-    } else {
-      courses.forEach(course => {
-        const card = document.createElement('div'); card.className = 'course-card';
-        const studentsInCourse = assigned.filter(s => s.course === course).sort((a,b)=>a.name.localeCompare(b.name));
-        const listHtml = studentsInCourse.map(createStudentElement).join('');
-        const pickerBtn = `<div style="margin-top:8px"><button class="open-sporadic-picker primary" data-course="${course}">+ Añadir esporádico</button></div>`;
-        card.innerHTML = `<div><h3>${course}</h3><div style="display:flex;flex-direction:column;gap:8px" data-course-list="${course}">${listHtml}</div></div>${pickerBtn}`;
-        dom.coursesContainer.appendChild(card);
-      });
-    }
-    updateSummary();
+  // --- Filtrar alumnos ---
+  let fixed = [];
+  if (shift === 'Primer Turno') {
+    fixed = appState.students.filter(s => s.turno1);
+  } else if (shift === 'Segundo Turno') {
+    fixed = appState.students.filter(s => s.turno2);
   }
+
+  // Alumnos sin turno (candidatos esporádicos, siempre disponibles en ambos turnos)
+  const esporadicos = appState.students.filter(s => !s.turno1 && !s.turno2);
+
+  // Reunir todos los cursos que tengan al menos un fijo o un esporádico
+  const allCourses = new Set([
+    ...fixed.map(s => s.course),
+    ...esporadicos.map(s => s.course)
+  ]);
+
+  if (!allCourses.size) {
+    dom.coursesContainer.innerHTML = '<p class="small-muted">No hay alumnos en este turno.</p>';
+    return;
+  }
+
+  // Pintar cada curso
+  [...allCourses].sort().forEach(course => {
+    const card = document.createElement('div');
+    card.className = 'course-card';
+
+    const studentsFixed = fixed.filter(s => s.course === course)
+      .sort((a,b)=>a.name.localeCompare(b.name));
+
+    const listHtml = studentsFixed.map(createStudentElement).join('');
+
+    const sporadicCandidates = esporadicos.filter(s => s.course === course)
+      .sort((a,b)=>a.name.localeCompare(b.name));
+
+    let sporadicBtn = '';
+    if (sporadicCandidates.length > 0) {
+      sporadicBtn = `
+        <div style="margin-top:8px">
+          <button class="open-sporadic-picker primary" data-course="${course}">
+            + Añadir esporádico
+          </button>
+        </div>`;
+    }
+
+    card.innerHTML = `
+      <div>
+        <h3>${course}</h3>
+        <div style="display:flex;flex-direction:column;gap:8px" data-course-list="${course}">
+          ${listHtml}
+        </div>
+      </div>
+      ${sporadicBtn}
+    `;
+    dom.coursesContainer.appendChild(card);
+  });
+
+  updateSummary();
+}
+
 
   /* ----- Sporadic picker ----- */
   let currentPickerCourse = null;
