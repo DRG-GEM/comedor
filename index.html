@@ -586,19 +586,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ----- History ----- */
   async function showHistoryModal() {
-    document.getElementById('history-modal').classList.add('active');
-    dom.historyStudentList.innerHTML = '<p class="small-muted">Cargando...</p>';
-    const all = await fetchStudents(); all.sort((a,b)=>a.name.localeCompare(b.name));
-    if (!all.length) dom.historyStudentList.innerHTML = '<p class="small-muted">No hay alumnos registrados.</p>';
-    else dom.historyStudentList.innerHTML = all.map(s => `<div class="history-student p-2" data-id="${s.id}" data-name="${s.name}" style="border-bottom:1px solid var(--card-border);padding:8px;cursor:pointer"><strong>${s.name}</strong><div class="small-muted">${s.shift || '(Esporádico)'} • ${s.course}</div></div>`).join('');
+  dom.historyModal.classList.add('active');
+  dom.historyStudentList.innerHTML = '<p class="small-muted">Cargando...</p>';
+
+  try {
+    const all = await fetchStudents();
+    all.sort((a,b)=>a.name.localeCompare(b.name));
+    if (!all.length) {
+      dom.historyStudentList.innerHTML = '<p class="small-muted">No hay alumnos registrados.</p>';
+      return;
+    }
+    dom.historyStudentList.innerHTML = all.map(s =>
+      `<div class="history-student p-2" data-id="${s.id}" data-name="${s.name}" style="border-bottom:1px solid var(--card-border);padding:8px;cursor:pointer">
+         <strong>${s.name}</strong>
+         <div class="small-muted">${s.shift || '(Esporádico)'} • ${s.course}</div>
+       </div>`
+    ).join('');
+  } catch (e) {
+    console.error('Error cargando lista de alumnos para historial:', e);
+    dom.historyStudentList.innerHTML = '<p class="small-muted">Error cargando alumnos.</p>';
   }
-  async function showStudentHistory(id, name) {
-    dom.historyStudentName.textContent = `Historial de: ${name}`;
-    dom.historyDatesList.innerHTML = '<p class="small-muted">Buscando...</p>';
+}
+
+// 3) Función para mostrar historial de un alumno (reemplaza la anterior)
+async function showStudentHistory(id, name) {
+  dom.historyStudentName.textContent = `Historial de: ${name}`;
+  dom.historyDatesList.innerHTML = '<p class="small-muted">Buscando...</p>';
+  try {
     const snap = await db.collection('attendance').where('studentId','==',id).get();
-    const dates = snap.docs.map(d=>d.data().date).sort().reverse();
-    dom.historyDatesList.innerHTML = dates.length ? dates.map(d=>`<div style="padding:6px;border-bottom:1px solid var(--card-border)">${new Date(d+'T00:00:00').toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>`).join('') : '<p class="small-muted">Sin registros.</p>';
+    if (snap.empty) {
+      dom.historyDatesList.innerHTML = '<p class="small-muted">Sin registros.</p>';
+      return;
+    }
+    // ordenar por fecha descendente (formato 'YYYY-MM-DD' -> compara como string)
+    const rows = snap.docs.map(d => d.data()).sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    dom.historyDatesList.innerHTML = rows.map(r => {
+      const pretty = (r.date && !isNaN(Date.parse(r.date))) ? 
+        new Date(r.date + 'T00:00:00').toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) 
+        : (r.date || '—');
+      const state = r.state || (r.status || '—');
+      return `<div style="padding:6px;border-bottom:1px solid var(--card-border);display:flex;justify-content:space-between;align-items:center">
+                <div style="text-align:left">${pretty}</div>
+                <div style="text-align:right"><strong>${state}</strong></div>
+              </div>`;
+    }).join('');
+  } catch (err) {
+    console.error('Error cargando historial del alumno:', err);
+    dom.historyDatesList.innerHTML = '<p class="small-muted">Error cargando historial.</p>';
   }
+}
 
   /* ----- Monthly report + print ----- */
   async function generateMonthlyReport(ym) {
@@ -770,8 +806,40 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.reportMonthInput.value = ym; dom.monthly-report-modal?.classList?.add?.('active'); dom.monthlyReportModal.classList.add('active'); await generateMonthlyReport(ym);
   });
 
-  dom.showHistoryBtn.addEventListener('click', showHistoryModal);
-  dom.closeHistoryBtn.addEventListener('click', ()=> document.getElementById('history-modal').classList.remove('active'));
+  dom.showHistoryBtn = dom.showHistoryBtn || document.getElementById('show-history-btn');
+if (dom.showHistoryBtn) dom.showHistoryBtn.addEventListener('click', showHistoryModal);
+
+// cerrar modal con la X
+if (dom.closeHistoryBtn) {
+  dom.closeHistoryBtn.addEventListener('click', () => dom.historyModal.classList.remove('active'));
+} else {
+  // fallback seguro
+  document.getElementById('close-history-btn')?.addEventListener('click', () => document.getElementById('history-modal')?.classList?.remove('active'));
+}
+
+// click sobre un alumno en la lista -> abrir su historial
+if (dom.historyStudentList) {
+  dom.historyStudentList.addEventListener('click', ev => {
+    const row = ev.target.closest('.history-student');
+    if (!row) return;
+    const id = row.dataset.id;
+    const name = row.dataset.name;
+    if (!id) return;
+    showStudentHistory(id, name);
+  });
+}
+
+// búsqueda dentro del listado de alumnos (si tienes el input)
+if (dom.historySearch) {
+  dom.historySearch.addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('#history-student-list .history-student').forEach(el => {
+      el.style.display = (el.dataset.name && el.dataset.name.toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+}
+dom.closeHistoryBtn = dom.closeHistoryBtn || document.getElementById('close-history-btn');
+  dom.historyModal = dom.historyModal || document.getElementById('history-modal');
   dom.historyStudentList.addEventListener('click', ev => { const row = ev.target.closest('.history-student'); if (!row) return; showStudentHistory(row.dataset.id, row.dataset.name); });
   dom.historySearch.addEventListener('input', (e)=>{ const q=e.target.value.toLowerCase(); document.querySelectorAll('#history-student-list .history-student').forEach(el=> el.style.display = (el.dataset.name.toLowerCase().includes(q)?'':'none')); });
 
