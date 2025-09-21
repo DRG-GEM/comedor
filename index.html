@@ -751,7 +751,8 @@ if (dom.printReportBtn) {
 
     const doc = iframe.contentWindow.document;
     const successColor = getComputedStyle(document.documentElement).getPropertyValue('--success') || '#004623';
-    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#8b0630';
+const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#8b0630';
+
 const styles = `
   <style>
     body {
@@ -761,6 +762,8 @@ const styles = `
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
+
+    /* Ticks */
     .attendance-mark {
       display: inline-block;
       width: 20px;
@@ -772,23 +775,50 @@ const styles = `
       line-height: 20px;
       font-weight: 700;
     }
-    table {
+
+    /* Tabla general */
+    .report-table {
       border-collapse: collapse;
       width: 100%;
+      table-layout: auto; /* permitir que la primera columna tenga espacio */
     }
-    th, td {
+    .report-table th, .report-table td {
       border: 1px solid #e6e8eb;
       padding: 6px;
       text-align: center;
+      vertical-align: middle;
     }
-    th {
+    .report-table thead th {
       background: #f3f4f6;
+      font-weight: 700;
     }
+
+    /* Primera columna: nombres de alumno (más ancha, alineada a la izquierda y texto que salte líneas) */
+    .report-table th:first-child,
+    .report-table td:first-child {
+      text-align: left;
+      padding-left: 8px;
+      min-width: 200px;   /* mínimo razonable para nombres largos */
+      max-width: 320px;   /* evita que se coma TODO el ancho */
+      white-space: normal; /* permitir wrapping */
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    /* Fuerza que el contenido de las celdas mantenga buena legibilidad */
+    .report-table td { 
+      white-space: nowrap;       /* por defecto los días no se parten */
+    }
+    /* pero permitimos al primer td romper líneas */
+    .report-table td:first-child { white-space: normal; }
+
+    /* Encabezado de curso (fondo primario) */
     .report-wrapper > div:first-child {
       background: ${primaryColor} !important;
       color: #fff !important;
       padding: 6px 10px;
       border-radius: 6px;
+      margin-bottom: 8px;
     }
 
     /* --- Fix impresión --- */
@@ -796,11 +826,16 @@ const styles = `
       .report-wrapper div[style*="overflow:auto"] {
         overflow: visible !important;
       }
-      .report-table {
-        table-layout: fixed;
+      /* evitar que la tabla reduzca demasiado las columnas en impresión */
+      .report-table { table-layout: auto !important; }
+      .report-table th:first-child,
+      .report-table td:first-child {
+        min-width: 200px !important;
+        max-width: 320px !important;
       }
     }
   </style>`;
+
     doc.open();
     doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Informe ${ym}</title>${styles}</head><body>${content}</body></html>`);
     doc.close();
