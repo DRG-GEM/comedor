@@ -272,6 +272,123 @@ img, svg { max-width:100%; height:auto; display:block; }
   .app-subtitle { font-size: 1rem; margin-bottom: 20px; }
   .turn-btn { font-size: 1rem; padding: 12px 22px; min-width: 140px; }
 }
+/* -----------------------------
+  Estilo moderno para pantalla principal / selección de turno
+   ----------------------------- */
+
+.shift-selection {
+  text-align: center;
+  padding: 28px 12px;
+}
+
+/* título principal */
+.main-hero-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--brand);
+  margin: 0 0 18px 0;
+}
+
+/* contenedor de "tarjetas" */
+.turn-cards {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: stretch;
+  flex-wrap: wrap;
+  margin: 0 auto;
+  max-width: 920px;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+/* tarjeta */
+.turn-card {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 320px;
+  height: 96px;
+  padding: 0;
+  border: none;
+  border-radius: 20px;
+  background: transparent;
+  cursor: pointer;
+  overflow: visible;
+  box-shadow: 0 10px 30px rgba(11,15,27,0.04);
+  transition: transform .12s ease, box-shadow .12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* fondo decorativo (usa color primario) */
+.turn-card-bg {
+  position: absolute;
+  left: 0; right: 0; top: 0; bottom: 0;
+  border-radius: 20px;
+  background: linear-gradient(180deg, var(--brand), var(--brand-dark));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+  opacity: 1;
+  z-index: 1;
+}
+
+/* contenido por encima */
+.turn-card-content {
+  position: relative;
+  z-index: 2;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 20px;
+}
+
+/* icono */
+.turn-icon {
+  font-size: 20px;
+  opacity: 0.95;
+}
+
+/* etiqueta grande */
+.turn-label {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+/* subtítulo pequeño */
+.turn-sub {
+  font-size: 0.82rem;
+  opacity: 0.92;
+  font-weight: 600;
+}
+
+/* hover / active */
+.turn-card:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(11,15,27,0.06); }
+.turn-card:active { transform: translateY(-1px) scale(.996); }
+
+/* responsive: tarjetas más compactas en móvil */
+@media (max-width: 760px) {
+  .turn-cards { gap: 12px; padding: 6px; }
+  .turn-card { width: 260px; height: 88px; border-radius: 16px; }
+  .turn-label { font-size: 1.02rem; }
+  .turn-sub { font-size: 0.78rem; }
+}
+
+/* pantallas muy pequeñas: vertical stack */
+@media (max-width: 420px) {
+  .turn-cards { flex-direction: column; gap: 12px; align-items: center; }
+  .turn-card { width: calc(100% - 40px); max-width: 420px; height: 82px; }
+}
+
+/* accesibilidad: foco visible */
+.turn-card:focus { outline: 3px solid rgba(255,255,255,0.14); outline-offset: 3px; box-shadow: 0 18px 40px rgba(11,15,27,0.06), 0 0 0 4px rgba(139,6,48,0.08); }
+
+/* si prefieres tarjeta con borde claro en sitios donde var(--brand) sea oscuro */
+@media (prefers-color-scheme: light) {
+  .turn-card-bg { border: 1px solid rgba(255,255,255,0.06); }
+}
 
 </style>
 </head>
@@ -303,15 +420,32 @@ img, svg { max-width:100%; height:auto; display:block; }
   <!-- Main -->
   <div id="main-content" style="margin-top:18px">
 
-    <section id="shift-selection" class="shift-selection">
-  <h2 class="app-subtitle">Selecciona un turno</h2>
-  <div class="turn-buttons" id="shift-buttons">
-    <button class="turn-btn" data-shift="Primer Turno">Primer Turno</button>
-    <button class="turn-btn" data-shift="Segundo Turno">Segundo Turno</button>
+    <section id="shift-selection" class="shift-selection" aria-labelledby="shift-title">
+  <h2 id="shift-title" class="main-hero-title">Selecciona un turno</h2>
+
+  <!-- <- IMPORTANTE: mantenemos id="shift-buttons" para que el JS siga funcionando -->
+  <div id="shift-buttons" class="turn-cards" role="list" aria-label="Turnos disponibles">
+    <button class="turn-card" role="listitem" data-shift="Primer Turno (Infantil)" aria-label="Primer Turno">
+      <div class="turn-card-bg" aria-hidden="true"></div>
+      <div class="turn-card-content">
+        <div class="turn-icon" aria-hidden="true">🍽️</div>
+        <div class="turn-label">Primer Turno</div>
+        <div class="turn-sub">Marcar asistentes</div>
+      </div>
+    </button>
+
+    <button class="turn-card" role="listitem" data-shift="Segundo Turno (Primaria)" aria-label="Segundo Turno">
+      <div class="turn-card-bg" aria-hidden="true"></div>
+      <div class="turn-card-content">
+        <div class="turn-icon" aria-hidden="true">🕒</div>
+        <div class="turn-label">Segundo Turno</div>
+        <div class="turn-sub">Marcar asistentes</div>
+      </div>
+    </button>
   </div>
 
   <!-- Panel de gestión (solo admin) -->
-  <div class="admin-panel admin-only">
+  <div class="admin-panel admin-only" style="margin-top:18px">
     <h3 style="text-align:center;margin-bottom:10px">Panel de Gestión</h3>
     <div class="btn-row" role="group" aria-label="gestion-datos">
       <button id="import-csv-btn-initial" class="primary">📤 Importar Alumnos (CSV)</button>
@@ -327,6 +461,7 @@ img, svg { max-width:100%; height:auto; display:block; }
     <p id="import-status-initial" style="text-align:center;margin-top:10px;min-height:18px;color:#059669"></p>
   </div>
 </section>
+
 
     <main id="dashboard" class="hidden" style="margin-top:18px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
