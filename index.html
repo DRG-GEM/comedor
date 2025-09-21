@@ -139,6 +139,80 @@ img, svg { max-width:100%; height:auto; display:block; }
 
 /* utility hidden class fallback (if tailwind not available) */
 .hidden { display:none !important; }
+  /* ----------------------------
+   Ajustes para resumen en móvil
+   ---------------------------- */
+
+/* Convertir la fila de resumen (primera section dentro de #dashboard) en flex centrado */
+#dashboard > section:first-of-type {
+  display: flex !important;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding: 0 6px;
+  box-sizing: border-box;
+}
+
+/* Tarjetas: tamaño controlado, centradas y con texto adaptativo */
+.summary-card {
+  flex: 0 1 160px;      /* crecer 0, encoger 1, base 160px */
+  max-width: 180px;
+  min-width: 120px;
+  padding: 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Número dentro de la tarjeta (ajustable) */
+.summary-card > div[style] {
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  line-height: 1;
+}
+
+/* Texto pequeño */
+.summary-card .small-muted {
+  font-size: 0.78rem;
+}
+
+/* Evitar que el grid de cursos provoque overflow lateral en móviles */
+#courses-container {
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden; /* evitar scroll horizontal inesperado */
+}
+
+/* Ajustes más agresivos para pantallas pequeñas */
+@media (max-width: 600px) {
+  /* Tarjetas aún más compactas en móvil */
+  .summary-card {
+    flex: 0 1 140px;
+    max-width: 160px;
+    min-width: 110px;
+    padding: 8px;
+  }
+  .summary-card > div[style] { font-size: 18px !important; }
+
+  /* Reduce paddings generales que causan desbordamiento */
+  .container { padding-left: 12px; padding-right: 12px; }
+
+  /* Asegurar que los botones en la cabecera no empujen el layout */
+  .header-row { gap: 8px; }
+
+  /* Student items: si la tarjeta era la causa, hacemos que se adapten un poco */
+  .student-item { padding-left: 10px; padding-right: 8px; }
+  .student-item .name { max-width: 60%; font-size: 0.98rem; }
+
+  /* Si aún existiera overflow en tablas del informe, permitir wrap en impresión ya manejado antes */
+  #courses-container { padding-right: 6px; }
+}
+
 </style>
 </head>
 <body>
