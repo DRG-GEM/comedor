@@ -61,31 +61,66 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
   min-width:0;
 }
 
-/* States */
-.student-item.pending { border-left-color:#cbd5e1; background:#fff; color:var(--text); }
-.student-item.present { border-left-color:var(--success); background: var(--success); color:#ffffff; box-shadow: 0 8px 20px rgba(0,70,35,0.12); }
-.student-item.present * { color: #ffffff !important; } /* asegurar contraste del texto dentro */
-.student-item.absent { border-left-color:var(--danger); background:linear-gradient(90deg, rgba(201,42,42,0.04), #fff); text-decoration:line-through; opacity:0.96; }
+/* -----------------------
+   Estados de los alumnos
+----------------------- */
 
-/* Alergia: recuadro alrededor del nombre (pantalla) */
+/* Pendientes (sin marcar para comer) */
+.student-item.pending {
+  border-left: 4px solid #cbd5e1;   /* gris suave */
+  background: #f9fafb;               /* gris muy claro */
+  color: #111827;                     /* texto oscuro */
+  transition: all 0.3s ease;
+}
+
+/* Presentes (marcados para comer) */
+.student-item.present {
+  border-left: 4px solid #166534; 
+  background: linear-gradient(135deg, #166534, #1e7f34); /* verde degradado */
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(22, 101, 52, 0.25); /* sombra suave */
+  transition: all 0.3s ease;
+}
+
+.student-item.present * {
+  color: #ffffff !important;  /* asegurar contraste del texto */
+}
+
+/* Ausentes */
+.student-item.absent {
+  border-left: 4px solid #991b1b;  
+  background: linear-gradient(135deg, #fee2e2, #fca5a5); /* rojo degradado */
+  text-decoration: line-through;   
+  color: #991b1b;
+  box-shadow: 0 2px 8px rgba(153, 27, 27, 0.15);
+  transition: all 0.3s ease;
+}
+
+/* -----------------------
+   Alergias
+----------------------- */
+
+/* Recuadro alrededor del nombre */
 .student-item.allergic .name {
-  border: 3px solid #facc15;   /* amarillo intenso */
-  background: #fef9c3;        /* amarillo claro */
+  border: 3px solid #facc15;  
+  background: linear-gradient(120deg, #fef08a, #fde68a); /* amarillo degradado */
   padding: 6px 10px;
   border-radius: 8px;
   display: inline-block;
   font-weight: 700;
-  color: inherit;
+  color: #000;
+  transition: all 0.3s ease;
 }
 
-/* cuando está presente y alérgico, mantener contraste */
+/* Presente y alérgico: mantener contraste sobre verde */
 .student-item.present.allergic .name {
   border-color: #facc15;
-  background: #fde047; /* un amarillo más fuerte sobre fondo oscuro */
+  background: linear-gradient(120deg, #fbbf24, #f59e0b); /* amarillo intenso degradado */
   color: #000;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
 }
 
-/* En impresión quitamos el fondo pero mantenemos el borde */
+/* Impresión: quitar fondo pero mantener borde */
 @media print {
   .student-item.allergic .name {
     background: transparent !important;
@@ -93,6 +128,15 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
     color: #000 !important;
   }
 }
+
+/* -----------------------
+   Efectos hover opcionales
+----------------------- */
+.student-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
 
 
 /* X button */
