@@ -1481,6 +1481,118 @@ dom.closeHistoryBtn = dom.closeHistoryBtn || document.getElementById('close-hist
   if ('serviceWorker' in navigator) { navigator.serviceWorker.register && navigator.serviceWorker.register('/sw.js').then(()=>console.log('sw registered')).catch(()=>{}); }
 
 }); // DOMContentLoaded
+        // ---------- Parche: (re)enlazar botones admin y turnos de forma robusta ----------
+function safeAddListener(el, evt, fn) {
+  if (!el) return;
+  // evitar duplicados: guardamos una bandera en el propio elemento
+  const key = '__listener_' + evt;
+  if (el[key]) {
+    // ya enlazado (no hacemos nada)
+    return;
+  }
+  el.addEventListener(evt, fn);
+  el[key] = true;
+}
+
+function bindAdminAndTurnButtons() {
+  // Admin buttons (IDs esperados)
+  safeAddListener(document.getElementById('import-csv-btn-initial'), 'click', () => {
+    const input = document.getElementById('csv-file-input');
+    if (input) input.click();
+  });
+
+  safeAddListener(document.getElementById('manage-students-btn'), 'click', () => {
+    if (typeof openManageStudentsModal === 'function') openManageStudentsModal();
+    else console.warn('openManageStudentsModal no está definido');
+  });
+
+  safeAddListener(document.getElementById('wipe-db'), 'click', async () => {
+    if (!confirm('¿Borrar todos los alumnos?')) return;
+    try { await deleteAllStudents(); appState.students = []; if (appState.currentShift) renderCourses(appState.currentShift); }
+    catch (e) { console.error('Error wipe DB', e); alert('Error al borrar la base de datos. Mira consola.'); }
+  });
+
+  safeAddListener(document.getElementById('export-csv-btn'), 'click', () => {
+    const d = (document.getElementById('export-date-input') && document.getElementById('export-date-input').value) || new Date().toISOString().slice(0,10);
+    exportFullDayCsv(d);
+  });
+
+  safeAddListener(document.getElementById('show-monthly-report-btn'), 'click', () => {
+    if (typeof openMonthlyReportModal === 'function') openMonthlyReportModal();
+    else {
+      // fallback simple: abrir modal si existe
+      const mm = document.getElementById('monthly-report-modal');
+      if (mm) mm.classList.add('active');
+    }
+  });
+
+  safeAddListener(document.getElementById('show-history-btn'), 'click', () => {
+    if (typeof showHistoryModal === 'function') showHistoryModal();
+    else {
+      const h = document.getElementById('history-modal');
+      if (h) h.classList.add('active');
+    }
+  });
+
+  // Logout/login
+  safeAddListener(document.getElementById('login-admin-btn'), 'click', () => {
+    if (auth && googleProvider) auth.signInWithPopup(googleProvider).catch(e => { console.error(e); alert('Error login'); });
+  });
+  safeAddListener(document.getElementById('logout-btn'), 'click', () => {
+    if (auth) auth.signOut().then(()=> setUIForRole(false)).catch(e=>console.error(e));
+  });
+
+  // Re-bind shift buttons (compatibilidad: tanto '#shift-buttons button' como '.turn-card' etc.)
+  // Primero los que estén dentro de #shift-buttons
+  const shiftContainer = document.getElementById('shift-buttons');
+  if (shiftContainer) {
+    // delegación: un único listener en el contenedor (funciona aunque los botones se reemplacen)
+    if (!shiftContainer.__listener_click) {
+      shiftContainer.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('button[data-shift]');
+        if (!btn) return;
+        // si tienes una función renderCourses, la llamamos con el dataset
+        const shiftName = btn.dataset.shift;
+        if (shiftName) renderCourses(shiftName);
+      });
+      shiftContainer.__listener_click = true;
+    }
+  } else {
+    // fallback: enlazar botones con clase .turn-card o .turn-btn
+    document.querySelectorAll('button.turn-card, button.turn-btn, #shift-buttons button').forEach(b => {
+      safeAddListener(b, 'click', (ev) => {
+        const shiftName = b.dataset.shift;
+        if (shiftName) renderCourses(shiftName);
+      });
+    });
+  }
+
+  // Re-bind import file input change (por si)
+  const csvInput = document.getElementById('csv-file-input');
+  if (csvInput && !csvInput.__listener_change) {
+    csvInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file && typeof handleCsvImport === 'function') handleCsvImport(file);
+    });
+    csvInput.__listener_change = true;
+  }
+
+  // Re-bind manage students modal close button
+  const closeManage = document.getElementById('close-manage-modal');
+  if (closeManage) safeAddListener(closeManage, 'click', ()=> {
+    const m = document.getElementById('manage-students-modal');
+    if (m) m.classList.remove('active');
+  });
+
+  // log pequeño para debugging
+  console.log('Admin & turn buttons (re)bound');
+}
+
+// ejecutar inmediatamente y también después de acciones que re-rendericen la UI
+try { bindAdminAndTurnButtons(); } catch(e) { console.error('bindAdminAndTurnButtons error', e); }
+
+// Si tu app recrea el DOM de admin dinámicamente, puedes llamar bindAdminAndTurnButtons() de nuevo cuando corresponda.
+
 </script>
 </body>
 </html>
