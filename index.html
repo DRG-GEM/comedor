@@ -21,15 +21,14 @@
 html,body{width:100%; overflow-x:hidden; -webkit-overflow-scrolling:touch;}
 body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:var(--text); margin:0; -webkit-font-smoothing:antialiased;}
 .container { max-width:1100px; width:100%; margin:0 auto; padding:20px; box-sizing:border-box; }
-.header-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.logo { width:54px;height:54px;border-radius:10px;background:#fff;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(15,23,42,0.04);border:1px solid var(--card-border); }
-.title-wrap { text-align:center; flex:1; min-width:0; }
-h1 { margin:8px 0 0; color:var(--brand); font-weight:800; font-size:28px; }
-.subtle { color:var(--muted); }
+.header-row { display:grid; grid-template-columns: auto 1fr auto; gap:16px; align-items:center; padding:12px 0; min-height:68px; }
+.logo { width:56px;height:56px;border-radius:12px;background:#fff;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(15,23,42,0.04);border:1px solid rgba(15,23,42,0.06); flex:0 0 auto; }
+.title-wrap { text-align:center; flex:1; min-width:0; display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding-left:6px;padding-right:6px; }
+h1 { margin:0; color:var(--brand); font-weight:800; font-size:20px; letter-spacing:0.1px; }
+.subtle { color:var(--muted); font-weight:600; font-size:14px; }
 
-.header-actions { display:flex; gap:8px; align-items:center; justify-content:flex-end; min-width:150px; }
+.header-actions { display:flex; gap:10px; align-items:center; justify-content:flex-end; flex:0 0 auto; }
 
-/* Paneles */
 .admin-panel { background:var(--paper); border-radius:12px; padding:18px; border:1px solid var(--card-border); box-shadow:0 14px 36px rgba(15,23,42,0.04); margin-top:18px; overflow:hidden; }
 .btn-row { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
 button.primary { background:linear-gradient(180deg,var(--brand),var(--brand-dark)); color:#fff; padding:10px 16px; border-radius:999px; font-weight:700; border:0; cursor:pointer; white-space:nowrap; }
@@ -37,12 +36,12 @@ button.ghost { background:#fff; border:1px solid rgba(15,23,42,0.06); padding:10
 button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 
 /* Summary + grid */
-.summary-card { background:var(--paper); padding:14px; border-radius:10px; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.03); text-align:center; }
+.summary-card { background:var(--paper); padding:10px 12px; border-radius:10px; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.03); text-align:center; }
 #courses-container { margin-top:14px; display:grid; gap:14px; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); }
 
 /* Course card */
-.course-card { background:var(--paper); border-radius:10px; padding:12px; border:1px solid var(--card-border); box-shadow:0 8px 24px rgba(15,23,42,0.03); display:flex; flex-direction:column; gap:8px; overflow:hidden; min-width:0; }
-.course-card h3 { color:var(--brand); margin:0; font-weight:700; white-space:normal; }
+.course-card { background: linear-gradient(180deg, #fff, #fff); border-radius:10px; padding:12px; border:1px solid var(--card-border); box-shadow:0 8px 24px rgba(15,23,42,0.03); display:flex; flex-direction:column; gap:8px; overflow:hidden; min-width:0; }
+.course-card h3 { color:var(--brand); margin:0; font-weight:700; white-space:normal; padding:6px 8px; border-radius:8px; background: linear-gradient(180deg,var(--brand),var(--brand-dark)); color:#fff; }
 
 /* Student item */
 .student-item { background:#ffffff; border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:space-between; gap:12px; border-left:6px solid transparent; border:1px solid rgba(15,23,42,0.04); transition: background .12s ease, box-shadow .12s ease, transform .06s ease; word-break:break-word; min-width:0; }
@@ -64,10 +63,10 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 /* States */
 .student-item.pending { border-left-color:#cbd5e1; background:#fff; color:var(--text); }
 .student-item.present { border-left-color:var(--success); background: var(--success); color:#ffffff; box-shadow: 0 8px 20px rgba(0,70,35,0.12); }
-.student-item.present * { color: #ffffff !important; } /* asegurar contraste del texto dentro */
+.student-item.present * { color: #ffffff !important; }
 .student-item.absent { border-left-color:var(--danger); background:linear-gradient(90deg, rgba(201,42,42,0.04), #fff); text-decoration:line-through; opacity:0.96; }
 
-/* Alergia: recuadro alrededor del nombre (pantalla) */
+/* Alergia: recuadro alrededor del nombre (pantalla: amarillo llamativo) */
 .student-item.allergic .name {
   border: 3px solid #facc15;   /* amarillo intenso */
   background: #fef9c3;        /* amarillo claro */
@@ -81,7 +80,7 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 /* cuando está presente y alérgico, mantener contraste */
 .student-item.present.allergic .name {
   border-color: #facc15;
-  background: #fde047; /* un amarillo más fuerte sobre fondo oscuro */
+  background: #fde047; /* amarillo más fuerte sobre fondo oscuro */
   color: #000;
 }
 
@@ -94,11 +93,10 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
   }
 }
 
-
 /* X button */
 .mark-absent-btn { width:40px; height:40px; border-radius:8px; border:1px solid rgba(0,0,0,0.04); background:#fff; font-weight:700; cursor:pointer; }
 
-/* Report styling (tables grandes --> scroll dentro del wrapper para no romper el layout) */
+/* Report styling */
 .report-wrapper { background:var(--paper); border-radius:12px; padding:10px; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(15,23,42,0.03); overflow:auto; -webkit-overflow-scrolling:touch; }
 .report-table { width:100%; border-collapse:collapse; font-size:13px; min-width:700px; }
 .report-table th, .report-table td { border:1px solid rgba(15,23,42,0.06); padding:6px 6px; text-align:center; min-width:28px; }
@@ -123,10 +121,10 @@ img, svg { max-width:100%; height:auto; display:block; }
 /* Better mobile adjustments */
 @media (max-width:600px){
   .container { padding:12px; }
-  .header-row { flex-direction:column; align-items:flex-start; gap:8px; }
-  .title-wrap { text-align:left; width:100%; }
-  h1 { font-size:20px; margin:4px 0 0; }
-  .header-actions { width:100%; justify-content:flex-start; }
+  .header-row { grid-template-columns: auto 1fr; align-items:center; gap:8px; padding:10px 6px; }
+  .title-wrap { text-align:left; width:100%; align-items:flex-start; padding-left:0; }
+  h1 { font-size:18px; margin:4px 0 0; }
+  .header-actions { grid-column:1 / -1; justify-content:flex-end; width:100%; }
   .admin-panel { padding:12px; }
   .btn-row { justify-content:flex-start; }
   .course-card { padding:10px; }
@@ -140,374 +138,8 @@ img, svg { max-width:100%; height:auto; display:block; }
   #shift-buttons button { padding:8px 12px; font-size:0.95rem; }
 }
 
-@media print{
-  body * { visibility:hidden; }
-  .printable-area, .printable-area * { visibility:visible; }
-  .printable-area { position:absolute; left:0; top:0; width:100%; background:#fff; padding:8px; }
-  @page { size: landscape; margin:0.4cm; }
-}
-
 /* utility hidden class fallback (if tailwind not available) */
 .hidden { display:none !important; }
-  /* ----------------------------
-   Ajustes para resumen en móvil
-   ---------------------------- */
-
-/* Convertir la fila de resumen (primera section dentro de #dashboard) en flex centrado */
-#dashboard > section:first-of-type {
-  display: flex !important;
-  gap: 10px;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-  padding: 0 6px;
-  box-sizing: border-box;
-}
-
-/* Tarjetas: tamaño controlado, centradas y con texto adaptativo */
-.summary-card {
-  flex: 0 1 160px;      /* crecer 0, encoger 1, base 160px */
-  max-width: 180px;
-  min-width: 120px;
-  padding: 10px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Número dentro de la tarjeta (ajustable) */
-.summary-card > div[style] {
-  font-size: 20px !important;
-  font-weight: 800 !important;
-  line-height: 1;
-}
-
-/* Texto pequeño */
-.summary-card .small-muted {
-  font-size: 0.78rem;
-}
-
-/* Evitar que el grid de cursos provoque overflow lateral en móviles */
-#courses-container {
-  width: 100%;
-  box-sizing: border-box;
-  overflow-x: hidden; /* evitar scroll horizontal inesperado */
-}
-
-/* Ajustes más agresivos para pantallas pequeñas */
-@media (max-width: 600px) {
-  /* Tarjetas aún más compactas en móvil */
-  .summary-card {
-    flex: 0 1 140px;
-    max-width: 160px;
-    min-width: 110px;
-    padding: 8px;
-  }
-  .summary-card > div[style] { font-size: 18px !important; }
-
-  /* Reduce paddings generales que causan desbordamiento */
-  .container { padding-left: 12px; padding-right: 12px; }
-
-  /* Asegurar que los botones en la cabecera no empujen el layout */
-  .header-row { gap: 8px; }
-
-  /* Student items: si la tarjeta era la causa, hacemos que se adapten un poco */
-  .student-item { padding-left: 10px; padding-right: 8px; }
-  .student-item .name { max-width: 60%; font-size: 0.98rem; }
-
-  /* Si aún existiera overflow en tablas del informe, permitir wrap en impresión ya manejado antes */
-  #courses-container { padding-right: 6px; }
-}
-/* -----------------------
-   Pantalla principal
-   ----------------------- */
-.main-screen {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 40px 20px;
-  text-align: center;
-  min-height: calc(100vh - 60px); /* deja margen con la cabecera si la hay */
-}
-
-.app-title {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--primary, #8b0630);
-  margin-bottom: 8px;
-}
-
-.app-subtitle {
-  font-size: 1.1rem;
-  color: #374151;
-  margin-bottom: 28px;
-}
-
-.turn-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: center;
-}
-
-.turn-btn {
-  background: var(--primary, #8b0630);
-  color: #fff;
-  font-size: 1.1rem;
-  font-weight: 600;
-  padding: 14px 28px;
-  border: none;
-  border-radius: 9999px;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-  min-width: 160px;
-}
-
-.turn-btn:hover {
-  background: #a50a3d;
-}
-
-.turn-btn:active {
-  transform: scale(0.97);
-}
-
-/* Responsive */
-@media (max-width: 500px) {
-  .app-title { font-size: 1.5rem; }
-  .app-subtitle { font-size: 1rem; margin-bottom: 20px; }
-  .turn-btn { font-size: 1rem; padding: 12px 22px; min-width: 140px; }
-}
-/* -----------------------------
-  Estilo moderno para pantalla principal / selección de turno
-   ----------------------------- */
-
-.shift-selection {
-  text-align: center;
-  padding: 28px 12px;
-}
-
-/* título principal */
-.main-hero-title {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--brand);
-  margin: 0 0 18px 0;
-}
-
-/* contenedor de "tarjetas" */
-.turn-cards {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  align-items: stretch;
-  flex-wrap: wrap;
-  margin: 0 auto;
-  max-width: 920px;
-  padding: 8px;
-  box-sizing: border-box;
-}
-
-/* tarjeta */
-.turn-card {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 320px;
-  height: 96px;
-  padding: 0;
-  border: none;
-  border-radius: 20px;
-  background: transparent;
-  cursor: pointer;
-  overflow: visible;
-  box-shadow: 0 10px 30px rgba(11,15,27,0.04);
-  transition: transform .12s ease, box-shadow .12s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* fondo decorativo (usa color primario) */
-.turn-card-bg {
-  position: absolute;
-  left: 0; right: 0; top: 0; bottom: 0;
-  border-radius: 20px;
-  background: linear-gradient(180deg, var(--brand), var(--brand-dark));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
-  opacity: 1;
-  z-index: 1;
-}
-
-/* contenido por encima */
-.turn-card-content {
-  position: relative;
-  z-index: 2;
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 14px 20px;
-}
-
-/* icono */
-.turn-icon {
-  font-size: 20px;
-  opacity: 0.95;
-}
-
-/* etiqueta grande */
-.turn-label {
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-}
-
-/* subtítulo pequeño */
-.turn-sub {
-  font-size: 0.82rem;
-  opacity: 0.92;
-  font-weight: 600;
-}
-
-/* hover / active */
-.turn-card:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(11,15,27,0.06); }
-.turn-card:active { transform: translateY(-1px) scale(.996); }
-
-/* responsive: tarjetas más compactas en móvil */
-@media (max-width: 760px) {
-  .turn-cards { gap: 12px; padding: 6px; }
-  .turn-card { width: 260px; height: 88px; border-radius: 16px; }
-  .turn-label { font-size: 1.02rem; }
-  .turn-sub { font-size: 0.78rem; }
-}
-
-/* pantallas muy pequeñas: vertical stack */
-@media (max-width: 420px) {
-  .turn-cards { flex-direction: column; gap: 12px; align-items: center; }
-  .turn-card { width: calc(100% - 40px); max-width: 420px; height: 82px; }
-}
-
-/* accesibilidad: foco visible */
-.turn-card:focus { outline: 3px solid rgba(255,255,255,0.14); outline-offset: 3px; box-shadow: 0 18px 40px rgba(11,15,27,0.06), 0 0 0 4px rgba(139,6,48,0.08); }
-
-/* si prefieres tarjeta con borde claro en sitios donde var(--brand) sea oscuro */
-@media (prefers-color-scheme: light) {
-  .turn-card-bg { border: 1px solid rgba(255,255,255,0.06); }
-}
-/* ------------------------
-  Cabecera: estilo limpio y centrado
-  ------------------------ */
-
-/* contenedor header: centrado y con separación */
-.header-row {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 16px;
-  align-items: center;
-  padding: 12px 0;
-  min-height: 68px;
-}
-
-/* logo: más nítido y con sombra sutil */
-.logo {
-  width:56px;
-  height:56px;
-  border-radius:12px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  background:#fff;
-  box-shadow:0 6px 20px rgba(15,23,42,0.04);
-  border:1px solid rgba(15,23,42,0.06);
-  flex:0 0 auto;
-}
-
-/* title area: centrado vertical y con overflow controlado */
-.title-wrap {
-  text-align:center;
-  min-width:0;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:4px;
-  padding-left:6px;
-  padding-right:6px;
-}
-
-/* principal: color y tamaño más moderno */
-.title-wrap h1 {
-  margin:0;
-  font-size:20px;
-  line-height:1;
-  font-weight:800;
-  color:var(--brand);
-  letter-spacing:0.1px;
-}
-
-/* subtítulo/role: más pequeño, contrastado y con separación */
-.title-wrap .subtle, #role-display {
-  margin:0;
-  font-size:14px;
-  color:var(--muted);
-  font-weight:600;
-  opacity:0.95;
-}
-
-/* header-actions: botones alineados a la derecha y compactos */
-.header-actions {
-  display:flex;
-  gap:10px;
-  align-items:center;
-  justify-content:flex-end;
-  flex:0 0 auto;
-}
-
-/* estilo de los botones rápidos en la cabecera */
-.header-actions .ghost, .header-actions .primary {
-  padding:8px 12px;
-  font-size:0.95rem;
-  border-radius:10px;
-  box-shadow:0 6px 18px rgba(11,15,27,0.03);
-}
-
-/* hacer logout discreto en mobile */
-#logout-btn { display:inline-flex; align-items:center; gap:6px; }
-
-/* ajustar tipografías y espaciado para buen aspecto en pantallas grandes */
-@media (min-width:1100px) {
-  .title-wrap h1 { font-size:22px; }
-  .title-wrap .subtle { font-size:15px; }
-}
-
-/* Mobile: apilar y centrar, evitar desbordamientos */
-@media (max-width:760px) {
-  .header-row {
-    grid-template-columns: auto 1fr;
-    grid-auto-rows: auto;
-    align-items: center;
-    gap:8px;
-    padding:10px 6px;
-  }
-  .header-actions {
-    grid-column: 1 / -1;
-    justify-content: flex-end;
-    width:100%;
-  }
-  .title-wrap { text-align:left; align-items:flex-start; padding-left:0; }
-  .title-wrap h1 { font-size:18px; }
-  .title-wrap .subtle { font-size:13px; }
-  .logo { width:48px; height:48px; border-radius:10px; }
-}
-
-/* small polish: ensure header never causes horizontal scroll */
-.header-row, .container { box-sizing:border-box; overflow-x:visible; }
-
 </style>
 </head>
 <body>
@@ -522,7 +154,8 @@ img, svg { max-width:100%; height:auto; display:block; }
     </div>
 
     <div class="header-actions">
-      <!-- logout visible cuando admin -->
+      <button id="show-history-btn" class="ghost small" title="Historial" style="display:none">📜 Historial</button>
+      <button id="show-monthly-report-btn" class="ghost small" title="Informe mensual" style="display:none">📅 Informe</button>
       <button id="logout-btn" class="ghost small" title="Cerrar sesión" style="display:none">Cerrar sesión</button>
     </div>
   </header>
@@ -538,48 +171,27 @@ img, svg { max-width:100%; height:auto; display:block; }
   <!-- Main -->
   <div id="main-content" style="margin-top:18px">
 
-    <section id="shift-selection" class="shift-selection" aria-labelledby="shift-title">
-  <h2 id="shift-title" class="main-hero-title">Selecciona un turno</h2>
-
-  <!-- <- IMPORTANTE: mantenemos id="shift-buttons" para que el JS siga funcionando -->
-  <div id="shift-buttons" class="turn-cards" role="list" aria-label="Turnos disponibles">
-    <button class="turn-card" role="listitem" data-shift="Primer Turno (Infantil)" aria-label="Primer Turno">
-      <div class="turn-card-bg" aria-hidden="true"></div>
-      <div class="turn-card-content">
-        <div class="turn-icon" aria-hidden="true">🍽️</div>
-        <div class="turn-label">Primer Turno</div>
-        <div class="turn-sub">Marcar asistentes</div>
+    <section id="shift-selection" class="shift-selection" style="text-align:center">
+      <h2 style="margin-bottom:12px">Elige un turno</h2>
+      <div id="shift-buttons" class="turn-cards" style="display:flex;gap:12px;justify-content:center">
+        <button class="primary large turn-card" data-shift="Primer Turno (Infantil)">Primer Turno</button>
+        <button class="primary large turn-card" data-shift="Segundo Turno (Primaria)">Segundo Turno</button>
       </div>
-    </button>
 
-    <button class="turn-card" role="listitem" data-shift="Segundo Turno (Primaria)" aria-label="Segundo Turno">
-      <div class="turn-card-bg" aria-hidden="true"></div>
-      <div class="turn-card-content">
-        <div class="turn-icon" aria-hidden="true">🕒</div>
-        <div class="turn-label">Segundo Turno</div>
-        <div class="turn-sub">Marcar asistentes</div>
+      <div class="admin-panel admin-only" style="margin-top:18px">
+        <h3 style="text-align:center;margin-bottom:10px">Panel de Gestión</h3>
+        <div class="btn-row" role="group" aria-label="gestion-datos">
+          <button id="import-csv-btn-initial" class="primary">📤 Importar Alumnos (CSV)</button>
+          <button id="manage-students-btn" class="primary">👥 Gestionar Alumnos</button>
+          <button id="wipe-db" class="ghost">🗑️ Borrar todos los alumnos</button>
+          <button id="export-csv-btn" class="primary">💾 Exportar CSV del Día</button>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap">
+          <input id="export-date-input" type="date" style="padding:8px;border-radius:8px;border:1px solid var(--card-border);background:#fff">
+        </div>
+        <p id="import-status-initial" style="text-align:center;margin-top:10px;min-height:18px;color:#059669"></p>
       </div>
-    </button>
-  </div>
-
-  <!-- Panel de gestión (solo admin) -->
-  <div class="admin-panel admin-only" style="margin-top:18px">
-    <h3 style="text-align:center;margin-bottom:10px">Panel de Gestión</h3>
-    <div class="btn-row" role="group" aria-label="gestion-datos">
-      <button id="import-csv-btn-initial" class="primary">📤 Importar Alumnos (CSV)</button>
-      <button id="manage-students-btn" class="primary">👥 Gestionar Alumnos</button>
-      <button id="wipe-db" class="ghost">🗑️ Borrar todos los alumnos</button>
-      <button id="show-monthly-report-btn" class="primary">📅 Informe Mensual</button>
-      <button id="show-history-btn" class="primary">📜 Historial</button>
-    </div>
-    <div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap">
-      <input id="export-date-input" type="date" style="padding:8px;border-radius:8px;border:1px solid var(--card-border);background:#fff">
-      <button id="export-csv-btn" class="primary">💾 Exportar CSV del Día</button>
-    </div>
-    <p id="import-status-initial" style="text-align:center;margin-top:10px;min-height:18px;color:#059669"></p>
-  </div>
-</section>
-
+    </section>
 
     <main id="dashboard" class="hidden" style="margin-top:18px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
@@ -589,11 +201,11 @@ img, svg { max-width:100%; height:auto; display:block; }
         </div>
       </div>
 
-      <section id="summaries" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;align-items:center">
-        <div class="summary-card"><div class="small-muted">Comensales</div><div id="summary-diners" style="font-size:18px;font-weight:800">0</div></div>
-        <div class="summary-card"><div class="small-muted">Ausentes</div><div id="summary-absent" style="font-size:18px;font-weight:800">0</div></div>
-        <div class="summary-card"><div class="small-muted">Pendientes</div><div id="summary-pending" style="font-size:18px;font-weight:800">0</div></div>
-        <div class="summary-card"><div class="small-muted">Presentes</div><div id="summary-present" style="font-size:18px;font-weight:800">0</div></div>
+      <section id="summary-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;justify-items:center;align-items:center">
+        <div class="summary-card" style="width:120px;text-align:center"><div class="small-muted">Comensales</div><div id="summary-diners" style="font-size:20px;font-weight:800">0</div></div>
+        <div class="summary-card" style="width:120px;text-align:center"><div class="small-muted">Ausentes</div><div id="summary-absent" style="font-size:20px;font-weight:800">0</div></div>
+        <div class="summary-card" style="width:120px;text-align:center"><div class="small-muted">Pendientes</div><div id="summary-pending" style="font-size:20px;font-weight:800">0</div></div>
+        <div class="summary-card" style="width:120px;text-align:center"><div class="small-muted">Presentes</div><div id="summary-present" style="font-size:20px;font-weight:800">0</div></div>
       </section>
 
       <section id="student-lists">
@@ -673,26 +285,48 @@ img, svg { max-width:100%; height:auto; display:block; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
 <script>
-// Parche util: evitar error attachShadow doble y añadir logger global
-(function() {
+/* ---------- Global utilities & preferred course order (must be global) ---------- */
+const PREFERRED_COURSE_ORDER = [
+  '3 años', '4 años', '5 años',
+  '1º EP', '2º EP', '3º EP', '4º EP', '5º EP', '6º EP'
+];
+function normalizeCourseName(name) {
+  if (!name) return '';
   try {
-    const _attach = Element.prototype.attachShadow;
-    Element.prototype.attachShadow = function(init) {
-      if (this.shadowRoot) return this.shadowRoot;
-      return _attach.call(this, init);
-    };
-  } catch(e) { console.warn('attachShadow patch skipped', e); }
+    const noDiacritics = name.normalize ? name.normalize('NFD').replace(/\p{Diacritic}/gu, '') : name;
+    return noDiacritics.toString().toLowerCase().replace(/\s+/g,' ').trim();
+  } catch(e) { return (name||'').toString().toLowerCase().trim(); }
+}
+const _preferredNormalized = PREFERRED_COURSE_ORDER.map(c => normalizeCourseName(c));
+function courseCompare(a, b) {
+  const na = normalizeCourseName(a||''), nb = normalizeCourseName(b||'');
+  const ia = _preferredNormalized.indexOf(na), ib = _preferredNormalized.indexOf(nb);
+  if (ia !== -1 && ib !== -1) return ia - ib;
+  if (ia !== -1) return -1;
+  if (ib !== -1) return 1;
+  return na.localeCompare(nb);
+}
+function orderedUniqueCourses(courseArray) {
+  const uniq = Array.from(new Set(courseArray.filter(Boolean)));
+  uniq.sort(courseCompare);
+  return uniq;
+}
 
-  // pequeño logger global para errores no atrapados
-  window.addEventListener('error', function(ev) {
-    console.error('GLOBAL ERROR (window.onerror):', ev.message, ev.filename + ':' + ev.lineno);
-  });
-  window.addEventListener('unhandledrejection', function(ev) {
-    console.error('UNHANDLED PROMISE REJECTION:', ev.reason);
-  });
-})();
+/* ---------- DOMContentLoaded: app ---------- */
+document.addEventListener('DOMContentLoaded', () => {
 
-  document.addEventListener('DOMContentLoaded', () => {
+  // Parche: evitar attachShadow doble y logger global
+  (function() {
+    try {
+      const _attach = Element.prototype.attachShadow;
+      Element.prototype.attachShadow = function(init) {
+        if (this.shadowRoot) return this.shadowRoot;
+        return _attach.call(this, init);
+      };
+    } catch(e) { console.warn('attachShadow patch skipped', e); }
+    window.addEventListener('error', function(ev) { console.error('GLOBAL ERROR (window.onerror):', ev.message, ev.filename + ':' + ev.lineno); });
+    window.addEventListener('unhandledrejection', function(ev) { console.error('UNHANDLED PROMISE REJECTION:', ev.reason); });
+  })();
 
   const firebaseConfig = {
     apiKey: "AIzaSyAeI9G1_2-E8Kghc-88bkrXa_VDJXeDyHo",
@@ -707,8 +341,8 @@ img, svg { max-width:100%; height:auto; display:block; }
   const auth = firebase.auth();
   const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-  // tempSporadic por turno (ahora es por turno, no global)
-  const appState = { currentShift: null, students: [], attendance: {}, tempSporadic: { 'Primer Turno (Infantil)': new Set(), 'Segundo Turno (Primaria)': new Set() } };
+  // appState: tempSporadic now per-shift (map shiftName -> Set(ids))
+  const appState = { currentShift: null, students: [], attendance: {}, tempSporadic: {} };
 
   const dom = {
     roleDisplay: document.getElementById('role-display'),
@@ -746,7 +380,8 @@ img, svg { max-width:100%; height:auto; display:block; }
     summary: { diners: document.getElementById('summary-diners'), absent: document.getElementById('summary-absent'), pending: document.getElementById('summary-pending'), present: document.getElementById('summary-present') },
     logoutBtn: document.getElementById('logout-btn'),
     showMonthlyBtn: document.getElementById('show-monthly-report-btn'),
-    showHistoryBtn: document.getElementById('show-history-btn')
+    showHistoryBtn: document.getElementById('show-history-btn'),
+    closeHistoryBtn: document.getElementById('close-history-btn')
   };
 
   /* ----- Firestore helpers ----- */
@@ -755,12 +390,12 @@ img, svg { max-width:100%; height:auto; display:block; }
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   }
   async function addStudentBatch(students) {
+    if (!students || !students.length) return 0;
     const batch = db.batch(); const col = db.collection('students'); let added = 0;
     students.forEach(s => {
       if (s.name && s.course) {
         const docRef = col.doc();
-        // keep old shape: shift string ('' if none), allergic boolean
-        batch.set(docRef, { name: s.name.trim(), course: s.course.trim(), shift: s.shift ? s.shift.trim() : '', allergic: !!s.allergic });
+        batch.set(docRef, { name: s.name.trim(), course: s.course.trim(), shift: s.shift ? s.shift.trim() : '', status: s.status || (s.shift ? 'fixed' : 'sporadic'), allergic: !!s.allergic });
         added++;
       }
     });
@@ -774,6 +409,7 @@ img, svg { max-width:100%; height:auto; display:block; }
   async function deleteAllStudents() { const snap = await db.collection('students').get(); const batch = db.batch(); snap.docs.forEach(d => batch.delete(d.ref)); await batch.commit(); }
 
   async function logAttendance(studentId, dateStr, state) {
+    if (!studentId) return;
     if (studentId.startsWith && studentId.startsWith('sporadic_')) return;
     const docRef = db.collection('attendance').doc(`${studentId}_${dateStr}`);
     await docRef.set({ studentId, date: dateStr, state });
@@ -797,7 +433,7 @@ img, svg { max-width:100%; height:auto; display:block; }
     dom.summary.pending.textContent = vals.filter(v=>'pending'===v).length;
   }
 
-  function createStudentElement(s) {
+  function createStudentElement(s, shift) {
     const div = document.createElement('div');
     const stateClass = appState.attendance && appState.attendance[s.id]
       ? appState.attendance[s.id]
@@ -807,129 +443,73 @@ img, svg { max-width:100%; height:auto; display:block; }
     div.dataset.studentId = s.id;
     div.dataset.studentName = s.name;
 
-    div.innerHTML = `
-      <span class="name ${s.allergic ? 'allergic' : ''}">${s.name}</span>
-      <div class="flex items-center gap-2">
-        <button class="mark-absent-btn" title="Marcar ausente">&times;</button>
-      </div>
-    `;
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'name' + (s.allergic ? ' allergic' : '');
+    nameSpan.textContent = s.name;
+
+    const right = document.createElement('div');
+    right.className = 'flex';
+    const btn = document.createElement('button');
+    btn.className = 'mark-absent-btn';
+    btn.title = 'Marcar ausente';
+    btn.textContent = '×';
+    right.appendChild(btn);
+
+    div.appendChild(nameSpan);
+    div.appendChild(right);
+
     return div.outerHTML;
   }
-/* ---------- Orden personalizado de cursos ---------- */
-/* Lista en el orden deseado (ajusta etiquetas exactas si tus cursos usan otra nomenclatura) */
-const PREFERRED_COURSE_ORDER = [
-  '3 años', '4 años', '5 años',
-  '1º EP', '2º EP', '3º EP', '4º EP', '5º EP', '6º EP'
-];
-
-// Normaliza nombre de curso: quita acentos, pasa a minúsculas y elimina dobles espacios
-function normalizeCourseName(name) {
-  if (!name) return '';
-  // eliminar acentos
-  const noDiacritics = name.normalize ? name.normalize('NFD').replace(/\p{Diacritic}/gu, '') : name;
-  return noDiacritics.toString().toLowerCase().replace(/\s+/g, ' ').trim();
-}
-
-// Precalcular versiones normalizadas del orden preferido
-const _preferredNormalized = PREFERRED_COURSE_ORDER.map(c => normalizeCourseName(c));
-
-/* Comparator para ordenar cursos: primero por el índice en PREFERRED_COURSE_ORDER, 
-   los que no estén en la lista se ordenan al final alfabeticamente */
-function courseCompare(a, b) {
-  const na = normalizeCourseName(a || '');
-  const nb = normalizeCourseName(b || '');
-  const ia = _preferredNormalized.indexOf(na);
-  const ib = _preferredNormalized.indexOf(nb);
-
-  if (ia !== -1 && ib !== -1) return ia - ib;
-  if (ia !== -1 && ib === -1) return -1;
-  if (ia === -1 && ib !== -1) return 1;
-  // Ninguno está en la lista -> orden alfabético por nombre original (case-insensitive)
-  return (na > nb) ? 1 : (na < nb) ? -1 : 0;
-}
-
-/* Utilidad: dado un array de cursos (posibles duplicados), devuelve array ordenado y único */
-function orderedUniqueCourses(courseArray) {
-  const uniq = Array.from(new Set(courseArray.filter(Boolean)));
-  uniq.sort(courseCompare);
-  return uniq;
-}
 
   /* ----- Render courses ----- */
   async function renderCourses(shift) {
-  appState.currentShift = shift;
-  document.getElementById('shift-selection').style.display = 'none';
-  document.getElementById('dashboard').classList.remove('hidden');
-  dom.coursesContainer.innerHTML = '<p class="small-muted">Cargando alumnos...</p>';
+    try {
+      appState.currentShift = shift;
+      document.getElementById('shift-selection').style.display = 'none';
+      document.getElementById('dashboard').classList.remove('hidden');
+      dom.coursesContainer.innerHTML = '<p class="small-muted">Cargando alumnos...</p>';
 
-  // Cargar datos
-  appState.students = await fetchStudents();
-  const today = new Date().toISOString().slice(0,10);
-  const attendance = await fetchAttendanceByDate(today); // mapa id -> estado
-  appState.attendance = {};
-  appState.students.forEach(s => { appState.attendance[s.id] = attendance[s.id] || 'pending'; });
+      appState.students = await fetchStudents();
+      const today = new Date().toISOString().slice(0,10);
+      const attendance = await fetchAttendanceByDate(today);
+      appState.attendance = {};
+      appState.students.forEach(s => appState.attendance[s.id] = attendance[s.id] || 'pending');
 
-  dom.coursesContainer.innerHTML = '';
+      dom.coursesContainer.innerHTML = '';
 
-  // Conjunto de tempSporadic para este turno (seguridad por si no existiera)
-  const sporadicSetForShift = (appState.tempSporadic && appState.tempSporadic[shift]) ? appState.tempSporadic[shift] : new Set();
+      // assigned: students with shift === shift OR those tempSporadic for this shift only
+      const tempSet = appState.tempSporadic[shift] || new Set();
+      const assigned = appState.students.filter(s => (s.shift && s.shift === shift) || tempSet.has(s.id));
 
-  // Alumnos fijos para el turno (comprobamos el string completo de shift)
-  const fixed = appState.students.filter(s => s.shift && s.shift === shift);
+      // Courses only from assigned students
+      const courses = orderedUniqueCourses(assigned.map(s => s.course));
 
-  // Alumnos sin turno asignado -> candidatos esporádicos (aparecen en ambos turnos)
-  const esporadicos = appState.students.filter(s => !s.shift || s.shift.trim() === '');
-
-  // Alumnos asignados a mostrar: fijos + esporádicos añadidos temporalmente para este turno
-  const assigned = appState.students.filter(s => (s.shift && s.shift === shift) || sporadicSetForShift.has(s.id));
-
-  // Reunir cursos que tengan al menos un asignado o al menos un candidato esporádico
-const courses = orderedUniqueCourses(assigned.map(s => s.course));
-  assigned.forEach(s => courseSet.add(s.course));
-  esporadicos.forEach(s => courseSet.add(s.course));
-
-  const courses = [...courseSet].sort((a,b) => (a||'').localeCompare(b||''));
-
-  if (!courses.length) {
-    dom.coursesContainer.innerHTML = '<p class="small-muted">No hay alumnos en este turno.</p>';
-    updateSummary();
-    return;
+      if (!courses.length) {
+        dom.coursesContainer.innerHTML = '<p class="small-muted">No hay alumnos en este turno.</p>';
+      } else {
+        courses.forEach(course => {
+          const card = document.createElement('div'); card.className = 'course-card';
+          const studentsInCourse = assigned.filter(s => s.course === course).sort((a,b)=>a.name.localeCompare(b.name));
+          const listHtml = studentsInCourse.map(s => createStudentElement(s, shift)).join('');
+          const pickerBtn = `<div style="margin-top:8px"><button class="open-sporadic-picker primary" data-course="${course}">+ Añadir esporádico</button></div>`;
+          card.innerHTML = `<div><h3>${course}</h3><div style="display:flex;flex-direction:column;gap:8px" data-course-list="${course}">${listHtml}</div></div>${pickerBtn}`;
+          dom.coursesContainer.appendChild(card);
+        });
+      }
+      updateSummary();
+    } catch (err) {
+      console.error('renderCourses error', err);
+      dom.coursesContainer.innerHTML = '<p class="small-muted">Error al cargar alumnos.</p>';
+    }
   }
-
-  // Pintar cursos
-  courses.forEach(course => {
-    const card = document.createElement('div');
-    card.className = 'course-card';
-
-    // Los que deben listarse como filas: solo los "assigned" (fijos del turno + los esporádicos ya añadidos para este turno)
-    const studentsInCourse = assigned.filter(s => s.course === course).sort((a,b) => a.name.localeCompare(b.name));
-    const listHtml = studentsInCourse.map(createStudentElement).join('');
-
-    // Candidatos esporádicos por curso: todos los sin turno de ese curso
-    const sporadicCandidates = esporadicos.filter(s => s.course === course).sort((a,b) => a.name.localeCompare(b.name));
-
-    const pickerBtn = sporadicCandidates.length > 0
-      ? `<div style="margin-top:8px"><button class="open-sporadic-picker primary" data-course="${course}">+ Añadir esporádico</button></div>`
-      : '';
-
-    card.innerHTML = `<div><h3>${course}</h3><div style="display:flex;flex-direction:column;gap:8px" data-course-list="${course}">${listHtml}</div></div>${pickerBtn}`;
-    dom.coursesContainer.appendChild(card);
-  });
-
-  updateSummary();
-}
-
-
 
   /* ----- Sporadic picker ----- */
   let currentPickerCourse = null;
   function openSporadicPickerModal(course) {
     currentPickerCourse = course;
     dom.sporadicPickerTitle.textContent = `Seleccionar esporádicos — ${course}`;
-    // candidates: students in that course WITHOUT any assigned shift (shift falsy)
-    // They should appear in picker for both turns; we only exclude those already added as tempSporadic for THIS shift
-    const shift = appState.currentShift;
-    const candidates = appState.students.filter(s => s.course === course && (!s.shift || s.shift.trim()==='') && !appState.tempSporadic[shift].has(s.id));
+    // candidates are students in that course WITHOUT an assigned shift (shift falsy)
+    const candidates = appState.students.filter(s => s.course === course && (!s.shift || s.shift.trim()===''));
     const container = dom.sporadicPickerContent;
     if (!candidates.length) {
       container.innerHTML = `<p class="small-muted">No hay alumnos sin turno asignado en ${course}.</p>`;
@@ -948,114 +528,94 @@ const courses = orderedUniqueCourses(assigned.map(s => s.course));
   }
   dom.closeSporadicPicker.addEventListener('click', () => dom.sporadicPickerModal.classList.remove('active'));
   dom.confirmSporadicAdd.addEventListener('click', async () => {
-    const checked = Array.from(dom.sporadicPickerContent.querySelectorAll('.sporadic-candidate:checked')).map(cb => cb.dataset.id);
-    if (!checked.length) { alert('Selecciona al menos un alumno.'); return; }
-    const today = new Date().toISOString().slice(0,10);
-    const shift = appState.currentShift;
-    for (const id of checked) {
-      try {
-        // register attendance for today as present
-        await logAttendance(id, today, 'present');
-        // add as sporadic only for the current shift (so doesn't appear in the other shift)
-        appState.tempSporadic[shift].add(id);
-        appState.attendance[id] = 'present';
-      } catch (e) { console.error('error al añadir esporádico', e); }
-    }
-    if (appState.currentShift) await renderCourses(appState.currentShift);
-    dom.sporadicPickerModal.classList.remove('active');
+    try {
+      const checked = Array.from(dom.sporadicPickerContent.querySelectorAll('.sporadic-candidate:checked')).map(cb => cb.dataset.id);
+      if (!checked.length) { alert('Selecciona al menos un alumno.'); return; }
+      const today = new Date().toISOString().slice(0,10);
+      const shift = appState.currentShift;
+      if (!shift) { alert('Error: no hay turno seleccionado'); return; }
+      // ensure map exists
+      if (!appState.tempSporadic[shift]) appState.tempSporadic[shift] = new Set();
+      for (const id of checked) {
+        try {
+          // register attendance for today as present and mark it only for this shift
+          await logAttendance(id, today, 'present');
+          appState.tempSporadic[shift].add(id);
+          appState.attendance[id] = 'present';
+        } catch (e) { console.error('error al añadir esporádico', e); }
+      }
+      if (appState.currentShift) await renderCourses(appState.currentShift);
+      dom.sporadicPickerModal.classList.remove('active');
+    } catch(e){ console.error('confirmSporadicAdd error', e); alert('Error añadiendo esporádicos. Mira consola.'); }
   });
 
   /* ----- CSV import ----- */
   function handleCsvImport(file) {
-  if (!file) return;
-  dom.importStatusInitial.textContent = 'Procesando archivo...';
-
-  Papa.parse(file, {
-    header: true,
-    skipEmptyLines: true,
-    complete: async (results) => {
-      // todo lo que hacemos aquí está dentro de try/catch para evitar SyntaxError por try sin catch
-      try {
-        const fields = (results.meta && results.meta.fields) ? results.meta.fields.map(f => (f||'').toString().toLowerCase().trim()) : [];
-        if (!fields.includes('nombre') && !fields.includes('name')) {
-          dom.importStatusInitial.textContent = 'Error: CSV debe tener columna "nombre" (o "name").';
-          return;
-        }
-        if (!fields.includes('curso') && !fields.includes('course')) {
-          dom.importStatusInitial.textContent = 'Error: CSV debe tener columna "curso" (o "course").';
-          return;
-        }
-
-        // eliminar todos los alumnos actuales (medida tal como tenías)
-        await deleteAllStudents();
-
-        // mapeo robusto por fila
-        const mapped = results.data.map(r => {
-          // normalizar keys (accesible indiferente a mayúsculas)
-          const row = {};
-          Object.keys(r || {}).forEach(k => row[k.toString().toLowerCase().trim()] = r[k]);
-
-          // detectar turno
-          const rawShift = (row.turno || row.shift || '').toString().trim();
-          let shift = '';
-          if (rawShift) {
-            if (/primer|^1\b|^1º|\bprimero\b/i.test(rawShift)) shift = 'Primer Turno (Infantil)';
-            else if (/segund|^2\b|^2º|\bsegundo\b/i.test(rawShift)) shift = 'Segundo Turno (Primaria)';
-            else shift = rawShift;
+    if (!file) return;
+    dom.importStatusInitial.textContent = 'Procesando archivo...';
+    Papa.parse(file, { header:true, skipEmptyLines:true,
+      complete: async (results) => {
+        try {
+          const fields = (results.meta && results.meta.fields) ? results.meta.fields.map(f => (f||'').toLowerCase().trim()) : [];
+          if (!fields.includes('nombre') && !fields.includes('name')) {
+            dom.importStatusInitial.textContent = 'Error: CSV debe tener columna "nombre" (o "name").';
+            return;
           }
+          if (!fields.includes('curso') && !fields.includes('course')) {
+            dom.importStatusInitial.textContent = 'Error: CSV debe tener columna "curso" (o "course").';
+            return;
+          }
+          await deleteAllStudents();
+          const mapped = results.data.map(r => {
+            const row = {};
+            Object.keys(r || {}).forEach(k => row[k.toString().toLowerCase().trim()] = r[k]);
 
-          // detectar alergia (buscamos keys comunes y también keys que contengan 'alerg'/'allerg')
-          let allergic = false;
-          const allergyCandidates = ['alergia','allergic','allergy'];
-          for (const key of allergyCandidates) {
-            if (Object.prototype.hasOwnProperty.call(row, key)) {
-              const v = (row[key] || '').toString().trim().toLowerCase();
-              if (v && /^(si|sí|s|yes|y|true|1)$/.test(v)) { allergic = true; break; }
+            const rawShift = (row.turno || row.shift || '').toString().trim();
+            let shift = '';
+            if (rawShift) {
+              if (/primer|^1\b|^1º|\bprimero\b/i.test(rawShift)) shift = 'Primer Turno (Infantil)';
+              else if (/segund|^2\b|^2º|\bsegundo\b/i.test(rawShift)) shift = 'Segundo Turno (Primaria)';
+              else shift = rawShift;
             }
-          }
-          if (!allergic) {
-            for (const key of Object.keys(row)) {
-              if (/alerg|allerg/i.test(key)) {
+
+            // alergia detection
+            let allergic = false;
+            const allergyCandidates = ['alergia','allergic','allergy'];
+            for (const key of allergyCandidates) {
+              if (Object.prototype.hasOwnProperty.call(row, key)) {
                 const v = (row[key] || '').toString().trim().toLowerCase();
                 if (v && /^(si|sí|s|yes|y|true|1)$/.test(v)) { allergic = true; break; }
               }
             }
-          }
+            if (!allergic) {
+              for (const key of Object.keys(row)) {
+                if (/alerg|allerg/i.test(key)) {
+                  const v = (row[key] || '').toString().trim().toLowerCase();
+                  if (v && /^(si|sí|s|yes|y|true|1)$/.test(v)) { allergic = true; break; }
+                }
+              }
+            }
 
-          const name = (row.nombre || row.name || '').toString().trim();
-          const course = (row.curso || row.course || '').toString().trim();
-
-          return {
-            name,
-            course,
-            shift,
-            status: shift ? 'fixed' : 'sporadic',
-            allergic: !!allergic
-          };
-        });
-
-        // añadimos en batch
-        const added = await addStudentBatch(mapped);
-        dom.importStatusInitial.textContent = `Importación completa ✅ (${added})`;
-        appState.students = await fetchStudents();
-        if (appState.currentShift) await renderCourses(appState.currentShift);
-
-      } catch (err) {
-        console.error('Error en import CSV completo:', err);
-        dom.importStatusInitial.textContent = 'Error al procesar CSV. Mira la consola.';
-      } finally {
-        // limpiamos mensaje tras unos segundos
-        setTimeout(()=>dom.importStatusInitial.textContent = '', 5000);
-      }
-    },
-    error: (err) => {
-      console.error('PapaParse error:', err);
-      dom.importStatusInitial.textContent = 'Error leyendo CSV';
-      setTimeout(()=>dom.importStatusInitial.textContent='', 3000);
-    }
-  });
-}
-
+            return {
+              name: (row.nombre || row.name || '').toString().trim(),
+              course: (row.curso || row.course || '').toString().trim(),
+              shift,
+              status: shift ? 'fixed' : 'sporadic',
+              allergic: !!allergic
+            };
+          });
+          const added = await addStudentBatch(mapped);
+          dom.importStatusInitial.textContent = `Importación completa ✅ (${added})`;
+          appState.students = await fetchStudents();
+          if (appState.currentShift) await renderCourses(appState.currentShift);
+        } catch (err) {
+          console.error('CSV import error', err);
+          dom.importStatusInitial.textContent = 'Error al procesar CSV. Mira la consola.';
+        } finally { setTimeout(()=>dom.importStatusInitial.textContent='',5000); }
+      },
+      error: (err) => { console.error(err); dom.importStatusInitial.textContent = 'Error leyendo CSV'; setTimeout(()=>dom.importStatusInitial.textContent='',3000); }
+    });
+  }
 
   /* ----- Export CSV ----- */
   async function exportFullDayCsv(dateStr) {
@@ -1078,300 +638,119 @@ const courses = orderedUniqueCourses(assigned.map(s => s.course));
       if (appState.attendance[id] === 'pending') {
         appState.attendance[id] = 'absent';
         toMark.push(id);
-        // no dependemos de elementos con id en DOM — re-render will show correct classes
+        // try update DOM class safely
+        document.querySelectorAll(`[data-student-id="${id}"]`).forEach(el => {
+          el.classList.remove('pending','present','absent'); el.classList.add('absent');
+        });
       }
     }
     await logBatchAttendance(toMark, today, 'absent');
     updateSummary();
-    if (appState.currentShift) await renderCourses(appState.currentShift);
   }
 
   /* ----- History ----- */
   async function showHistoryModal() {
-  dom.historyModal.classList.add('active');
-  dom.historyStudentList.innerHTML = '<p class="small-muted">Cargando...</p>';
-
-  try {
-    const all = await fetchStudents();
-    all.sort((a,b)=>a.name.localeCompare(b.name));
-    if (!all.length) {
-      dom.historyStudentList.innerHTML = '<p class="small-muted">No hay alumnos registrados.</p>';
-      return;
-    }
-    dom.historyStudentList.innerHTML = all.map(s =>
-      `<div class="history-student p-2" data-id="${s.id}" data-name="${s.name}" style="border-bottom:1px solid var(--card-border);padding:8px;cursor:pointer">
-         <strong>${s.name}</strong>
-         <div class="small-muted">${s.shift || '(Esporádico)'} • ${s.course}</div>
-       </div>`
-    ).join('');
-  } catch (e) {
-    console.error('Error cargando lista de alumnos para historial:', e);
-    dom.historyStudentList.innerHTML = '<p class="small-muted">Error cargando alumnos.</p>';
+    try {
+      document.getElementById('history-modal').classList.add('active');
+      dom.historyStudentList.innerHTML = '<p class="small-muted">Cargando...</p>';
+      const all = await fetchStudents(); all.sort((a,b)=>a.name.localeCompare(b.name));
+      if (!all.length) dom.historyStudentList.innerHTML = '<p class="small-muted">No hay alumnos registrados.</p>';
+      else dom.historyStudentList.innerHTML = all.map(s => `<div class="history-student p-2" data-id="${s.id}" data-name="${s.name}" style="border-bottom:1px solid var(--card-border);padding:8px;cursor:pointer"><strong>${s.name}</strong><div class="small-muted">${s.shift || '(Esporádico)'} • ${s.course}</div></div>`).join('');
+    } catch(e){ console.error('showHistoryModal', e); }
   }
-}
-
-// 3) Función para mostrar historial de un alumno (reemplaza la anterior)
-async function showStudentHistory(id, name) {
-  dom.historyStudentName.textContent = `Historial de: ${name}`;
-  dom.historyDatesList.innerHTML = '<p class="small-muted">Buscando...</p>';
-  try {
+  async function showStudentHistory(id, name) {
+    dom.historyStudentName.textContent = `Historial de: ${name}`;
+    dom.historyDatesList.innerHTML = '<p class="small-muted">Buscando...</p>';
     const snap = await db.collection('attendance').where('studentId','==',id).get();
-    if (snap.empty) {
-      dom.historyDatesList.innerHTML = '<p class="small-muted">Sin registros.</p>';
-      return;
-    }
-    // ordenar por fecha descendente (formato 'YYYY-MM-DD' -> compara como string)
-    const rows = snap.docs.map(d => d.data()).sort((a,b) => (b.date||'').localeCompare(a.date||''));
-    dom.historyDatesList.innerHTML = rows.map(r => {
-      const pretty = (r.date && !isNaN(Date.parse(r.date))) ? 
-        new Date(r.date + 'T00:00:00').toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) 
-        : (r.date || '—');
-      const state = r.state || (r.status || '—');
-      return `<div style="padding:6px;border-bottom:1px solid var(--card-border);display:flex;justify-content:space-between;align-items:center">
-                <div style="text-align:left">${pretty}</div>
-                <div style="text-align:right"><strong>${state}</strong></div>
-              </div>`;
-    }).join('');
-  } catch (err) {
-    console.error('Error cargando historial del alumno:', err);
-    dom.historyDatesList.innerHTML = '<p class="small-muted">Error cargando historial.</p>';
+    const dates = snap.docs.map(d=>d.data().date).sort().reverse();
+    dom.historyDatesList.innerHTML = dates.length ? dates.map(d=>`<div style="padding:6px;border-bottom:1px solid var(--card-border)">${new Date(d+'T00:00:00').toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>`).join('') : '<p class="small-muted">Sin registros.</p>';
   }
-}
 
   /* ----- Monthly report + print ----- */
-  /* ---------------------------
-   INFORME MENSUAL (parche)
-   --------------------------- */
-
-async function generateMonthlyReport(ym) {
-  dom.monthlyReportContent.innerHTML = '<p class="small-muted">Generando informe...</p>';
-  if (!ym || !/^\d{4}-\d{2}$/.test(ym)) {
-    dom.monthlyReportContent.innerHTML = '<p style="color:#b45309">Selecciona un mes válido.</p>';
-    return;
-  }
-
-  try {
-    const [yStr,mStr] = ym.split('-');
-    const y = parseInt(yStr,10), m = parseInt(mStr,10);
-    const days = new Date(y, m, 0).getDate(); // número de días del mes
-
-    // datos
-    const allStudents = await fetchStudents(); // [{id,name,course,shift,allergic}]
-    const attendanceData = await fetchAttendanceByMonth(ym); // debe devolver Map studentId -> Set(days)
-    // seguridad: si fetchAttendanceByMonth devuelve objeto en otro formato, normalizamos:
-    // (la impl. existente debería devolver Map, si no, adaptarlo)
-    const attendanceMap = (attendanceData instanceof Map) ? attendanceData : new Map(Object.entries(attendanceData || {}));
-
-    // agrupar por curso (incluimos cursos vacíos por si)
-    const byCourse = allStudents.reduce((acc, s) => { (acc[s.course] = acc[s.course] || []).push(s); return acc; }, {});
-
-    if (!Object.keys(byCourse).length) {
-      dom.monthlyReportContent.innerHTML = '<p class="small-muted">No hay alumnos registrados.</p>';
+  async function generateMonthlyReport(ym) {
+    dom.monthly-report-content
+    dom.monthlyReportContent.innerHTML = '<p class="small-muted">Generando informe...</p>';
+    if (!ym || !/^\d{4}-\d{2}$/.test(ym)) {
+      dom.monthlyReportContent.innerHTML = '<p style="color:#b45309">Selecciona un mes válido.</p>';
       return;
     }
+    try {
+      const [yStr,mStr] = ym.split('-');
+      const y = parseInt(yStr,10), m = parseInt(mStr,10);
+      const days = new Date(y, m, 0).getDate(); // número de días del mes
 
-    // construir HTML del informe
-    let html = `<div class="printable-area"><h2 style="text-align:center">${new Date(y, m-1, 1).toLocaleString('es-ES', { month: 'long', year: 'numeric' })}</h2>`;
+      const allStudents = await fetchStudents();
+      const attendanceData = await fetchAttendanceByMonth(ym);
+      const attendanceMap = (attendanceData instanceof Map) ? attendanceData : new Map(Object.entries(attendanceData || {}));
 
-Object.keys(byCourse).sort(courseCompare).forEach(course=>{
-      const students = byCourse[course].sort((a,b)=> a.name.localeCompare(b.name));
-      html += `<div class="report-wrapper" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center"><strong>${course}</strong><small>Días: ${days} — ${students.length} alumnos</small></div><div style="overflow:auto;margin-top:8px"><table class="report-table"><thead><tr><th style="min-width:180px;text-align:left;padding-left:8px">Alumno</th>`;
+      const byCourse = allStudents.reduce((acc, s) => { (acc[s.course] = acc[s.course] || []).push(s); return acc; }, {});
+      if (!Object.keys(byCourse).length) { dom.monthlyReportContent.innerHTML = '<p class="small-muted">No hay alumnos registrados.</p>'; return; }
 
-      for (let d=1; d<=days; d++) html += `<th>${d}</th>`;
-      html += `<th>Total</th></tr></thead><tbody>`;
-
-      students.forEach(st => {
-        const attended = attendanceMap.get(st.id) || new Set();
-        html += `<tr><td style="text-align:left;padding-left:8px">${st.name}</td>`;
-        for (let d=1; d<=days; d++) {
-          html += attended.has(d) ? `<td><span class="attendance-mark">✓</span></td>` : `<td></td>`;
-        }
-        html += `<td class="total">${attended.size || 0}</td></tr>`;
+      let html = `<div class="printable-area"><h2 style="text-align:center">${new Date(y, m-1, 1).toLocaleString('es-ES', { month: 'long', year: 'numeric' })}</h2>`;
+      Object.keys(byCourse).sort(courseCompare).forEach(course=>{
+        const students = byCourse[course].sort((a,b)=>a.name.localeCompare(b.name));
+        html += `<div class="report-wrapper" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center"><strong>${course}</strong><small>Días: ${days} — ${students.length} alumnos</small></div><div style="overflow:auto;margin-top:8px"><table class="report-table"><thead><tr><th style="min-width:180px;text-align:left;padding-left:8px">Alumno</th>`;
+        for (let d=1; d<=days; d++) html += `<th>${d}</th>`;
+        html += `<th>Total</th></tr></thead><tbody>`;
+        students.forEach(st=>{
+          const attended = attendanceMap.get(st.id) || new Set();
+          html += `<tr><td style="text-align:left;padding-left:8px">${st.name}</td>`;
+          for (let d=1; d<=days; d++) html += attended.has(d) ? `<td><span class="attendance-mark">✓</span></td>` : `<td></td>`;
+          html += `<td class="total">${attended.size || 0}</td></tr>`;
+        });
+        html += `</tbody></table></div></div>`;
       });
+      html += `</div>`;
+      dom.monthlyReportContent.innerHTML = html;
+    } catch (err) {
+      console.error('Error generando informe mensual:', err);
+      dom.monthlyReportContent.innerHTML = `<p class="small-muted">Error al generar el informe. Mira la consola.</p>`;
+    }
+  }
 
-      html += `</tbody></table></div></div>`;
+  function openMonthlyReportModal() {
+    const now = new Date();
+    const ymDefault = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    try {
+      if (!dom.reportMonthInput) {
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'inline-flex'; wrapper.style.gap = '8px';
+        const input = document.createElement('input'); input.type='month'; input.id='report-month-input'; input.style.padding='8px'; input.style.borderRadius='8px'; input.style.border='1px solid var(--card-border)';
+        wrapper.appendChild(input);
+        dom.monthlyReportModal.querySelector('header > div')?.insertBefore(wrapper, dom.printReportBtn || null);
+        dom.reportMonthInput = input;
+      }
+      dom.reportMonthInput.value = dom.reportMonthInput.value || ymDefault;
+    } catch(e){ console.warn('fallback reportMonthInput create', e); }
+    dom.monthlyReportModal.classList.add('active');
+    generateMonthlyReport(dom.reportMonthInput.value || ymDefault);
+  }
+
+  if (dom.printReportBtn) {
+    dom.printReportBtn.addEventListener('click', async () => {
+      let ym = dom.reportMonthInput?.value;
+      if (!ym) { const now = new Date(); ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; if (dom.reportMonthInput) dom.reportMonthInput.value = ym; }
+      await generateMonthlyReport(ym);
+      const content = dom.monthlyReportContent.innerHTML;
+      if (!content) { alert('No hay contenido para imprimir.'); return; }
+      const iframe = document.createElement('iframe'); iframe.style.position='fixed'; iframe.style.right='0'; iframe.style.bottom='0'; iframe.style.width='0'; iframe.style.height='0'; iframe.style.border='0';
+      document.body.appendChild(iframe);
+      const doc = iframe.contentWindow.document;
+      const successColor = getComputedStyle(document.documentElement).getPropertyValue('--success') || '#004623';
+      const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--brand') || '#8b0630';
+      const styles = `
+        <style>
+          body{font-family:Inter,Arial;padding:18px;color:#111;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+          .attendance-mark{display:inline-block;width:20px;height:20px;background:${successColor} !important;color:#fff;border-radius:50%;text-align:center;line-height:20px;font-weight:700}
+          table{border-collapse:collapse;width:100%}
+          th,td{border:1px solid #e6e8eb;padding:6px;text-align:center}
+          th{background:#f3f4f6}
+          .report-wrapper > div:first-child{background:${primaryColor} !important;color:#fff !important;padding:6px 10px;border-radius:6px}
+        </style>`;
+      doc.open(); doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Informe ${ym}</title>${styles}</head><body>${content}</body></html>`); doc.close();
+      setTimeout(()=>{ try{ iframe.contentWindow.focus(); iframe.contentWindow.print(); } catch(e){ console.error(e); alert('Error al imprimir: '+e.message);} setTimeout(()=>{ try{ document.body.removeChild(iframe); } catch(e){} },800); },300);
     });
-
-    html += `</div>`;
-    dom.monthlyReportContent.innerHTML = html;
-  } catch (err) {
-    console.error('Error generando informe mensual:', err);
-    dom.monthlyReportContent.innerHTML = `<p class="small-muted">Error al generar el informe. Mira la consola.</p>`;
   }
-}
-
-// abre el modal (y preselecciona mes actual si no hay valor)
-function openMonthlyReportModal() {
-  const now = new Date();
-  const ymDefault = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  try {
-    if (!dom.reportMonthInput) {
-      // crear input si no existe (fallback)
-      const wrapper = document.createElement('div');
-      wrapper.style.display = 'inline-flex';
-      wrapper.style.gap = '8px';
-      const input = document.createElement('input');
-      input.type = 'month';
-      input.id = 'report-month-input';
-      input.style.padding = '8px';
-      input.style.borderRadius = '8px';
-      input.style.border = '1px solid var(--card-border)';
-      wrapper.appendChild(input);
-      dom.monthlyReportModal.querySelector('header > div')?.insertBefore(wrapper, dom.printReportBtn || null);
-      dom.reportMonthInput = input;
-    }
-    dom.reportMonthInput.value = dom.reportMonthInput.value || ymDefault;
-  } catch(e){ console.warn('fallback reportMonthInput create', e); }
-
-  dom.monthlyReportModal.classList.add('active');
-  // generar al abrir
-  generateMonthlyReport(dom.reportMonthInput.value || ymDefault);
-}
-
-// Listener imprimir: crea iframe y llama a print (con color coherente)
-if (dom.printReportBtn) {
-  dom.printReportBtn.removeEventListener?.('click', null); // intento de evitar duplicados
-  dom.printReportBtn.addEventListener('click', async () => {
-    let ym = dom.reportMonthInput?.value;
-    if (!ym) {
-      const now = new Date();
-      ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-      if (dom.reportMonthInput) dom.reportMonthInput.value = ym;
-    }
-    await generateMonthlyReport(ym);
-    const content = dom.monthlyReportContent.innerHTML;
-    if (!content) { alert('No hay contenido para imprimir.'); return; }
-
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = '0';
-    document.body.appendChild(iframe);
-
-    const doc = iframe.contentWindow.document;
-    const successColor = getComputedStyle(document.documentElement).getPropertyValue('--success') || '#004623';
-const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#8b0630';
-
-const styles = `
-  <style>
-    body {
-      font-family: Inter, Arial, sans-serif;
-      padding: 18px;
-      color: #111;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    /* Ticks */
-    .attendance-mark {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      background: ${successColor} !important;
-      color: #fff !important;
-      border-radius: 50%;
-      text-align: center;
-      line-height: 20px;
-      font-weight: 700;
-    }
-
-    /* Tabla general */
-    .report-table {
-      border-collapse: collapse;
-      width: 100%;
-      table-layout: auto; /* permitir que la primera columna tenga espacio */
-    }
-    .report-table th, .report-table td {
-      border: 1px solid #e6e8eb;
-      padding: 6px;
-      text-align: center;
-      vertical-align: middle;
-    }
-    .report-table thead th {
-      background: #f3f4f6;
-      font-weight: 700;
-    }
-
-    /* Primera columna: nombres de alumno (más ancha, alineada a la izquierda y texto que salte líneas) */
-    .report-table th:first-child,
-    .report-table td:first-child {
-      text-align: left;
-      padding-left: 8px;
-      min-width: 200px;   /* mínimo razonable para nombres largos */
-      max-width: 320px;   /* evita que se coma TODO el ancho */
-      white-space: normal; /* permitir wrapping */
-      word-break: break-word;
-      overflow-wrap: anywhere;
-    }
-
-    /* Fuerza que el contenido de las celdas mantenga buena legibilidad */
-    .report-table td { 
-      white-space: nowrap;       /* por defecto los días no se parten */
-    }
-    /* pero permitimos al primer td romper líneas */
-    .report-table td:first-child { white-space: normal; }
-
-    /* Encabezado de curso (fondo primario) */
-    .report-wrapper > div:first-child {
-      background: ${primaryColor} !important;
-      color: #fff !important;
-      padding: 6px 10px;
-      border-radius: 6px;
-      margin-bottom: 8px;
-    }
-
-    /* --- Fix impresión --- */
-    @media print {
-      .report-wrapper div[style*="overflow:auto"] {
-        overflow: visible !important;
-      }
-      /* evitar que la tabla reduzca demasiado las columnas en impresión */
-      .report-table { table-layout: auto !important; }
-      .report-table th:first-child,
-      .report-table td:first-child {
-        min-width: 200px !important;
-        max-width: 320px !important;
-      }
-    }
-  </style>`;
-
-    doc.open();
-    doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Informe ${ym}</title>${styles}</head><body>${content}</body></html>`);
-    doc.close();
-
-    // pequeño delay para que renderice antes de imprimir
-    setTimeout(() => {
-      try { iframe.contentWindow.focus(); iframe.contentWindow.print(); }
-      catch (e) { console.error('Error al imprimir:', e); alert('Error al imprimir: ' + e.message); }
-      setTimeout(() => { try { document.body.removeChild(iframe); } catch (e) {} }, 800);
-    }, 300);
-  });
-}
-
-// Asegurar que existe un botón para abrir el modal. Si no existe, lo creamos dentro del panel admin (admin-only)
-(function ensureMonthlyReportButton() {
-  let btn = document.getElementById('show-monthly-report-btn');
-  if (!btn) {
-    // crear un botón discreto dentro del panel admin
-    const adminPanel = document.querySelector('.admin-panel.admin-only');
-    if (adminPanel) {
-      btn = document.createElement('button');
-      btn.id = 'show-monthly-report-btn';
-      btn.className = 'ghost small';
-      btn.textContent = '📅 Informe Mensual';
-      btn.style.marginTop = '10px';
-      adminPanel.appendChild(btn);
-    }
-  }
-  if (btn) {
-    btn.removeEventListener?.('click', null);
-    btn.addEventListener('click', openMonthlyReportModal);
-  }
-})();
-
 
   /* ----- Manage students modal (admin) ----- */
   async function openManageStudentsModal() {
@@ -1379,8 +758,7 @@ const styles = `
     dom.manageStudentsContent.innerHTML = '<p class="small-muted">Cargando...</p>';
     const all = await fetchStudents(); const byCourse = all.reduce((acc,s)=>{ (acc[s.course]=acc[s.course]||[]).push(s); return acc; },{});
     let html = '';
-    // For each course, list students with only 3 controls: Primer, Segundo, Alergia
-    Object.keys(byCourse).sort().forEach(course=>{
+    Object.keys(byCourse).sort(courseCompare).forEach(course=>{
       html += `<h4 style="margin-top:12px;color:var(--brand)">${course}</h4>`;
       byCourse[course].sort((a,b)=>a.name.localeCompare(b.name)).forEach(s=>{
         const checkedPrimer = s.shift === 'Primer Turno (Infantil)' ? 'checked' : '';
@@ -1389,8 +767,8 @@ const styles = `
         html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px;border-bottom:1px solid var(--card-border);align-items:center">
                   <div><strong>${s.name}</strong></div>
                   <div style="display:flex;gap:8px;align-items:center">
-                    <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="primer" ${checkedPrimer}> 1º turno</label>
-                    <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="segundo" ${checkedSegundo}> 2º turno</label>
+                    <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="primer" ${checkedPrimer}> 1º</label>
+                    <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="segundo" ${checkedSegundo}> 2º</label>
                   </div>
                   <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center">
                     <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-update-control" data-id="${s.id}" data-prop="allergic" ${isAllergic}> Alergia</label>
@@ -1400,34 +778,18 @@ const styles = `
     });
     dom.manageStudentsContent.innerHTML = html;
 
-    // event listeners: ensure checkboxes behave exclusively for shifts
+    // event listeners
     dom.manageStudentsContent.querySelectorAll('.student-shift-checkbox').forEach(cb => {
       cb.addEventListener('change', async (ev) => {
         const id = ev.target.dataset.id;
-        // Read states from DOM (we rely on two checkboxes present)
-        const primerCb = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="primer"]`);
-        const segundoCb = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="segundo"]`);
-        // enforce exclusivity: if primer checked, uncheck segundo; if segundo checked, uncheck primer
-        if (ev.target.dataset.prop === 'primer' && primerCb.checked) { if (segundoCb) segundoCb.checked = false; }
-        if (ev.target.dataset.prop === 'segundo' && segundoCb.checked) { if (primerCb) primerCb.checked = false; }
-
-        const primer = primerCb.checked;
-        const segundo = segundoCb.checked;
+        const primer = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="primer"]`).checked;
+        const segundo = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="segundo"]`).checked;
         let newShift = '';
         if (primer && !segundo) newShift = 'Primer Turno (Infantil)';
         else if (!primer && segundo) newShift = 'Segundo Turno (Primaria)';
-        else newShift = ''; // none selected
-
-        const ok = await updateStudentDoc(id, { shift: newShift });
-        if (ok) {
-          const s = appState.students.find(x=>x.id===id);
-          if (s) s.shift = newShift;
-          dom.importStatusInitial.textContent = 'Guardado';
-          setTimeout(()=>dom.importStatusInitial.textContent='',1200);
-        } else {
-          dom.importStatusInitial.textContent = 'Error guardando';
-          setTimeout(()=>dom.importStatusInitial.textContent='',1200);
-        }
+        else newShift = '';
+        const ok = await updateStudentDoc(id, { shift: newShift, status: newShift ? 'fixed' : 'sporadic' });
+        if (ok) { const s = appState.students.find(x=>x.id===id); if (s) { s.shift = newShift; s.status = newShift ? 'fixed' : 'sporadic'; } dom.importStatusInitial.textContent = 'Guardado'; setTimeout(()=>dom.importStatusInitial.textContent='',1200); }
       });
     });
 
@@ -1454,6 +816,7 @@ const styles = `
     const current = appState.attendance[studentId] || 'pending';
     const newState = isX ? (current === 'absent' ? 'pending' : 'absent') : (current === 'present' ? 'pending' : 'present');
     appState.attendance[studentId] = newState;
+    // update classes
     studentDiv.classList.remove('pending','present','absent'); studentDiv.classList.add(newState);
     updateSummary();
     try { await logAttendance(studentId, new Date().toISOString().slice(0,10), newState); } catch(err){ console.error('logAttendance error', err); }
@@ -1465,12 +828,16 @@ const styles = `
       dom.roleDisplay.textContent = 'Admin: ' + (auth.currentUser ? (auth.currentUser.displayName || 'Admin') : 'Admin');
       document.querySelectorAll('.admin-only').forEach(el=>el.style.display='block');
       dom.logoutBtn.style.display = 'inline-flex';
+      dom.showMonthlyBtn && (dom.showMonthlyBtn.style.display = 'inline-flex');
+      dom.showHistoryBtn && (dom.showHistoryBtn.style.display = 'inline-flex');
+      document.getElementById('import-csv-btn-initial')?.setAttribute('aria-hidden','false');
     } else {
       dom.roleDisplay.textContent = 'Modo: Profesor / Cuidador';
       document.querySelectorAll('.admin-only').forEach(el=>el.style.display='none');
       dom.logoutBtn.style.display = 'none';
+      dom.showMonthlyBtn && (dom.showMonthlyBtn.style.display = 'none');
+      dom.showHistoryBtn && (dom.showHistoryBtn.style.display = 'none');
     }
-    // always show shift-selection to start (profesor-side entry)
     document.getElementById('dashboard').classList.add('hidden');
     document.getElementById('shift-selection').style.display = 'block';
   }
@@ -1478,70 +845,41 @@ const styles = `
   auth.onAuthStateChanged(user => {
     const isAdmin = user && !user.isAnonymous;
     setUIForRole(isAdmin);
-    // if admin and #admin in hash, show admin view
-    if (isAdmin && location.hash.replace('#','') === 'admin') {
-      dom.adminLoginView.classList.remove('hidden');
-      dom.adminLoginView.style.display = 'block';
-    } else {
-      // hide the admin login view if not needed
-      if (!isAdmin) dom.adminLoginView.classList.add('hidden');
-    }
   });
 
   /* ----- Controls wiring ----- */
-  dom.loginAdminBtn.addEventListener('click', ()=> auth.signInWithPopup(googleProvider).catch(e=>{ console.error(e); alert('Error login'); }));
-  dom.logoutBtn.addEventListener('click', ()=> auth.signOut().then(()=>{ setUIForRole(false); }));
-  dom.importCsvBtnInitial.addEventListener('click', ()=> dom.csvFileInput.click());
-  dom.csvFileInput.addEventListener('change', e => handleCsvImport(e.target.files[0]));
-  dom.manageStudentsBtn.addEventListener('click', openManageStudentsModal);
-  dom.wipeDbBtn.addEventListener('click', async ()=> { if (!confirm('¿Borrar todos los alumnos?')) return; await deleteAllStudents(); appState.students = []; if (appState.currentShift) renderCourses(appState.currentShift); });
-  dom.exportCsvBtn.addEventListener('click', ()=> { const d = dom.exportDateInput.value || new Date().toISOString().slice(0,10); exportFullDayCsv(d); });
+  dom.loginAdminBtn && dom.loginAdminBtn.addEventListener('click', ()=> auth.signInWithPopup(googleProvider).catch(e=>{ console.error(e); alert('Error login'); }));
+  dom.logoutBtn && dom.logoutBtn.addEventListener('click', ()=> auth.signOut().then(()=>{ setUIForRole(false); }));
+  dom.importCsvBtnInitial && dom.importCsvBtnInitial.addEventListener('click', ()=> dom.csvFileInput.click());
+  dom.csvFileInput && dom.csvFileInput.addEventListener('change', e => handleCsvImport(e.target.files[0]));
+  dom.manageStudentsBtn && dom.manageStudentsBtn.addEventListener('click', openManageStudentsModal);
+  dom.wipeDbBtn && dom.wipeDbBtn.addEventListener('click', async ()=> { if (!confirm('¿Borrar todos los alumnos?')) return; await deleteAllStudents(); appState.students = []; if (appState.currentShift) renderCourses(appState.currentShift); });
+  dom.exportCsvBtn && dom.exportCsvBtn.addEventListener('click', ()=> { const d = dom.exportDateInput.value || new Date().toISOString().slice(0,10); exportFullDayCsv(d); });
 
-  document.querySelectorAll('#shift-buttons button').forEach(btn => btn.addEventListener('click', ()=> renderCourses(btn.dataset.shift)));
-  dom.finalizeShiftBtn.addEventListener('click', finalizeShift);
-  dom.backToShiftsBtn.addEventListener('click', ()=> { document.getElementById('shift-selection').style.display='block'; document.getElementById('dashboard').classList.add('hidden'); });
+  // shift buttons delegation
+  const shiftContainer = document.getElementById('shift-buttons');
+  if (shiftContainer) {
+    if (!shiftContainer.__listener_click) {
+      shiftContainer.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('button[data-shift]');
+        if (!btn) return;
+        const shiftName = btn.dataset.shift;
+        if (shiftName) renderCourses(shiftName);
+      });
+      shiftContainer.__listener_click = true;
+    }
+  } else {
+    document.querySelectorAll('#shift-buttons button').forEach(btn => btn.addEventListener('click', ()=> renderCourses(btn.dataset.shift)));
+  }
 
-  dom.showMonthlyBtn.addEventListener('click', async ()=> {
-    const now = new Date(); const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-    dom.reportMonthInput.value = ym; dom.monthly-report-modal?.classList?.add?.('active'); dom.monthlyReportModal.classList.add('active'); await generateMonthlyReport(ym);
-  });
+  dom.finalizeShiftBtn && dom.finalizeShiftBtn.addEventListener('click', finalizeShift);
+  dom.backToShiftsBtn && dom.backToShiftsBtn.addEventListener('click', ()=> { document.getElementById('shift-selection').style.display='block'; document.getElementById('dashboard').classList.add('hidden'); });
 
-  dom.showHistoryBtn = dom.showHistoryBtn || document.getElementById('show-history-btn');
-if (dom.showHistoryBtn) dom.showHistoryBtn.addEventListener('click', showHistoryModal);
-
-// cerrar modal con la X
-if (dom.closeHistoryBtn) {
-  dom.closeHistoryBtn.addEventListener('click', () => dom.historyModal.classList.remove('active'));
-} else {
-  // fallback seguro
-  document.getElementById('close-history-btn')?.addEventListener('click', () => document.getElementById('history-modal')?.classList?.remove('active'));
-}
-
-// click sobre un alumno en la lista -> abrir su historial
-if (dom.historyStudentList) {
-  dom.historyStudentList.addEventListener('click', ev => {
-    const row = ev.target.closest('.history-student');
-    if (!row) return;
-    const id = row.dataset.id;
-    const name = row.dataset.name;
-    if (!id) return;
-    showStudentHistory(id, name);
-  });
-}
-
-// búsqueda dentro del listado de alumnos (si tienes el input)
-if (dom.historySearch) {
-  dom.historySearch.addEventListener('input', (e) => {
-    const q = e.target.value.toLowerCase();
-    document.querySelectorAll('#history-student-list .history-student').forEach(el => {
-      el.style.display = (el.dataset.name && el.dataset.name.toLowerCase().includes(q)) ? '' : 'none';
-    });
-  });
-}
-dom.closeHistoryBtn = dom.closeHistoryBtn || document.getElementById('close-history-btn');
-  dom.historyModal = dom.historyModal || document.getElementById('history-modal');
-  dom.historyStudentList.addEventListener('click', ev => { const row = ev.target.closest('.history-student'); if (!row) return; showStudentHistory(row.dataset.id, row.dataset.name); });
-  dom.historySearch.addEventListener('input', (e)=>{ const q=e.target.value.toLowerCase(); document.querySelectorAll('#history-student-list .history-student').forEach(el=> el.style.display = (el.dataset.name.toLowerCase().includes(q)?'':'none')); });
+  dom.showMonthlyBtn && dom.showMonthlyBtn.addEventListener('click', openMonthlyReportModal);
+  dom.showHistoryBtn && dom.showHistoryBtn.addEventListener('click', showHistoryModal);
+  dom.closeHistoryBtn && dom.closeHistoryBtn.addEventListener('click', ()=> document.getElementById('history-modal').classList.remove('active'));
+  dom.historyStudentList && dom.historyStudentList.addEventListener('click', ev => { const row = ev.target.closest('.history-student'); if (!row) return; showStudentHistory(row.dataset.id, row.dataset.name); });
+  dom.historySearch && dom.historySearch.addEventListener('input', (e)=>{ const q=e.target.value.toLowerCase(); document.querySelectorAll('#history-student-list .history-student').forEach(el=> el.style.display = (el.dataset.name.toLowerCase().includes(q)?'':'none')); });
 
   document.getElementById('close-report-btn')?.addEventListener('click', ()=> dom.monthlyReportModal.classList.remove('active'));
 
@@ -1553,25 +891,33 @@ dom.closeHistoryBtn = dom.closeHistoryBtn || document.getElementById('close-hist
   setUIForRole(false);
   document.getElementById('export-date-input').value = new Date().toISOString().slice(0,10);
 
-  // Hash handling: permitir /#admin
-  function handleHash() {
-    const h = (location.hash || '').replace('#','');
-    if (h === 'admin') {
-      // mostrar vista admin-login-view y ocultar la selección por defecto
-      dom.adminLoginView.classList.remove('hidden');
-      dom.adminLoginView.style.display = 'block';
-      document.getElementById('shift-selection').style.display = 'none';
-      document.getElementById('dashboard').classList.add('hidden');
-      window.scrollTo(0,0);
-      try { dom.loginAdminBtn.focus(); } catch(e){}
-    } else {
-      if (!auth.currentUser) {
-        dom.adminLoginView.classList.add('hidden');
+  // ensure history/modal buttons exist (create if missing)
+  (function ensureAdminButtons() {
+    if (!document.getElementById('show-monthly-report-btn')) {
+      const adminPanel = document.querySelector('.admin-panel.admin-only');
+      if (adminPanel) {
+        const btn = document.createElement('button');
+        btn.id = 'show-monthly-report-btn';
+        btn.className = 'ghost small';
+        btn.textContent = '📅 Informe Mensual';
+        btn.style.marginTop = '10px';
+        adminPanel.appendChild(btn);
+        btn.addEventListener('click', openMonthlyReportModal);
       }
     }
-  }
-  window.addEventListener('hashchange', handleHash);
-  handleHash();
+    if (!document.getElementById('show-history-btn')) {
+      const adminPanel = document.querySelector('.admin-panel.admin-only');
+      if (adminPanel) {
+        const btn = document.createElement('button');
+        btn.id = 'show-history-btn';
+        btn.className = 'ghost small';
+        btn.textContent = '📜 Historial';
+        btn.style.marginTop = '10px';
+        adminPanel.appendChild(btn);
+        btn.addEventListener('click', showHistoryModal);
+      }
+    }
+  })();
 
   // service worker (no-fatal)
   if ('serviceWorker' in navigator) { navigator.serviceWorker.register && navigator.serviceWorker.register('/sw.js').then(()=>console.log('sw registered')).catch(()=>{}); }
@@ -1580,4 +926,3 @@ dom.closeHistoryBtn = dom.closeHistoryBtn || document.getElementById('close-hist
 </script>
 </body>
 </html>
-
