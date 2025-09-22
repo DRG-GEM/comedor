@@ -62,26 +62,24 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 }
 
 /* -----------------------
-   Estados de los alumnos
+   Estados de los alumnos (contraste reforzado y responsive)
 ----------------------- */
 
-/* Pendientes (sin marcar para comer) */
+/* Pendientes */
 .student-item.pending {
-  border-left: 4px solid #d1d5db; /* gris suave */
-  background: #f3f4f6;            /* gris muy claro */
-  color: #1f2937;                 /* texto oscuro */
-  transition: all 0.3s ease;
+  border-left: 4px solid #9ca3af; /* gris medio */
+  background-color: #f9fafb;      /* gris muy claro */
+  color: #111827;                 /* texto oscuro */
 }
 
-/* Presentes (marcados para comer) */
+/* Presentes */
 .student-item.present {
-  border-left: 4px solid #14532d; /* verde muy oscuro */
-  background: #14532d;            /* fondo sólido para contraste */
+  border-left: 4px solid #064e3b; /* verde muy oscuro */
+  background-color: #064e3b;      /* sólido para contraste */
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(20, 83, 45, 0.25);
-  transition: all 0.3s ease;
 }
-
+.student-item.present .name,
+.student-item.present .student-name,
 .student-item.present * {
   color: #ffffff !important;
 }
@@ -89,38 +87,30 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 /* Ausentes */
 .student-item.absent {
   border-left: 4px solid #b91c1c; /* rojo fuerte */
-  background: #fee2e2;            /* fondo claro para contraste */
-  color: #b91c1c;                 /* texto rojo oscuro */
+  background-color: #b91c1c;      /* rojo sólido */
+  color: #ffffff;                 /* texto blanco para contraste */
   text-decoration: line-through;
-  box-shadow: 0 2px 8px rgba(185, 28, 28, 0.15);
-  transition: all 0.3s ease;
+}
+.student-item.absent .name,
+.student-item.absent .student-name {
+  color: #ffffff !important;
 }
 
 /* -----------------------
    Alergias
 ----------------------- */
-
-/* Recuadro alrededor del nombre */
 .student-item.allergic .name {
   border: 3px solid #facc15;
-  background: linear-gradient(120deg, #fef08a, #fde047); /* amarillo visible */
-  padding: 6px 10px;
-  border-radius: 8px;
-  display: inline-block;
-  font-weight: 700;
+  background-color: #facc15; /* amarillo sólido */
   color: #000;
-  transition: all 0.3s ease;
 }
-
-/* Presente y alérgico: mantener contraste sobre verde */
 .student-item.present.allergic .name {
   border-color: #facc15;
-  background: linear-gradient(120deg, #fbbf24, #f59e0b);
+  background-color: #facc15;
   color: #000;
-  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
 }
 
-/* Impresión: quitar fondo pero mantener borde */
+/* Impresión */
 @media print {
   .student-item.allergic .name {
     background: transparent !important;
@@ -128,6 +118,17 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
     color: #000 !important;
   }
 }
+
+/* -----------------------
+   Ajustes extra para pantallas pequeñas
+----------------------- */
+@media (max-width: 600px) {
+  /* Forzar que los colores de estado se mantengan visibles en móvil */
+  .student-item.present { background-color: #064e3b !important; }
+  .student-item.absent { background-color: #b91c1c !important; }
+  .student-item.allergic .name { background-color: #facc15 !important; }
+}
+
 
 /* -----------------------
    Efectos hover opcionales
