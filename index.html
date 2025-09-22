@@ -44,7 +44,7 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 .course-card h3 { color:var(--brand); margin:0; font-weight:700; white-space:normal; }
 
 /* Student item */
-.student-item { background:#ffffff; border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:space-between; gap:12px; border-left:4px solid transparent; border-right:5px solid transparent; border-top:1px solid rgba(15,23,42,0.04); border-bottom:1px solid rgba(15,23,42,0.04); transition: background .12s ease, box-shadow .12s ease, transform .06s ease; word-break:break-word; min-width:0; }
+.student-item { background:#ffffff; border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:space-between; gap:12px; border:1px solid rgba(15,23,42,0.04); border-left-width:4px; transition: background .12s ease, box-shadow .12s ease, transform .06s ease; word-break:break-word; min-width:0; }
 .student-left { display:flex; gap:12px; align-items:center; min-width:0; }
 .student-name { font-weight:700; font-size:1.02rem; }
 .student-meta { color:var(--muted); font-size:0.92rem; }
@@ -62,44 +62,38 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 
 
 /* ======================================================= */
-/* == ESTADOS DE ALUMNO (REESCRITOS SEGÚN REQUISITOS) == */
+/* == ESTADOS DE ALUMNO (V2 - RECUADRO AMARILLO ENTERO) == */
 /* ======================================================= */
 
 /* PENDIENTE (Estado por defecto) */
-/* Fondo gris muy claro, con un borde sutil para consistencia. */
 .student-item.pending {
   background-color: #f8f9fa; /* Gris extra claro */
   border-left-color: #dee2e6; /* Borde gris sutil */
+  color: #344054;
 }
 
 /* PRESENTE */
-/* Fondo verde oscuro con texto blanco para máximo contraste. */
 .student-item.present {
-  background-color: #004623; /* Verde oscuro (de tus variables --success) */
+  background-color: #004623; /* Verde oscuro */
   color: #ffffff;
   border-left-color: #00381c; /* Borde un tono más oscuro */
 }
-/* Asegura que todo el texto dentro del item sea blanco */
 .student-item.present .name,
 .student-item.present * {
   color: #ffffff !important;
 }
 
 /* AUSENTE */
-/* Fondo rojo intenso con texto blanco para buen contraste. */
 .student-item.absent {
-  background-color: #b91c1c; /* Rojo oscuro (de tu código original) */
+  background-color: #b91c1c; /* Rojo oscuro */
   color: #ffffff;
   border-left-color: #991b1b; /* Borde un tono más oscuro */
   text-decoration: line-through;
-  opacity: 0.9; /* Sutilmente atenuado */
 }
-/* Asegura que todo el texto dentro del item sea blanco */
 .student-item.absent .name,
 .student-item.absent * {
   color: #ffffff !important;
 }
-
 
 /* ALÉRGICO (REQUISITO: RECUADRO AMARILLO ENTERO) */
 /* Este estilo SOBREESCRIBE el color de fondo de los otros estados. */
@@ -127,23 +121,14 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 
 /* Impresión */
 @media print {
+  .student-item.allergic {
+    background: #fffbeb !important;
+    border: 1px solid #facc15 !important;
+  }
   .student-item.allergic .name {
-    background: transparent !important;
-    border: 2px solid #facc15 !important;
     color: #000 !important;
   }
 }
-
-/* -----------------------
-   Ajustes extra para pantallas pequeñas
------------------------ */
-@media (max-width: 600px) {
-  /* Forzar que los colores de estado se mantengan visibles en móvil */
-  .student-item.present { background-color: #004623 !important; }
-  .student-item.absent { background-color: #b91c1c !important; }
-  .student-item.allergic .name { background-color: #fef08a !important; }
-}
-
 
 /* -----------------------
    Efectos hover opcionales
@@ -152,9 +137,6 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
-
-
-
 
 /* X button */
 .mark-absent-btn { width:40px; height:40px; border-radius:8px; border:1px solid rgba(0,0,0,0.04); background:#fff; font-weight:700; cursor:pointer; }
