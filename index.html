@@ -921,27 +921,45 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           await deleteAllStudents();
           const mapped = results.data.map(r => {
-            const rawShift = (r.turno || r.shift || '').toString().trim();
-            let shift = '';
-            if (rawShift) {
-              if (/primer/i.test(rawShift)) shift = 'Primer Turno (Infantil)';
-              else if (/segund/i.test(rawShift)) shift = 'Segundo Turno (Primaria)';
-              else shift = rawShift;
-            }
-            return { name: (r.nombre||'').toString().trim(), course: (r.curso||'').toString().trim(), shift, allergic: false };
-          });
-          const added = await addStudentBatch(mapped);
-          dom.importStatusInitial.textContent = `Importación completa ✅ (${added})`;
-          appState.students = await fetchStudents();
-          if (appState.currentShift) await renderCourses(appState.currentShift);
-        } catch (err) {
-          console.error('CSV import error', err);
-          dom.importStatusInitial.textContent = 'Error al procesar CSV. Mira la consola.';
-        } finally { setTimeout(()=>dom.importStatusInitial.textContent='',5000); }
-      },
-      error: (err) => { console.error(err); dom.importStatusInitial.textContent = 'Error leyendo CSV'; setTimeout(()=>dom.importStatusInitial.textContent='',3000); }
-    });
+  // normalizar campos posibles
+  const rawShift = (r.turno || r.shift || '').toString().trim();
+  // detectar turno: aceptamos "primer", "segund", "1", "2", etc.
+  let shift = '';
+  if (rawShift) {
+    if (/primer|^1\b|^1º|\bprimero\b/i.test(rawShift)) shift = 'Primer Turno (Infantil)';
+    else if (/segund|^2\b|^2º|\bsegundo\b/i.test(rawShift)) shift = 'Segundo Turno (Primaria)';
+    else shift = rawShift;
   }
+
+  // detectar alergia: buscamos en posibles cabeceras 'alergia', 'allergic', 'allergy'
+  const allergyFields = ['alergia','allergic','allergy'];
+  let allergic = false;
+  for (const key of allergyFields) {
+    if (Object.prototype.hasOwnProperty.call(r, key)) {
+      const val = (r[key] || '').toString().trim().toLowerCase();
+      if (val && /^(si|sí|s|yes|y|true|1)$/.test(val)) { allergic = true; break; }
+    }
+  }
+  // Permitir también columnas con mayúsculas u otros espacios
+  // (buscamos any key that includes 'alerg' or 'allerg')
+  if (!allergic) {
+    for (const key of Object.keys(r)) {
+      if (/alerg|allerg/i.test(key)) {
+        const val = (r[key] || '').toString().trim().toLowerCase();
+        if (val && /^(si|sí|s|yes|y|true|1)$/.test(val)) { allergic = true; break; }
+      }
+    }
+  }
+
+  return {
+    name: (r.nombre || r.name || '').toString().trim(),
+    course: (r.curso || r.course || '').toString().trim(),
+    shift,
+    status: shift ? 'fixed' : 'sporadic',
+    allergic: !!allergic
+  };
+});
+
 
   /* ----- Export CSV ----- */
   async function exportFullDayCsv(dateStr) {
