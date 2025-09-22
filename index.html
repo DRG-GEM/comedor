@@ -918,6 +918,33 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   })();
+// ---- parche: permitir /#admin y mostrar/ocultar la vista de login admin ----
+function handleHash() {
+  try {
+    const h = (location.hash || '').replace('#','').toLowerCase();
+    if (h === 'admin') {
+      // Mostrar vista de login admin y ocultar selección por defecto
+      if (dom.adminLoginView) {
+        dom.adminLoginView.classList.remove('hidden');
+        dom.adminLoginView.style.display = 'block';
+      }
+      const sel = document.getElementById('shift-selection');
+      if (sel) sel.style.display = 'none';
+      const dash = document.getElementById('dashboard');
+      if (dash) dash.classList.add('hidden');
+      window.scrollTo(0,0);
+      try { dom.loginAdminBtn && dom.loginAdminBtn.focus(); } catch(e){}
+    } else {
+      // Si no hay usuario autenticado, ocultamos la vista de login admin
+      if (!auth.currentUser) {
+        dom.adminLoginView && dom.adminLoginView.classList.add('hidden');
+      }
+    }
+  } catch (e) { console.warn('handleHash error', e); }
+}
+window.addEventListener('hashchange', handleHash);
+handleHash(); // llamada inicial para respetar la URL actual
+// -----------------------------------------------------------------------
 
   // service worker (no-fatal)
   if ('serviceWorker' in navigator) { navigator.serviceWorker.register && navigator.serviceWorker.register('/sw.js').then(()=>console.log('sw registered')).catch(()=>{}); }
