@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Gestor de Comedor Escolar</title>
 
-<!-- Tailwind CDN para prototipo -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -45,7 +44,7 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 .course-card h3 { color:var(--brand); margin:0; font-weight:700; white-space:normal; }
 
 /* Student item */
-.student-item { background:#ffffff; border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:space-between; gap:12px; border-left:6px solid transparent; border:1px solid rgba(15,23,42,0.04); transition: background .12s ease, box-shadow .12s ease, transform .06s ease; word-break:break-word; min-width:0; }
+.student-item { background:#ffffff; border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:space-between; gap:12px; border-left:4px solid transparent; border-right:5px solid transparent; border-top:1px solid rgba(15,23,42,0.04); border-bottom:1px solid rgba(15,23,42,0.04); transition: background .12s ease, box-shadow .12s ease, transform .06s ease; word-break:break-word; min-width:0; }
 .student-left { display:flex; gap:12px; align-items:center; min-width:0; }
 .student-name { font-weight:700; font-size:1.02rem; }
 .student-meta { color:var(--muted); font-size:0.92rem; }
@@ -61,54 +60,74 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
   min-width:0;
 }
 
-/* -----------------------
-   Estados de los alumnos (contraste reforzado y responsive)
------------------------ */
 
-/* Pendientes */
+/* ======================================================= */
+/* == ESTADOS DE ALUMNO (REESCRITOS SEGÚN REQUISITOS) == */
+/* ======================================================= */
+
+/* PENDIENTE (Estado por defecto) */
+/* Fondo gris muy claro, con un borde sutil para consistencia. */
 .student-item.pending {
-  border-left: 4px solid #9ca3af; /* gris medio */
-  background-color: #f9fafb;      /* gris muy claro */
-  color: #111827;                 /* texto oscuro */
+  background-color: #f8f9fa; /* Gris extra claro */
+  border-left-color: #dee2e6; /* Borde gris sutil */
 }
 
-/* Presentes */
+/* PRESENTE */
+/* Fondo verde oscuro con texto blanco para máximo contraste. */
 .student-item.present {
-  border-left: 4px solid #064e3b; /* verde muy oscuro */
-  background-color: #064e3b;      /* sólido para contraste */
+  background-color: #004623; /* Verde oscuro (de tus variables --success) */
   color: #ffffff;
+  border-left-color: #00381c; /* Borde un tono más oscuro */
 }
+/* Asegura que todo el texto dentro del item sea blanco */
 .student-item.present .name,
-.student-item.present .student-name,
 .student-item.present * {
   color: #ffffff !important;
 }
 
-/* Ausentes */
+/* AUSENTE */
+/* Fondo rojo intenso con texto blanco para buen contraste. */
 .student-item.absent {
-  border-left: 4px solid #b91c1c; /* rojo fuerte */
-  background-color: #b91c1c;      /* rojo sólido */
-  color: #ffffff;                 /* texto blanco para contraste */
+  background-color: #b91c1c; /* Rojo oscuro (de tu código original) */
+  color: #ffffff;
+  border-left-color: #991b1b; /* Borde un tono más oscuro */
   text-decoration: line-through;
+  opacity: 0.9; /* Sutilmente atenuado */
 }
+/* Asegura que todo el texto dentro del item sea blanco */
 .student-item.absent .name,
-.student-item.absent .student-name {
+.student-item.absent * {
   color: #ffffff !important;
 }
 
-/* -----------------------
-   Alergias
------------------------ */
+
+/* ALÉRGICO (indicador siempre visible) */
+/* Este estilo se combina con los anteriores (pending, present, absent). */
+/* No cambia el color de fondo, sino que añade un borde derecho amarillo muy visible. */
+.student-item.allergic {
+  border-right-color: #f59e0b; /* Amarillo/ámbar muy visible */
+}
+
+/* Para que el NOMBRE del alérgico también destaque en cualquier estado */
 .student-item.allergic .name {
-  border: 3px solid #facc15;
-  background-color: #facc15; /* amarillo sólido */
-  color: #000;
+  background-color: #fef08a; /* Fondo amarillo pálido */
+  color: #713f12; /* Texto oscuro para contraste sobre amarillo */
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
 }
-.student-item.present.allergic .name {
-  border-color: #facc15;
-  background-color: #facc15;
-  color: #000;
+
+/* Caso especial: si el fondo es oscuro (presente/ausente) y es alérgico,
+   el nombre debe mantener su estilo de alto contraste. */
+.student-item.present.allergic .name,
+.student-item.absent.allergic .name {
+  color: #713f12 !important; /* Forzar el color oscuro del texto del nombre */
 }
+
+/* ======================================================= */
+/* == FIN DE LA SECCIÓN DE ESTADOS == */
+/* ======================================================= */
+
 
 /* Impresión */
 @media print {
@@ -124,9 +143,9 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 ----------------------- */
 @media (max-width: 600px) {
   /* Forzar que los colores de estado se mantengan visibles en móvil */
-  .student-item.present { background-color: #064e3b !important; }
+  .student-item.present { background-color: #004623 !important; }
   .student-item.absent { background-color: #b91c1c !important; }
-  .student-item.allergic .name { background-color: #facc15 !important; }
+  .student-item.allergic .name { background-color: #fef08a !important; }
 }
 
 
@@ -213,7 +232,7 @@ img, svg { max-width:100%; height:auto; display:block; }
 
 /* Tarjetas: tamaño controlado, centradas y con texto adaptativo */
 .summary-card {
-  flex: 0 1 160px;      /* crecer 0, encoger 1, base 160px */
+  flex: 0 1 160px;     /* crecer 0, encoger 1, base 160px */
   max-width: 180px;
   min-width: 120px;
   padding: 10px;
@@ -568,12 +587,10 @@ img, svg { max-width:100%; height:auto; display:block; }
     </div>
 
     <div class="header-actions">
-      <!-- logout visible cuando admin -->
       <button id="logout-btn" class="ghost small" title="Cerrar sesión" style="display:none">Cerrar sesión</button>
     </div>
   </header>
 
-  <!-- Login admin -->
   <div id="admin-login-view" class="admin-panel hidden" style="max-width:640px;margin:14px auto 0">
     <h2 style="text-align:center">Acceso de Administrador</h2>
     <div style="text-align:center;margin-top:10px">
@@ -581,13 +598,11 @@ img, svg { max-width:100%; height:auto; display:block; }
     </div>
   </div>
 
-  <!-- Main -->
   <div id="main-content" style="margin-top:18px">
 
     <section id="shift-selection" class="shift-selection" aria-labelledby="shift-title">
   <h2 id="shift-title" class="main-hero-title">Selecciona un turno</h2>
 
-  <!-- <- IMPORTANTE: mantenemos id="shift-buttons" para que el JS siga funcionando -->
   <div id="shift-buttons" class="turn-cards" role="list" aria-label="Turnos disponibles">
     <button class="turn-card" role="listitem" data-shift="Primer Turno (Infantil)" aria-label="Primer Turno">
       <div class="turn-card-bg" aria-hidden="true"></div>
@@ -608,7 +623,6 @@ img, svg { max-width:100%; height:auto; display:block; }
     </button>
   </div>
 
-  <!-- Panel de gestión (solo admin) -->
   <div class="admin-panel admin-only" style="margin-top:18px">
     <h3 style="text-align:center;margin-bottom:10px">Panel de Gestión</h3>
     <div class="btn-row" role="group" aria-label="gestion-datos">
@@ -652,7 +666,6 @@ img, svg { max-width:100%; height:auto; display:block; }
 
 <input id="csv-file-input" type="file" accept=".csv" style="display:none">
 
-<!-- Manage Students Modal (admin) -->
 <div id="manage-students-modal" class="fixed-modal" aria-hidden="true">
   <div class="modal-content">
     <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -663,7 +676,6 @@ img, svg { max-width:100%; height:auto; display:block; }
   </div>
 </div>
 
-<!-- Sporadic Picker Modal (profesor) -->
 <div id="sporadic-picker-modal" class="fixed-modal" aria-hidden="true">
   <div class="modal-content">
     <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -677,7 +689,6 @@ img, svg { max-width:100%; height:auto; display:block; }
   </div>
 </div>
 
-<!-- Monthly report modal -->
 <div id="monthly-report-modal" class="fixed-modal" aria-hidden="true">
   <div class="modal-content">
     <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -692,7 +703,6 @@ img, svg { max-width:100%; height:auto; display:block; }
   </div>
 </div>
 
-<!-- History modal -->
 <div id="history-modal" class="fixed-modal" aria-hidden="true">
   <div class="modal-content">
     <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -712,7 +722,6 @@ img, svg { max-width:100%; height:auto; display:block; }
   </div>
 </div>
 
-<!-- Firebase + PapaParse -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -778,20 +787,10 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   /* ---------------------------
-     Inyectar estilos visuales
-     --------------------------- */
+      Inyectar estilos visuales
+      --------------------------- */
   (function injectStyles() {
     const css = `
-      /* Alergia: fondo/texto amarillo visible */
-      .student-item.allergic { box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.18); }
-      .student-item .name.allergic { background: rgba(250,204,21,0.12); padding:2px 6px; border-radius:4px; color:#8a5a00; }
-
-      /* Presente: verde más intenso */
-      .student-item.present { border-left: 4px solid #0b7a3f !important; background: rgba(11,122,63,0.04); }
-
-      /* Ausente: rojo suave */
-      .student-item.absent { border-left: 4px solid #c0262e !important; background: rgba(192,38,46,0.03); }
-
       /* Resumen - tarjetas más compactas en móvil */
       @media (max-width: 600px) {
         .summary-card { transform: none; margin: 6px auto; width: 92%; font-size: 0.95rem; }
@@ -804,7 +803,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       /* Pequeñas mejoras visuales */
       .course-card { margin-bottom: 12px; border-radius: 8px; padding: 12px; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,0.03); border:1px solid var(--card-border); }
-      .student-item { display:flex; justify-content:space-between; align-items:center; padding:8px; border-radius:6px; margin-bottom:6px; border:1px solid transparent; }
+      .student-item { display:flex; justify-content:space-between; align-items:center; padding:8px; border-radius:6px; margin-bottom:6px; }
       .student-item .name { font-weight:600; }
       .student-item .small-muted { font-size:0.85rem; color:#666; }
     `;
@@ -891,7 +890,7 @@ document.addEventListener('DOMContentLoaded', () => {
     div.dataset.studentName = s.name;
     // Mantener botón para marcar ausente y todo hook
     div.innerHTML = `
-      <span class="name ${s.allergic ? 'allergic' : ''}">${s.name}</span>
+      <span class="name">${s.name}</span>
       <div style="display:flex;align-items:center;gap:8px">
         <button class="mark-absent-btn" title="Marcar ausente">&times;</button>
       </div>
@@ -990,9 +989,9 @@ document.addEventListener('DOMContentLoaded', () => {
       let html = `<div style="display:flex;flex-direction:column;gap:8px">`;
       candidates.sort((a,b)=>a.name.localeCompare(b.name)).forEach(s => {
         html += `<label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--card-border);border-radius:8px;background:#fff">
-                   <input type="checkbox" class="sporadic-candidate" data-id="${s.id}">
-                   <div style="flex:1"><strong>${s.name}</strong><div class="small-muted">${s.course}</div></div>
-                 </label>`;
+                    <input type="checkbox" class="sporadic-candidate" data-id="${s.id}">
+                    <div style="flex:1"><strong>${s.name}</strong><div class="small-muted">${s.course}</div></div>
+                   </label>`;
       });
       html += `</div>`;
       container.innerHTML = html;
@@ -1100,8 +1099,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (dom.historyStudentList) dom.historyStudentList.innerHTML = all.map(s =>
         `<div class="history-student p-2" data-id="${s.id}" data-name="${s.name}" style="border-bottom:1px solid var(--card-border);padding:8px;cursor:pointer">
-           <strong>${s.name}</strong>
-           <div class="small-muted">${s.shift || '(Esporádico)'} • ${s.course}</div>
+          <strong>${s.name}</strong>
+          <div class="small-muted">${s.shift || '(Esporádico)'} • ${s.course}</div>
          </div>`
       ).join('');
     } catch (e) {
@@ -1532,4 +1531,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-
