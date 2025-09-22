@@ -815,6 +815,45 @@ img, svg { max-width:100%; height:auto; display:block; }
     `;
     return div.outerHTML;
   }
+/* ---------- Orden personalizado de cursos ---------- */
+/* Lista en el orden deseado (ajusta etiquetas exactas si tus cursos usan otra nomenclatura) */
+const PREFERRED_COURSE_ORDER = [
+  '3 años', '4 años', '5 años',
+  '1º EP', '2º EP', '3º EP', '4º EP', '5º EP', '6º EP'
+];
+
+// Normaliza nombre de curso: quita acentos, pasa a minúsculas y elimina dobles espacios
+function normalizeCourseName(name) {
+  if (!name) return '';
+  // eliminar acentos
+  const noDiacritics = name.normalize ? name.normalize('NFD').replace(/\p{Diacritic}/gu, '') : name;
+  return noDiacritics.toString().toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+// Precalcular versiones normalizadas del orden preferido
+const _preferredNormalized = PREFERRED_COURSE_ORDER.map(c => normalizeCourseName(c));
+
+/* Comparator para ordenar cursos: primero por el índice en PREFERRED_COURSE_ORDER, 
+   los que no estén en la lista se ordenan al final alfabeticamente */
+function courseCompare(a, b) {
+  const na = normalizeCourseName(a || '');
+  const nb = normalizeCourseName(b || '');
+  const ia = _preferredNormalized.indexOf(na);
+  const ib = _preferredNormalized.indexOf(nb);
+
+  if (ia !== -1 && ib !== -1) return ia - ib;
+  if (ia !== -1 && ib === -1) return -1;
+  if (ia === -1 && ib !== -1) return 1;
+  // Ninguno está en la lista -> orden alfabético por nombre original (case-insensitive)
+  return (na > nb) ? 1 : (na < nb) ? -1 : 0;
+}
+
+/* Utilidad: dado un array de cursos (posibles duplicados), devuelve array ordenado y único */
+function orderedUniqueCourses(courseArray) {
+  const uniq = Array.from(new Set(courseArray.filter(Boolean)));
+  uniq.sort(courseCompare);
+  return uniq;
+}
 
   /* ----- Render courses ----- */
   async function renderCourses(shift) {
@@ -845,7 +884,7 @@ img, svg { max-width:100%; height:auto; display:block; }
   const assigned = appState.students.filter(s => (s.shift && s.shift === shift) || sporadicSetForShift.has(s.id));
 
   // Reunir cursos que tengan al menos un asignado o al menos un candidato esporádico
-  const courseSet = new Set();
+const courses = orderedUniqueCourses(assigned.map(s => s.course));
   assigned.forEach(s => courseSet.add(s.course));
   esporadicos.forEach(s => courseSet.add(s.course));
 
@@ -1134,7 +1173,7 @@ async function generateMonthlyReport(ym) {
     // construir HTML del informe
     let html = `<div class="printable-area"><h2 style="text-align:center">${new Date(y, m-1, 1).toLocaleString('es-ES', { month: 'long', year: 'numeric' })}</h2>`;
 
-    Object.keys(byCourse).sort((a,b)=> (a||'').localeCompare(b||'')).forEach(course => {
+Object.keys(byCourse).sort(courseCompare).forEach(course=>{
       const students = byCourse[course].sort((a,b)=> a.name.localeCompare(b.name));
       html += `<div class="report-wrapper" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center"><strong>${course}</strong><small>Días: ${days} — ${students.length} alumnos</small></div><div style="overflow:auto;margin-top:8px"><table class="report-table"><thead><tr><th style="min-width:180px;text-align:left;padding-left:8px">Alumno</th>`;
 
