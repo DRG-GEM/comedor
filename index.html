@@ -67,23 +67,33 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 .student-item.present * { color: #ffffff !important; } /* asegurar contraste del texto dentro */
 .student-item.absent { border-left-color:var(--danger); background:linear-gradient(90deg, rgba(201,42,42,0.04), #fff); text-decoration:line-through; opacity:0.96; }
 
-/* Alergia: recuadro alrededor del nombre (sin badge de texto) */
+/* Alergia: recuadro alrededor del nombre (pantalla) */
 .student-item.allergic .name {
-  border: 2px solid #c92a2a;
+  border: 3px solid #facc15;   /* amarillo intenso */
+  background: #fef9c3;        /* amarillo claro */
   padding: 6px 10px;
   border-radius: 8px;
   display: inline-block;
-  background: rgba(201,42,42,0.03);
   font-weight: 700;
   color: inherit;
 }
 
-/* cuando está presente y alérgico, dejamos el recuadro legible sobre el fondo oscuro */
+/* cuando está presente y alérgico, mantener contraste */
 .student-item.present.allergic .name {
-  border-color: rgba(255,255,255,0.85);
-  background: rgba(255,255,255,0.06);
-  color: #fff;
+  border-color: #facc15;
+  background: #fde047; /* un amarillo más fuerte sobre fondo oscuro */
+  color: #000;
 }
+
+/* En impresión quitamos el fondo pero mantenemos el borde */
+@media print {
+  .student-item.allergic .name {
+    background: transparent !important;
+    border: 2px solid #facc15 !important;
+    color: #000 !important;
+  }
+}
+
 
 /* X button */
 .mark-absent-btn { width:40px; height:40px; border-radius:8px; border:1px solid rgba(0,0,0,0.04); background:#fff; font-weight:700; cursor:pointer; }
