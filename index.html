@@ -101,27 +101,23 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 }
 
 
-/* ALÉRGICO (indicador siempre visible) */
-/* Este estilo se combina con los anteriores (pending, present, absent). */
-/* No cambia el color de fondo, sino que añade un borde derecho amarillo muy visible. */
+/* ALÉRGICO (REQUISITO: RECUADRO AMARILLO ENTERO) */
+/* Este estilo SOBREESCRIBE el color de fondo de los otros estados. */
+/* La condición (presente/ausente/pendiente) se mantiene visible por el borde izquierdo. */
 .student-item.allergic {
-  border-right-color: #f59e0b; /* Amarillo/ámbar muy visible */
+  background-color: #fffbeb; /* Fondo amarillo pálido muy visible */
+  color: #78350f; /* Texto oscuro (marrón) para buen contraste sobre amarillo */
 }
 
-/* Para que el NOMBRE del alérgico también destaque en cualquier estado */
+/* Aseguramos que el texto dentro del recuadro alérgico sea siempre oscuro */
+.student-item.allergic .name,
+.student-item.allergic * {
+   color: #78350f !important; /* !important para sobreescribir el blanco de .present/.absent */
+}
+/* El nombre ya no necesita su propio fondo, pero lo hacemos negrita para destacar */
 .student-item.allergic .name {
-  background-color: #fef08a; /* Fondo amarillo pálido */
-  color: #713f12; /* Texto oscuro para contraste sobre amarillo */
-  padding: 2px 6px;
-  border-radius: 4px;
+  background-color: transparent;
   font-weight: bold;
-}
-
-/* Caso especial: si el fondo es oscuro (presente/ausente) y es alérgico,
-   el nombre debe mantener su estilo de alto contraste. */
-.student-item.present.allergic .name,
-.student-item.absent.allergic .name {
-  color: #713f12 !important; /* Forzar el color oscuro del texto del nombre */
 }
 
 /* ======================================================= */
