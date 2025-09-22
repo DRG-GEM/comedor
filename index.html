@@ -1479,9 +1479,7 @@ dom.closeHistoryBtn = dom.closeHistoryBtn || document.getElementById('close-hist
 
   // service worker (no-fatal)
   if ('serviceWorker' in navigator) { navigator.serviceWorker.register && navigator.serviceWorker.register('/sw.js').then(()=>console.log('sw registered')).catch(()=>{}); }
-
-}); // DOMContentLoaded
-        // ---------- Parche: (re)enlazar botones admin y turnos de forma robusta ----------
+// ---------- Parche: (re)enlazar botones admin y turnos de forma robusta ----------
 function safeAddListener(el, evt, fn) {
   if (!el) return;
   // evitar duplicados: guardamos una bandera en el propio elemento
@@ -1593,6 +1591,8 @@ try { bindAdminAndTurnButtons(); } catch(e) { console.error('bindAdminAndTurnBut
 
 // Si tu app recrea el DOM de admin dinámicamente, puedes llamar bindAdminAndTurnButtons() de nuevo cuando corresponda.
 
+}); // DOMContentLoaded
+        
 </script>
 </body>
 </html>
