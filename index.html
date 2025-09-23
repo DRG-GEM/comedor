@@ -46,7 +46,7 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 /* Student item */
 .student-item { background:#ffffff; border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:space-between; gap:12px; border:1px solid rgba(15,23,42,0.04); border-left-width:4px; transition: background .12s ease, box-shadow .12s ease, transform .06s ease; word-break:break-word; min-width:0; }
 .student-left { display:flex; gap:12px; align-items:center; min-width:0; }
-.student-name { font-weight:700; font-size:1.02rem; }
+.student-name { font-size:1.02rem; }
 .student-meta { color:var(--muted); font-size:0.92rem; }
 
 /* Prevent long names causing horizontal overflow */
@@ -62,56 +62,68 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 
 
 /* ======================================================= */
-/* == ESTADOS DE ALUMNO (V3 - CORREGIDO Y CON MÁXIMO CONTRASTE) == */
+/* == ESTADOS DE ALUMNO (V4 - REGLAS COMBINADAS Y ROBUSTAS) == */
 /* ======================================================= */
 
-/* PENDIENTE (Estado por defecto) */
+/* --- ESTADOS BASE --- */
+
+/* PENDIENTE (Por defecto) */
 .student-item.pending {
-  background-color: #f8f9fa; /* Gris extra claro */
-  border-left-color: #dee2e6; /* Borde gris sutil */
-  color: #111827; /* Texto oscuro */
+  background-color: #f8f9fa;
+  border-left-color: #dee2e6;
+  color: #111827;
 }
 
-/* PRESENTE */
+/* PRESENTE (No alérgico) */
 .student-item.present {
   background-color: #004623; /* Verde oscuro */
   color: #ffffff;
-  border-left-color: #00381c; /* Borde un tono más oscuro */
+  border-left-color: #00381c;
 }
-.student-item.present .name,
-.student-item.present * {
+.student-item.present *, .student-item.present .name {
   color: #ffffff !important;
 }
 
-/* AUSENTE */
+/* AUSENTE (No alérgico) */
 .student-item.absent {
   background-color: #b91c1c; /* Rojo oscuro */
   color: #ffffff;
-  border-left-color: #991b1b; /* Borde un tono más oscuro */
+  border-left-color: #991b1b;
   text-decoration: line-through;
 }
-.student-item.absent .name,
-.student-item.absent * {
+.student-item.absent *, .student-item.absent .name {
   color: #ffffff !important;
 }
 
-/* ALÉRGICO (REQUISITO: RECUADRO AMARILLO ENTERO) */
-/* Este estilo SOBREESCRIBE el color de fondo de los otros estados. */
-/* La condición (presente/ausente) se mantiene visible por el borde izquierdo. */
-.student-item.allergic {
-  background-color: #fffbeb; /* Fondo amarillo pálido muy visible */
-  color: #1e293b; /* Texto muy oscuro (slate) para máximo contraste */
+
+/* --- MODIFICADOR DE ALERGIA (SOBREESCRIBE LOS ESTADOS BASE) --- */
+/* Estas reglas son más específicas y anulan los colores de fondo y texto anteriores. */
+
+/* CASO 1: Alérgico y Pendiente */
+.student-item.allergic.pending {
+  background-color: #fffbeb; /* Amarillo pálido */
+  border-left-color: #dee2e6; /* Mantenemos el borde del estado pendiente */
 }
 
-/* Aseguramos que el texto dentro del recuadro alérgico sea siempre oscuro */
-.student-item.allergic .name,
-.student-item.allergic * {
-   color: #1e293b !important; /* !important para sobreescribir el blanco de .present/.absent */
+/* CASO 2: Alérgico y Presente (¡EL MÁS IMPORTANTE!) */
+.student-item.allergic.present {
+  background-color: #fffbeb; /* Amarillo pálido */
+  border-left-color: #004623; /* Mantenemos el borde verde del estado presente */
 }
-/* El nombre ya no necesita su propio fondo, pero lo hacemos negrita para destacar */
-.student-item.allergic .name {
-  background-color: transparent;
-  font-weight: bold;
+
+/* CASO 3: Alérgico y Ausente */
+.student-item.allergic.absent {
+  background-color: #fffbeb; /* Amarillo pálido */
+  border-left-color: #b91c1c; /* Mantenemos el borde rojo del estado ausente */
+  text-decoration: line-through;
+}
+
+/* REGLA FINAL: Forzar el color y grosor del texto en CUALQUIER alérgico */
+/* Esta regla con alta especificidad asegura que el texto sea siempre oscuro y legible. */
+.student-item.allergic *, .student-item.allergic .name {
+   color: #1c1917 !important; /* Usamos un color casi negro (Stone 900) y !important para ganar la batalla */
+   font-weight: 600 !important; /* Hacemos el texto un poco más grueso para legibilidad */
+   background-color: transparent !important;
 }
 
 /* ======================================================= */
