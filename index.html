@@ -441,44 +441,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const snap = await db.collection('students').get();
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   }
-  async function addStudentBatch(students) {
-    const batch = db.batch(); const col = db.collection('students'); let added = 0;
-    students.forEach(s => {
-      if (s.name && s.course) {
-        const docRef = col.doc();
-        batch.set(docRef, { name: s.name.trim(), course: s.course.trim(), shift: s.shift ? s.shift.trim() : '', allergic: !!s.allergic });
-        added++;
-      }
-    });
-    if (added) await batch.commit();
-    return added;
+  
+  async function logAttendance(studentId, dateStr, state) {
+    if (!studentId) return;
+    await db.collection('attendance').doc(`${studentId}_${dateStr}`).set({ studentId, date: dateStr, state }, { merge: true });
   }
-  async function updateStudentDoc(id, updates) {
-    try { await db.collection('students').doc(id).update(updates); return true; }
-    catch(e){ console.error('updateStudentDoc error', e); return false; }
-  }
-  async function deleteAllStudents() { const snap = await db.collection('students').get(); const batch = db.batch(); snap.docs.forEach(d => batch.delete(d.ref)); await batch.commit(); }
 
-  async function logAttendance(studentId, dateStr, state, meta = {}) {
-    if (!studentId || (studentId.startsWith && studentId.startsWith('sporadic_'))) return;
-    const payload = { studentId, date: dateStr, state, ...meta };
-    await db.collection('attendance').doc(`${studentId}_${dateStr}`).set(payload, { merge: true });
+  async function fetchAttendanceByDate(dateStr) {
+    const snap = await db.collection('attendance').where('date','==',dateStr).get();
+    const out = {};
+    snap.docs.forEach(d => { out[d.data().studentId] = d.data().state; });
+    return out;
   }
-  async function fetchAttendanceByDate(dateStr) { const snap = await db.collection('attendance').where('date','==',dateStr).get(); const out = {}; snap.docs.forEach(d=>out[d.data().studentId]=d.data().state); return out; }
   
   function updateSummary() {
     const vals = Object.values(appState.attendance || {});
-    if (dom.summary.diners) dom.summary.diners.textContent = vals.length;
-    if (dom.summary.absent) dom.summary.absent.textContent = vals.filter(v=>'absent'===v).length;
-    if (dom.summary.present) dom.summary.present.textContent = vals.filter(v=>'present'===v).length;
-    if (dom.summary.pending) dom.summary.pending.textContent = vals.filter(v=>'pending'===v).length;
+    const diners = appState.students.filter(s => s.shift === appState.currentShift || (appState.tempSporadic[appState.currentShift] || new Set()).has(s.id));
+    dom.summary.diners.textContent = diners.length;
+    dom.summary.absent.textContent = Object.values(appState.attendance).filter(v => v === 'absent').length;
+    dom.summary.present.textContent = Object.values(appState.attendance).filter(v => v === 'present').length;
+    dom.summary.pending.textContent = diners.filter(s => (appState.attendance[s.id] || 'pending') === 'pending').length;
   }
 
   function createStudentElement(s) {
     const stateClass = appState.attendance[s.id] || 'pending';
     const allergicClass = s.allergic ? 'allergic' : '';
     return `
-      <div class="student-item ${stateClass} ${allergicClass}" data-student-id="${s.id}">
+      <div class="student-item ${stateClass}" data-student-id="${s.id}">
         <span class="name ${allergicClass}">${s.name}</span>
         <div style="display:flex;align-items:center;gap:8px">
           <button class="mark-absent-btn" title="Marcar ausente">&times;</button>
@@ -487,22 +476,37 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function renderCourses(shift) {
-    if (!shift) return;
     appState.currentShift = shift;
     document.getElementById('shift-selection').style.display = 'none';
     document.getElementById('dashboard').classList.remove('hidden');
     dom.coursesContainer.innerHTML = '<p class="small-muted">Cargando alumnos...</p>';
 
     appState.students = await fetchStudents();
-    const today = new Date().toISOString().slice(0,10);
+    const today = new Date().toISOString().slice(0, 10);
     const attendance = await fetchAttendanceByDate(today);
-    appState.attendance = {};
-    appState.students.forEach(s => { appState.attendance[s.id] = attendance[s.id] || 'pending'; });
+    appState.attendance = attendance;
+    
+    appState.students.forEach(s => {
+        if (!appState.attendance[s.id]) {
+            appState.attendance[s.id] = 'pending';
+        }
+    });
 
     const sporadicSetForShift = appState.tempSporadic[shift] || new Set();
     const assigned = appState.students.filter(s => s.shift === shift || sporadicSetForShift.has(s.id));
     
-    const courses = [...new Set(assigned.map(s => s.course))].sort();
+    // --- INICIO DE LA MODIFICACIÓN DE ORDEN ---
+    const courseOrder = ['3 años', '4 años', '5 años', '1º EP', '2º EP', '3º EP', '4º EP', '5º EP', '6º EP'];
+    const courses = [...new Set(assigned.map(s => s.course))].sort((a, b) => {
+        const indexA = courseOrder.indexOf(a);
+        const indexB = courseOrder.indexOf(b);
+
+        if (indexA === -1 && indexB === -1) return a.localeCompare(b); // Ambos desconocidos, orden alfabético
+        if (indexA === -1) return 1; // 'a' es desconocido, va al final
+        if (indexB === -1) return -1; // 'b' es desconocido, va al final
+        return indexA - indexB; // Ordenar según la lista
+    });
+    // --- FIN DE LA MODIFICACIÓN DE ORDEN ---
 
     if (!courses.length) {
       dom.coursesContainer.innerHTML = '<p class="small-muted">No hay alumnos en este turno.</p>';
@@ -531,8 +535,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const newState = isX ? (current === 'absent' ? 'pending' : 'absent') : (current === 'present' ? 'pending' : 'present');
     
     appState.attendance[studentId] = newState;
-    studentDiv.classList.remove('pending','present','absent');
-    studentDiv.classList.add(newState);
+    studentDiv.className = 'student-item ' + newState; // Simplified class update
+    const student = appState.students.find(s => s.id === studentId);
+    if(student && student.allergic) {
+        studentDiv.querySelector('.name').classList.add('allergic');
+    }
     
     updateSummary();
     await logAttendance(studentId, new Date().toISOString().slice(0,10), newState);
@@ -556,10 +563,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('dashboard').classList.add('hidden');
   });
 
-  // Simplified event listeners
   dom.loginAdminBtn.addEventListener('click', () => auth.signInWithPopup(googleProvider).catch(e => console.error(e)));
   dom.logoutBtn.addEventListener('click', () => auth.signOut());
-  dom.manageStudentsBtn.addEventListener('click', () => alert('Gestión de alumnos próximamente')); // Placeholder
+
+  // Placeholders for other admin functions
+  dom.manageStudentsBtn.addEventListener('click', () => alert('Gestión de alumnos próximamente.'));
+  dom.importCsvBtnInitial.addEventListener('click', () => dom.csvFileInput.click());
+  dom.wipeDbBtn.addEventListener('click', () => alert('Función de borrado no implementada en este prototipo.'));
+  dom.showMonthlyBtn.addEventListener('click', () => alert('Informe mensual próximamente.'));
+  dom.showHistoryBtn.addEventListener('click', () => alert('Historial próximamente.'));
 
 });
 </script>
