@@ -104,7 +104,6 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 /* == FIN DE LA SECCIÓN DE ESTADOS == */
 /* ======================================================= */
 
-
 .student-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
@@ -512,17 +511,15 @@ document.addEventListener('DOMContentLoaded', () => {
     assigned.forEach(s => courseSet.add(s.course));
     esporadicos.forEach(s => courseSet.add(s.course));
 
-    // --- INICIO DE LA MODIFICACIÓN DE ORDEN ---
     const courseOrder = ['3 años', '4 años', '5 años', '1º EP', '2º EP', '3º EP', '4º EP', '5º EP', '6º EP'];
     const courses = [...courseSet].sort((a, b) => {
         const indexA = courseOrder.indexOf(a);
         const indexB = courseOrder.indexOf(b);
-        if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+        if (indexA === -1 && indexB === -1) return a ? a.localeCompare(b) : -1;
         if (indexA === -1) return 1;
         if (indexB === -1) return -1;
         return indexA - indexB;
     });
-    // --- FIN DE LA MODIFICACIÓN DE ORDEN ---
 
     if (courses.length === 0 && assigned.length === 0) {
       dom.coursesContainer.innerHTML = '<p class="small-muted">No hay alumnos en este turno.</p>';
@@ -663,13 +660,13 @@ document.addEventListener('DOMContentLoaded', () => {
   async function showStudentHistory(id, name) {
     dom.historyStudentName.textContent = `Historial de: ${name}`;
     dom.historyDatesList.innerHTML = '<p class="small-muted">Buscando...</p>';
-    const snap = await db.collection('attendance').where('studentId','==',id).orderBy('date', 'desc').get();
+    const snap = await db.collection('attendance').where('studentId','==',id).get();
     if (snap.empty) {
       dom.historyDatesList.innerHTML = '<p class="small-muted">Sin registros.</p>';
       return;
     }
-    dom.historyDatesList.innerHTML = snap.docs.map(d => {
-      const r = d.data();
+    const rows = snap.docs.map(d => d.data()).sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    dom.historyDatesList.innerHTML = rows.map(r => {
       const pretty = new Date(r.date + 'T00:00:00').toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
       return `<div style="padding:6px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;"><span>${pretty}</span><strong>${r.state}</strong></div>`;
     }).join('');
@@ -687,7 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let html = `<div class="printable-area"><h2 style="text-align:center">${new Date(y, m-1, 1).toLocaleString('es-ES', { month: 'long', year: 'numeric' })}</h2>`;
     Object.keys(byCourse).sort().forEach(course => {
       const students = byCourse[course].sort((a,b)=> a.name.localeCompare(b.name));
-      html += `<div class="report-wrapper" style="margin-top:12px"><strong>${course}</strong><div style="overflow:auto;margin-top:8px"><table class="report-table"><thead><tr><th style="min-width:180px;text-align:left;">Alumno</th>`;
+      html += `<div class="report-wrapper" style="margin-top:12px"><div style="background:var(--brand);color:#fff;padding:6px 10px;border-radius:6px;margin-bottom:8px;"><strong>${course}</strong></div><div style="overflow:auto;margin-top:8px"><table class="report-table"><thead><tr><th style="min-width:180px;text-align:left;">Alumno</th>`;
       for (let d=1; d<=days; d++) html += `<th>${d}</th>`;
       html += `<th>Total</th></tr></thead><tbody>`;
       students.forEach(st => {
@@ -721,14 +718,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const checkedPrimer = s.shift === 'Primer Turno (Infantil)' ? 'checked' : '';
         const checkedSegundo = s.shift === 'Segundo Turno (Primaria)' ? 'checked' : '';
         const isAllergic = s.allergic ? 'checked' : '';
-        html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px;border-bottom:1px solid var(--card-border);align-items:center">
+        html += `<div style="display:grid;grid-template-columns:1fr auto auto;gap:16px;padding:8px;border-bottom:1px solid var(--card-border);align-items:center">
                    <div><strong>${s.name}</strong></div>
-                   <div style="display:flex;gap:8px;align-items:center">
-                     <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="primer" ${checkedPrimer}> 1º turno</label>
-                     <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="segundo" ${checkedSegundo}> 2º turno</label>
+                   <div style="display:flex;gap:12px;align-items:center">
+                     <label style="display:flex;align-items:center;gap:4px;white-space:nowrap;"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="primer" ${checkedPrimer}> 1º Turno</label>
+                     <label style="display:flex;align-items:center;gap:4px;white-space:nowrap;"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="segundo" ${checkedSegundo}> 2º Turno</label>
                    </div>
                    <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center">
-                     <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-update-control" data-id="${s.id}" data-prop="allergic" ${isAllergic}> Alergia</label>
+                     <label style="display:flex;align-items:center;gap:4px;"><input type="checkbox" class="student-update-control" data-id="${s.id}" data-prop="allergic" ${isAllergic}> Alergia</label>
                    </div>
                  </div>`;
       });
@@ -738,8 +735,8 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.manageStudentsContent.querySelectorAll('.student-shift-checkbox').forEach(cb => {
       cb.addEventListener('change', async (ev) => {
         const id = ev.target.dataset.id;
-        const primerCb = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="primer"]`);
-        const segundoCb = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="segundo"]`);
+        const primerCb = dom.manageStudentsContent.querySelector(`input[data-id="${id}"][data-prop="primer"]`);
+        const segundoCb = dom.manageStudentsContent.querySelector(`input[data-id="${id}"][data-prop="segundo"]`);
         if (ev.target.dataset.prop === 'primer' && primerCb.checked) { if (segundoCb) segundoCb.checked = false; }
         if (ev.target.dataset.prop === 'segundo' && segundoCb.checked) { if (primerCb) primerCb.checked = false; }
         
@@ -760,6 +757,8 @@ document.addEventListener('DOMContentLoaded', () => {
         await updateStudentDoc(id,{ allergic: val });
         const s = appState.students.find(x=>x.id===id);
         if (s) s.allergic = val;
+        // Re-render if shift is active to update visuals immediately
+        if(appState.currentShift) renderCourses(appState.currentShift);
       });
     });
   }
@@ -808,19 +807,26 @@ document.addEventListener('DOMContentLoaded', () => {
   dom.closeReportBtn.addEventListener('click', () => dom.monthlyReportModal.classList.remove('active'));
   dom.reportMonthInput.addEventListener('change', () => generateMonthlyReport(dom.reportMonthInput.value));
   dom.printReportBtn.addEventListener('click', () => {
-      const content = dom.monthlyReportContent.innerHTML;
+    const content = dom.monthlyReportContent.querySelector('.printable-area')?.innerHTML;
+    if(!content) return;
       const iframe = document.createElement('iframe');
       iframe.style.display = 'none';
       document.body.appendChild(iframe);
       const doc = iframe.contentWindow.document;
+      const successColor = getComputedStyle(document.documentElement).getPropertyValue('--success') || '#004623';
+      const brandColor = getComputedStyle(document.documentElement).getPropertyValue('--brand') || '#8b0630';
+      const styles = `
+          <style>
+              body{font-family: Inter, sans-serif; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;}
+              .report-wrapper > div:first-child { background:${brandColor} !important; color:#fff !important; padding:6px 10px; border-radius:6px; margin-bottom:8px; }
+              .report-table{width:100%;border-collapse:collapse}
+              .report-table th, .report-table td{border:1px solid #ddd;padding:4px;text-align:center}
+              .report-table th:first-child, .report-table td:first-child{text-align:left; min-width:180px;}
+              .attendance-mark{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:${successColor} !important;color:#fff !important;font-weight:700;}
+          </style>
+      `;
       doc.open();
-      doc.write(`<html><head><title>Informe</title><style>
-          body{font-family:sans-serif}
-          .report-table{width:100%;border-collapse:collapse}
-          .report-table th, .report-table td{border:1px solid #ccc;padding:4px;text-align:center}
-          .report-table th:first-child, .report-table td:first-child{text-align:left; min-width:150px;}
-          .attendance-mark{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--success);color:#fff;font-weight:700;}
-      </style></head><body>${content}</body></html>`);
+      doc.write(`<html><head><title>Informe Mensual</title>${styles}</head><body>${content}</body></html>`);
       doc.close();
       iframe.contentWindow.print();
       document.body.removeChild(iframe);
