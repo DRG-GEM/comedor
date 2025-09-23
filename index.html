@@ -403,16 +403,38 @@ document.addEventListener('DOMContentLoaded', () => {
     adminLoginView: document.getElementById('admin-login-view'),
     mainContent: document.getElementById('main-content'),
     coursesContainer: document.getElementById('courses-container'),
+    importStatusInitial: document.getElementById('import-status-initial'),
     csvFileInput: document.getElementById('csv-file-input'),
+    manageStudentsModal: document.getElementById('manage-students-modal'),
+    manageStudentsContent: document.getElementById('manage-students-content'),
+    closeManageModal: document.getElementById('close-manage-modal'),
     sporadicPickerModal: document.getElementById('sporadic-picker-modal'),
     sporadicPickerContent: document.getElementById('sporadic-picker-content'),
     sporadicPickerTitle: document.getElementById('sporadic-picker-title'),
     closeSporadicPicker: document.getElementById('close-sporadic-picker'),
     confirmSporadicAdd: document.getElementById('confirm-sporadic-add'),
+    monthlyReportModal: document.getElementById('monthly-report-modal'),
+    monthlyReportContent: document.getElementById('monthly-report-content'),
+    reportMonthInput: document.getElementById('report-month-input'),
+    printReportBtn: document.getElementById('print-report-btn'),
+    closeReportBtn: document.getElementById('close-report-btn'),
+    historyModal: document.getElementById('history-modal'),
+    historyStudentList: document.getElementById('history-student-list'),
+    historyStudentName: document.getElementById('history-student-name'),
+    historyDatesList: document.getElementById('history-dates-list'),
+    historySearch: document.getElementById('history-search'),
     loginAdminBtn: document.getElementById('login-admin-btn'),
+    importCsvBtnInitial: document.getElementById('import-csv-btn-initial'),
+    manageStudentsBtn: document.getElementById('manage-students-btn'),
+    wipeDbBtn: document.getElementById('wipe-db'),
+    exportCsvBtn: document.getElementById('export-csv-btn'),
+    exportDateInput: document.getElementById('export-date-input'),
+    finalizeShiftBtn: document.getElementById('finalize-shift-btn'),
     backToShiftsBtn: document.getElementById('back-to-shifts'),
     summary: { diners: document.getElementById('summary-diners'), absent: document.getElementById('summary-absent'), pending: document.getElementById('summary-pending'), present: document.getElementById('summary-present') },
-    logoutBtn: document.getElementById('logout-btn')
+    logoutBtn: document.getElementById('logout-btn'),
+    showMonthlyBtn: document.getElementById('show-monthly-report-btn'),
+    showHistoryBtn: document.getElementById('show-history-btn')
   };
 
   async function fetchStudents() {
@@ -473,13 +495,8 @@ document.addEventListener('DOMContentLoaded', () => {
     appState.students = await fetchStudents();
     const today = new Date().toISOString().slice(0, 10);
     const attendance = await fetchAttendanceByDate(today);
-    appState.attendance = attendance;
-    
-    appState.students.forEach(s => {
-        if (!appState.attendance[s.id]) {
-            appState.attendance[s.id] = 'pending';
-        }
-    });
+    appState.attendance = {};
+    appState.students.forEach(s => { appState.attendance[s.id] = attendance[s.id] || 'pending'; });
 
     const sporadicSetForShift = appState.tempSporadic[appState.currentShift] || new Set();
     const assigned = appState.students.filter(s => s.shift === appState.currentShift || sporadicSetForShift.has(s.id));
@@ -508,7 +525,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return `
           <div class="course-card">
             <h3>${course}</h3>
-            <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;flex-direction:column;gap:8px" data-course-list="${course}">
               ${studentsInCourse.map(createStudentElement).join('')}
             </div>
             ${pickerBtn}
@@ -602,6 +619,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   dom.loginAdminBtn.addEventListener('click', () => auth.signInWithPopup(googleProvider).catch(e => console.error(e)));
   dom.logoutBtn.addEventListener('click', () => auth.signOut());
+
+  // --- ADMIN BUTTONS RESTORED ---
+  dom.manageStudentsBtn.addEventListener('click', () => alert('Gestión de alumnos próximamente.'));
+  dom.importCsvBtnInitial.addEventListener('click', () => dom.csvFileInput.click());
+  dom.wipeDbBtn.addEventListener('click', () => alert('Función de borrado no implementada en este prototipo.'));
+  dom.showMonthlyBtn.addEventListener('click', () => alert('Informe mensual próximamente.'));
+  dom.showHistoryBtn.addEventListener('click', () => alert('Historial próximamente.'));
+  dom.exportCsvBtn.addEventListener('click', () => alert('Exportación CSV próximamente.'));
+  dom.finalizeShiftBtn.addEventListener('click', () => alert('Finalizar turno próximamente.'));
 
 });
 </script>
