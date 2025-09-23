@@ -420,7 +420,8 @@ document.addEventListener('DOMContentLoaded', () => {
     summary: { diners: document.getElementById('summary-diners'), absent: document.getElementById('summary-absent'), pending: document.getElementById('summary-pending'), present: document.getElementById('summary-present') },
     logoutBtn: document.getElementById('logout-btn'),
     showMonthlyBtn: document.getElementById('show-monthly-report-btn'),
-    showHistoryBtn: document.getElementById('show-history-btn')
+    showHistoryBtn: document.getElementById('show-history-btn'),
+    closeHistoryBtn: document.getElementById('close-history-btn')
   };
 
   async function fetchStudents() {
@@ -682,7 +683,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const byCourse = allStudents.reduce((acc, s) => { (acc[s.course] = acc[s.course] || []).push(s); return acc; }, {});
 
     let html = `<div class="printable-area"><h2 style="text-align:center">${new Date(y, m-1, 1).toLocaleString('es-ES', { month: 'long', year: 'numeric' })}</h2>`;
-    Object.keys(byCourse).sort().forEach(course => {
+    const courseOrder = ['3 años', '4 años', '5 años', '1º EP', '2º EP', '3º EP', '4º EP', '5º EP', '6º EP'];
+    const sortedCourses = Object.keys(byCourse).sort((a, b) => {
+        const indexA = courseOrder.indexOf(a);
+        const indexB = courseOrder.indexOf(b);
+        if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        return indexA - indexB;
+    });
+
+    sortedCourses.forEach(course => {
       const students = byCourse[course].sort((a,b)=> a.name.localeCompare(b.name));
       html += `<div class="report-wrapper" style="margin-top:12px"><div style="background:var(--brand);color:#fff;padding:6px 10px;border-radius:6px;margin-bottom:8px;"><strong>${course}</strong></div><div style="overflow:auto;margin-top:8px"><table class="report-table"><thead><tr><th style="min-width:180px;text-align:left;">Alumno</th>`;
       for (let d=1; d<=days; d++) html += `<th>${d}</th>`;
@@ -757,7 +768,6 @@ document.addEventListener('DOMContentLoaded', () => {
         await updateStudentDoc(id,{ allergic: val });
         const s = appState.students.find(x=>x.id===id);
         if (s) s.allergic = val;
-        // Re-render if shift is active to update visuals immediately
         if(appState.currentShift) renderCourses(appState.currentShift);
       });
     });
@@ -829,7 +839,7 @@ document.addEventListener('DOMContentLoaded', () => {
       doc.write(`<html><head><title>Informe Mensual</title>${styles}</head><body>${content}</body></html>`);
       doc.close();
       iframe.contentWindow.print();
-      document.body.removeChild(iframe);
+      setTimeout(() => document.body.removeChild(iframe), 500);
   });
   dom.showHistoryBtn.addEventListener('click', showHistoryModal);
   dom.closeHistoryBtn.addEventListener('click', () => dom.historyModal.classList.remove('active'));
