@@ -403,38 +403,16 @@ document.addEventListener('DOMContentLoaded', () => {
     adminLoginView: document.getElementById('admin-login-view'),
     mainContent: document.getElementById('main-content'),
     coursesContainer: document.getElementById('courses-container'),
-    importStatusInitial: document.getElementById('import-status-initial'),
     csvFileInput: document.getElementById('csv-file-input'),
-    manageStudentsModal: document.getElementById('manage-students-modal'),
-    manageStudentsContent: document.getElementById('manage-students-content'),
-    closeManageModal: document.getElementById('close-manage-modal'),
     sporadicPickerModal: document.getElementById('sporadic-picker-modal'),
     sporadicPickerContent: document.getElementById('sporadic-picker-content'),
     sporadicPickerTitle: document.getElementById('sporadic-picker-title'),
     closeSporadicPicker: document.getElementById('close-sporadic-picker'),
     confirmSporadicAdd: document.getElementById('confirm-sporadic-add'),
-    monthlyReportModal: document.getElementById('monthly-report-modal'),
-    monthlyReportContent: document.getElementById('monthly-report-content'),
-    reportMonthInput: document.getElementById('report-month-input'),
-    printReportBtn: document.getElementById('print-report-btn'),
-    closeReportBtn: document.getElementById('close-report-btn'),
-    historyModal: document.getElementById('history-modal'),
-    historyStudentList: document.getElementById('history-student-list'),
-    historyStudentName: document.getElementById('history-student-name'),
-    historyDatesList: document.getElementById('history-dates-list'),
-    historySearch: document.getElementById('history-search'),
     loginAdminBtn: document.getElementById('login-admin-btn'),
-    importCsvBtnInitial: document.getElementById('import-csv-btn-initial'),
-    manageStudentsBtn: document.getElementById('manage-students-btn'),
-    wipeDbBtn: document.getElementById('wipe-db'),
-    exportCsvBtn: document.getElementById('export-csv-btn'),
-    exportDateInput: document.getElementById('export-date-input'),
-    finalizeShiftBtn: document.getElementById('finalize-shift-btn'),
     backToShiftsBtn: document.getElementById('back-to-shifts'),
     summary: { diners: document.getElementById('summary-diners'), absent: document.getElementById('summary-absent'), pending: document.getElementById('summary-pending'), present: document.getElementById('summary-present') },
-    logoutBtn: document.getElementById('logout-btn'),
-    showMonthlyBtn: document.getElementById('show-monthly-report-btn'),
-    showHistoryBtn: document.getElementById('show-history-btn')
+    logoutBtn: document.getElementById('logout-btn')
   };
 
   async function fetchStudents() {
@@ -442,9 +420,10 @@ document.addEventListener('DOMContentLoaded', () => {
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   }
   
-  async function logAttendance(studentId, dateStr, state) {
+  async function logAttendance(studentId, dateStr, state, meta = {}) {
     if (!studentId) return;
-    await db.collection('attendance').doc(`${studentId}_${dateStr}`).set({ studentId, date: dateStr, state }, { merge: true });
+    const payload = { studentId, date: dateStr, state, ...meta };
+    await db.collection('attendance').doc(`${studentId}_${dateStr}`).set(payload, { merge: true });
   }
 
   async function fetchAttendanceByDate(dateStr) {
@@ -455,12 +434,22 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function updateSummary() {
-    const vals = Object.values(appState.attendance || {});
-    const diners = appState.students.filter(s => s.shift === appState.currentShift || (appState.tempSporadic[appState.currentShift] || new Set()).has(s.id));
-    dom.summary.diners.textContent = diners.length;
-    dom.summary.absent.textContent = Object.values(appState.attendance).filter(v => v === 'absent').length;
-    dom.summary.present.textContent = Object.values(appState.attendance).filter(v => v === 'present').length;
-    dom.summary.pending.textContent = diners.filter(s => (appState.attendance[s.id] || 'pending') === 'pending').length;
+    const assignedStudents = appState.students.filter(s => 
+      s.shift === appState.currentShift || 
+      (appState.tempSporadic[appState.currentShift] || new Set()).has(s.id)
+    );
+    let present = 0, absent = 0, pending = 0;
+    assignedStudents.forEach(s => {
+      const status = appState.attendance[s.id] || 'pending';
+      if (status === 'present') present++;
+      else if (status === 'absent') absent++;
+      else pending++;
+    });
+    
+    dom.summary.diners.textContent = assignedStudents.length;
+    dom.summary.present.textContent = present;
+    dom.summary.absent.textContent = absent;
+    dom.summary.pending.textContent = pending;
   }
 
   function createStudentElement(s) {
@@ -492,41 +481,71 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    const sporadicSetForShift = appState.tempSporadic[shift] || new Set();
-    const assigned = appState.students.filter(s => s.shift === shift || sporadicSetForShift.has(s.id));
-    
-    // --- INICIO DE LA MODIFICACIÓN DE ORDEN ---
+    const sporadicSetForShift = appState.tempSporadic[appState.currentShift] || new Set();
+    const assigned = appState.students.filter(s => s.shift === appState.currentShift || sporadicSetForShift.has(s.id));
+    const esporadicos = appState.students.filter(s => !s.shift || s.shift.trim() === '');
+    const courseSet = new Set([...assigned.map(s => s.course), ...esporadicos.map(s => s.course)]);
+
     const courseOrder = ['3 años', '4 años', '5 años', '1º EP', '2º EP', '3º EP', '4º EP', '5º EP', '6º EP'];
-    const courses = [...new Set(assigned.map(s => s.course))].sort((a, b) => {
+    const courses = [...courseSet].sort((a, b) => {
         const indexA = courseOrder.indexOf(a);
         const indexB = courseOrder.indexOf(b);
-
-        if (indexA === -1 && indexB === -1) return a.localeCompare(b); // Ambos desconocidos, orden alfabético
-        if (indexA === -1) return 1; // 'a' es desconocido, va al final
-        if (indexB === -1) return -1; // 'b' es desconocido, va al final
-        return indexA - indexB; // Ordenar según la lista
+        if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        return indexA - indexB;
     });
-    // --- FIN DE LA MODIFICACIÓN DE ORDEN ---
 
     if (!courses.length) {
       dom.coursesContainer.innerHTML = '<p class="small-muted">No hay alumnos en este turno.</p>';
     } else {
       dom.coursesContainer.innerHTML = courses.map(course => {
         const studentsInCourse = assigned.filter(s => s.course === course).sort((a,b) => a.name.localeCompare(b.name));
+        const sporadicCandidates = esporadicos.filter(s => s.course === course && !sporadicSetForShift.has(s.id));
+        const pickerBtn = sporadicCandidates.length > 0 ? 
+          `<div style="margin-top:8px"><button class="open-sporadic-picker primary small" data-course="${course}">+ Añadir esporádico</button></div>` : '';
+        
         return `
           <div class="course-card">
             <h3>${course}</h3>
             <div style="display:flex;flex-direction:column;gap:8px">
               ${studentsInCourse.map(createStudentElement).join('')}
             </div>
+            ${pickerBtn}
           </div>`;
       }).join('');
     }
     updateSummary();
   }
+  
+  function openSporadicPickerModal(course) {
+    dom.sporadicPickerTitle.textContent = `Añadir esporádicos a ${course}`;
+    const sporadicSetForShift = appState.tempSporadic[appState.currentShift] || new Set();
+    const candidates = appState.students.filter(s => s.course === course && (!s.shift || s.shift.trim() === '') && !sporadicSetForShift.has(s.id))
+      .sort((a,b) => a.name.localeCompare(b.name));
+
+    if(candidates.length === 0) {
+        dom.sporadicPickerContent.innerHTML = `<p class="small-muted">No hay más alumnos esporádicos en este curso.</p>`;
+    } else {
+        dom.sporadicPickerContent.innerHTML = candidates.map(s => `
+        <label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--card-border);border-radius:8px;background:#fff;margin-bottom:6px;">
+          <input type="checkbox" class="sporadic-candidate" value="${s.id}">
+          <span>${s.name} ${s.allergic ? ' (⚠️ Alergia)' : ''}</span>
+        </label>
+        `).join('');
+    }
+    dom.sporadicPickerModal.classList.add('active');
+  }
 
   dom.coursesContainer.addEventListener('click', async (e) => {
     const studentDiv = e.target.closest('.student-item');
+    const pickerBtn = e.target.closest('.open-sporadic-picker');
+
+    if(pickerBtn) {
+        openSporadicPickerModal(pickerBtn.dataset.course);
+        return;
+    }
+
     if (!studentDiv) return;
     
     const studentId = studentDiv.dataset.studentId;
@@ -535,15 +554,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const newState = isX ? (current === 'absent' ? 'pending' : 'absent') : (current === 'present' ? 'pending' : 'present');
     
     appState.attendance[studentId] = newState;
-    studentDiv.className = 'student-item ' + newState; // Simplified class update
-    const student = appState.students.find(s => s.id === studentId);
-    if(student && student.allergic) {
-        studentDiv.querySelector('.name').classList.add('allergic');
-    }
+    studentDiv.classList.remove('pending','present','absent');
+    studentDiv.classList.add(newState);
     
     updateSummary();
     await logAttendance(studentId, new Date().toISOString().slice(0,10), newState);
   });
+  
+  dom.confirmSporadicAdd.addEventListener('click', async () => {
+    const checked = [...dom.sporadicPickerContent.querySelectorAll('.sporadic-candidate:checked')].map(cb => cb.value);
+    if(checked.length === 0) return;
+    
+    const today = new Date().toISOString().slice(0,10);
+    const shift = appState.currentShift;
+    if(!appState.tempSporadic[shift]) appState.tempSporadic[shift] = new Set();
+
+    const promises = checked.map(id => {
+        appState.tempSporadic[shift].add(id);
+        appState.attendance[id] = 'present';
+        return logAttendance(id, today, 'present', { sporadic: true, sporadicShift: shift });
+    });
+    
+    await Promise.all(promises);
+    dom.sporadicPickerModal.classList.remove('active');
+    await renderCourses(shift);
+  });
+
+  dom.closeSporadicPicker.addEventListener('click', () => dom.sporadicPickerModal.classList.remove('active'));
   
   function setUIForRole(isAdmin) {
     dom.roleDisplay.textContent = isAdmin ? 'Admin: ' + (auth.currentUser?.displayName || 'Admin') : 'Modo: Profesor / Cuidador';
@@ -565,13 +602,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   dom.loginAdminBtn.addEventListener('click', () => auth.signInWithPopup(googleProvider).catch(e => console.error(e)));
   dom.logoutBtn.addEventListener('click', () => auth.signOut());
-
-  // Placeholders for other admin functions
-  dom.manageStudentsBtn.addEventListener('click', () => alert('Gestión de alumnos próximamente.'));
-  dom.importCsvBtnInitial.addEventListener('click', () => dom.csvFileInput.click());
-  dom.wipeDbBtn.addEventListener('click', () => alert('Función de borrado no implementada en este prototipo.'));
-  dom.showMonthlyBtn.addEventListener('click', () => alert('Informe mensual próximamente.'));
-  dom.showHistoryBtn.addEventListener('click', () => alert('Historial próximamente.'));
 
 });
 </script>
