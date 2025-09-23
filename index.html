@@ -56,6 +56,7 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
   font-weight: 500;
 }
 
+
 /* ======================================================= */
 /* == ESTADOS DE ALUMNO (V5 - LÓGICA SIMPLIFICADA Y ROBUSTA) == */
 /* ======================================================= */
@@ -102,6 +103,7 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 /* ======================================================= */
 /* == FIN DE LA SECCIÓN DE ESTADOS == */
 /* ======================================================= */
+
 
 .student-item:hover {
   transform: translateY(-2px);
@@ -510,6 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
     assigned.forEach(s => courseSet.add(s.course));
     esporadicos.forEach(s => courseSet.add(s.course));
 
+    // --- INICIO DE LA MODIFICACIÓN DE ORDEN ---
     const courseOrder = ['3 años', '4 años', '5 años', '1º EP', '2º EP', '3º EP', '4º EP', '5º EP', '6º EP'];
     const courses = [...courseSet].sort((a, b) => {
         const indexA = courseOrder.indexOf(a);
@@ -519,12 +522,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (indexB === -1) return -1;
         return indexA - indexB;
     });
+    // --- FIN DE LA MODIFICACIÓN DE ORDEN ---
 
     if (courses.length === 0 && assigned.length === 0) {
       dom.coursesContainer.innerHTML = '<p class="small-muted">No hay alumnos en este turno.</p>';
     } else {
       dom.coursesContainer.innerHTML = courses.map(course => {
-        if (!course) return ''; // Evitar cursos "undefined" o vacíos
+        if (!course) return '';
         const studentsInCourse = assigned.filter(s => s.course === course).sort((a,b) => a.name.localeCompare(b.name));
         const sporadicCandidates = esporadicos.filter(s => s.course === course && !sporadicSetForShift.has(s.id));
         
@@ -532,7 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ? `<div style="margin-top:8px"><button class="open-sporadic-picker primary small" data-course="${course}">+ Añadir esporádico</button></div>`
           : '';
 
-        if (studentsInCourse.length === 0 && pickerBtn === '') return ''; // No renderizar el curso si no tiene alumnos ni esporádicos
+        if (studentsInCourse.length === 0 && pickerBtn === '') return '';
 
         return `
           <div class="course-card">
@@ -641,7 +645,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     await logBatchAttendance(toMark, today, 'absent');
-    await renderCourses(appState.currentShift); // Re-render to show changes
+    await renderCourses(appState.currentShift);
   }
 
   async function showHistoryModal() {
@@ -705,6 +709,60 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.monthlyReportModal.classList.add('active');
     generateMonthlyReport(dom.reportMonthInput.value);
   }
+  
+  async function openManageStudentsModal() {
+    dom.manageStudentsModal.classList.add('active');
+    dom.manageStudentsContent.innerHTML = '<p class="small-muted">Cargando...</p>';
+    const all = await fetchStudents(); const byCourse = all.reduce((acc,s)=>{ (acc[s.course]=acc[s.course]||[]).push(s); return acc; },{});
+    let html = '';
+    Object.keys(byCourse).sort().forEach(course=>{
+      html += `<h4 style="margin-top:12px;color:var(--brand)">${course}</h4>`;
+      byCourse[course].sort((a,b)=>a.name.localeCompare(b.name)).forEach(s=>{
+        const checkedPrimer = s.shift === 'Primer Turno (Infantil)' ? 'checked' : '';
+        const checkedSegundo = s.shift === 'Segundo Turno (Primaria)' ? 'checked' : '';
+        const isAllergic = s.allergic ? 'checked' : '';
+        html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px;border-bottom:1px solid var(--card-border);align-items:center">
+                   <div><strong>${s.name}</strong></div>
+                   <div style="display:flex;gap:8px;align-items:center">
+                     <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="primer" ${checkedPrimer}> 1º turno</label>
+                     <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-shift-checkbox" data-id="${s.id}" data-prop="segundo" ${checkedSegundo}> 2º turno</label>
+                   </div>
+                   <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center">
+                     <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="student-update-control" data-id="${s.id}" data-prop="allergic" ${isAllergic}> Alergia</label>
+                   </div>
+                 </div>`;
+      });
+    });
+    dom.manageStudentsContent.innerHTML = html;
+
+    dom.manageStudentsContent.querySelectorAll('.student-shift-checkbox').forEach(cb => {
+      cb.addEventListener('change', async (ev) => {
+        const id = ev.target.dataset.id;
+        const primerCb = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="primer"]`);
+        const segundoCb = dom.manageStudentsContent.querySelector(`input.student-shift-checkbox[data-id="${id}"][data-prop="segundo"]`);
+        if (ev.target.dataset.prop === 'primer' && primerCb.checked) { if (segundoCb) segundoCb.checked = false; }
+        if (ev.target.dataset.prop === 'segundo' && segundoCb.checked) { if (primerCb) primerCb.checked = false; }
+        
+        let newShift = '';
+        if (primerCb.checked) newShift = 'Primer Turno (Infantil)';
+        else if (segundoCb.checked) newShift = 'Segundo Turno (Primaria)';
+        
+        await updateStudentDoc(id, { shift: newShift });
+        const s = appState.students.find(x=>x.id===id);
+        if (s) s.shift = newShift;
+      });
+    });
+
+    dom.manageStudentsContent.querySelectorAll('.student-update-control[data-prop="allergic"]').forEach(cb => {
+      cb.addEventListener('change', async (ev) => {
+        const id = ev.target.dataset.id;
+        const val = !!ev.target.checked;
+        await updateStudentDoc(id,{ allergic: val });
+        const s = appState.students.find(x=>x.id===id);
+        if (s) s.allergic = val;
+      });
+    });
+  }
 
   dom.coursesContainer.addEventListener('click', async (e) => {
     const openPickerBtn = e.target.closest('.open-sporadic-picker');
@@ -740,7 +798,8 @@ document.addEventListener('DOMContentLoaded', () => {
   dom.importCsvBtnInitial.addEventListener('click', ()=> dom.csvFileInput.click());
   dom.csvFileInput.addEventListener('change', e => handleCsvImport(e.target.files[0]));
   dom.manageStudentsBtn.addEventListener('click', openManageStudentsModal);
-  dom.wipeDbBtn.addEventListener('click', async ()=> { if (confirm('¿Borrar todos los alumnos?')) { await deleteAllStudents(); await renderCourses(appState.currentShift); } });
+  dom.closeManageModal.addEventListener('click', () => dom.manageStudentsModal.classList.remove('active'));
+  dom.wipeDbBtn.addEventListener('click', async ()=> { if (confirm('¿Borrar todos los alumnos?')) { await deleteAllStudents(); if (appState.currentShift) await renderCourses(appState.currentShift); } });
   dom.exportCsvBtn.addEventListener('click', ()=> exportFullDayCsv(dom.exportDateInput.value || new Date().toISOString().slice(0,10)));
   document.querySelectorAll('#shift-buttons button').forEach(btn => btn.addEventListener('click', ()=> renderCourses(btn.dataset.shift)));
   dom.finalizeShiftBtn.addEventListener('click', finalizeShift);
@@ -755,7 +814,13 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.appendChild(iframe);
       const doc = iframe.contentWindow.document;
       doc.open();
-      doc.write('<html><head><title>Informe</title><style>body{font-family:sans-serif}.report-table{width:100%;border-collapse:collapse}.report-table th,td{border:1px solid #ccc;padding:4px;text-align:center}.report-table th:first-child,td:first-child{text-align:left}</style></head><body>' + content + '</body></html>');
+      doc.write(`<html><head><title>Informe</title><style>
+          body{font-family:sans-serif}
+          .report-table{width:100%;border-collapse:collapse}
+          .report-table th, .report-table td{border:1px solid #ccc;padding:4px;text-align:center}
+          .report-table th:first-child, .report-table td:first-child{text-align:left; min-width:150px;}
+          .attendance-mark{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--success);color:#fff;font-weight:700;}
+      </style></head><body>${content}</body></html>`);
       doc.close();
       iframe.contentWindow.print();
       document.body.removeChild(iframe);
@@ -769,7 +834,7 @@ document.addEventListener('DOMContentLoaded', () => {
   dom.historySearch.addEventListener('input', e => {
       const q = e.target.value.toLowerCase();
       dom.historyStudentList.querySelectorAll('.history-student').forEach(el => {
-          el.style.display = el.dataset.name.toLowerCase().includes(q) ? '' : 'none';
+          el.style.display = (el.dataset.name || '').toLowerCase().includes(q) ? '' : 'none';
       });
   });
 
