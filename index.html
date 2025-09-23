@@ -62,14 +62,14 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 
 
 /* ======================================================= */
-/* == ESTADOS DE ALUMNO (V2 - RECUADRO AMARILLO ENTERO) == */
+/* == ESTADOS DE ALUMNO (V3 - CORREGIDO Y CON MÁXIMO CONTRASTE) == */
 /* ======================================================= */
 
 /* PENDIENTE (Estado por defecto) */
 .student-item.pending {
   background-color: #f8f9fa; /* Gris extra claro */
   border-left-color: #dee2e6; /* Borde gris sutil */
-  color: #344054;
+  color: #111827; /* Texto oscuro */
 }
 
 /* PRESENTE */
@@ -97,16 +97,16 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
 
 /* ALÉRGICO (REQUISITO: RECUADRO AMARILLO ENTERO) */
 /* Este estilo SOBREESCRIBE el color de fondo de los otros estados. */
-/* La condición (presente/ausente/pendiente) se mantiene visible por el borde izquierdo. */
+/* La condición (presente/ausente) se mantiene visible por el borde izquierdo. */
 .student-item.allergic {
   background-color: #fffbeb; /* Fondo amarillo pálido muy visible */
-  color: #78350f; /* Texto oscuro (marrón) para buen contraste sobre amarillo */
+  color: #1e293b; /* Texto muy oscuro (slate) para máximo contraste */
 }
 
 /* Aseguramos que el texto dentro del recuadro alérgico sea siempre oscuro */
 .student-item.allergic .name,
 .student-item.allergic * {
-   color: #78350f !important; /* !important para sobreescribir el blanco de .present/.absent */
+   color: #1e293b !important; /* !important para sobreescribir el blanco de .present/.absent */
 }
 /* El nombre ya no necesita su propio fondo, pero lo hacemos negrita para destacar */
 .student-item.allergic .name {
@@ -130,9 +130,7 @@ button.small { padding:6px 8px; font-size:0.9rem; border-radius:8px; }
   }
 }
 
-/* -----------------------
-   Efectos hover opcionales
------------------------ */
+/* Efectos hover opcionales */
 .student-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
@@ -764,32 +762,12 @@ document.addEventListener('DOMContentLoaded', () => {
     showHistoryBtn: document.getElementById('show-history-btn')
   };
 
-  /* ---------------------------
-      Inyectar estilos visuales
-      --------------------------- */
-  (function injectStyles() {
-    const css = `
-      /* Resumen - tarjetas más compactas en móvil */
-      @media (max-width: 600px) {
-        .summary-card { transform: none; margin: 6px auto; width: 92%; font-size: 0.95rem; }
-        .course-card { padding: 8px; }
-        .report-table th:first-child, .report-table td:first-child { min-width: 160px; }
-      }
-
-      /* Botones de picker y modal: textos exactos por accesibilidad */
-      .open-sporadic-picker.primary { white-space:nowrap; }
-
-      /* Pequeñas mejoras visuales */
-      .course-card { margin-bottom: 12px; border-radius: 8px; padding: 12px; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,0.03); border:1px solid var(--card-border); }
-      .student-item { display:flex; justify-content:space-between; align-items:center; padding:8px; border-radius:6px; margin-bottom:6px; }
-      .student-item .name { font-weight:600; }
-      .student-item .small-muted { font-size:0.85rem; color:#666; }
-    `;
-    const style = document.createElement('style');
-    style.setAttribute('data-generated','comedorvp-fixes');
-    style.innerHTML = css;
-    document.head.appendChild(style);
-  })();
+  /*
+   * ===================================================================
+   * == NOTA: El bloque de JS que inyectaba estilos se ha eliminado  ==
+   * == para evitar conflictos con el CSS principal del <style> tag. ==
+   * ===================================================================
+  */
 
   /* ----- Firestore helpers (mejora: logAttendance acepta meta opcional) ----- */
   async function fetchStudents() {
